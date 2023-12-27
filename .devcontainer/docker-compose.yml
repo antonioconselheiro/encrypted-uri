@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  encrypted-uri-dev:
+    image: encrypted-uri-dev
+    container_name: encrypted-uri-dev
+    build:
+      context: ../.
+      dockerfile: ./.devcontainer/Dockerfile
+    working_dir: /encrypted-uri
+    volumes:
+      - ..:/encrypted-uri:cached
+      - /var/run/docker.sock:/var/run/docker.sock
+    tty: true

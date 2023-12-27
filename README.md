@@ -3,7 +3,7 @@
 > Apocalypse 2:17
 
 # Encrypted URI
-## Generic Encrypted Content Encode Specification
+## URI Encrypted Scheme Specification
 
 Encode to standardize different types of encrypted content into a query string that allows the user to customize his cyphers with his preferred encryption algorithm.
 

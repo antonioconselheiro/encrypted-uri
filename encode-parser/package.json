@@ -1,0 +1,24 @@
+{
+  "name": "@encrypted-uri/encode-parser",
+  "version": "0.1.0",
+  "description": "encode and decode encrypted uri to resultset",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/antonioconselheiro/encrypted-uri.git"
+  },
+  "keywords": [
+    "uri",
+    "encrypted",
+    "encrypted-data",
+    "encryption-algorithms",
+    "uri-template",
+    "uri-solutions"
+  ],
+  "author": "António Conselheiro",
+  "license": "Unlicense",
+  "bugs": {
+    "url": "https://github.com/antonioconselheiro/encrypted-uri/issues"
+  },
+  "homepage": "https://github.com/antonioconselheiro/encrypted-uri#readme"
+}

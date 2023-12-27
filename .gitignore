@@ -1,0 +1,9 @@
+# Credentials
+.gitconfig
+.ssh
+
+# Dependencies
+/node_modules
+/encode-parser/node_modules
+/noble-cipher-impl/node_modules
+/webcrypto-api-impl/node_modules
