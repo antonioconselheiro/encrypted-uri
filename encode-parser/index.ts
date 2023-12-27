@@ -1,14 +1,22 @@
-type TEncryptedURIResultset = {
+type TEncryptedURIDefaultParams = {
+  cypher: string;
+}
+
+type TEncryptedAESParams = {
   algorithm: 'aes';
   mode: 'cbc' | 'ecb' | 'ctr' | 'gcm' | 'siv';
   initializationVector: string;
   padding: 'pkcs7' | 'ansix923' | 'iso10126' | 'iso97971' | 'zeropad' | 'nopad';
-} | {
+}
+
+type TEncryptedNumberOnceParams = {
   algorithm: 'salsa20' | 'chacha' | 'xsalsa20' | 'xchacha' | 'poly1305' | 'chacha8' | 'chacha12';
-  nonce: string;
+  numberOnce: string;
 };
 
-type TURIEncryptedConfig = {
+type TEncryptedURIResultset = (TEncryptedAESParams | TEncryptedNumberOnceParams) & TEncryptedURIDefaultParams;
+
+type TEncryptedURIConfig = {
   includeDefaults: true;
 } | ({
   /**
@@ -69,9 +77,9 @@ type TURIEncryptedConfig = {
    * @default false
    */
   alwaysIncludeMode?: true;
-})
-//implements TEncryptedURIResultset
-class URIEncrypted  {
+});
+
+class URIEncrypted {
 
   static readonly INCLUDE_DEFAULTS = true;
   
@@ -80,40 +88,91 @@ class URIEncrypted  {
   static readonly DEFAULT_AES_PADDING = 'pkcs7';
 
   readonly encoded: string;
+  readonly decoded: TEncryptedURIResultset;
 
-  constructor(content: TEncryptedURIResultset, config?: TURIEncryptedConfig);
+  constructor(content: TEncryptedURIResultset, config?: TEncryptedURIConfig);
   constructor(content: string);
   constructor(
     content: string | TEncryptedURIResultset,
-    config?: TURIEncryptedConfig
+    config?: TEncryptedURIConfig
   ) {
     if (typeof content === 'string') {
-      this.decode(this.encoded = content);
+      this.decoded = this.decode(this.encoded = content);
+      this.encoded = content;
     } else {
+      this.decoded = content;
       this.encoded = this.encode(content, config);
     }
   }
 
-  private decode(content: string): void {
+  private decode(content: string): TEncryptedURIResultset {
 
   }
 
-  private encode(content: TEncryptedURIResultset, config?: TURIEncryptedConfig): string {
+  private encode(content: TEncryptedURIResultset, config?: TEncryptedURIConfig): string {
+    const algorithm = this.encodeAlgorithmAndMode(content, config);
+    const parameters = this.encodeParameters(content, config);
+
+    return `encrypted:${algorithm}?${parameters};${content.cypher}`;
+  }
+
+  private encodeParameters(
+    content: TEncryptedURIResultset,
+    config?: TEncryptedURIConfig
+  ): string {
     const {
-      alwaysIncludeAlgorithm,
-      alwaysIncludeMode,
       alwaysIncludePadding,
       alwaysIncludeDefaultArgumentName
     } = this.normalizeConfig(config);
 
-    let uriAlgorithm: string;
-    if (alwaysIncludeAlgorithm) {
-      uriAlgorithm = content.algorithm;
+    const params = new URLSearchParams();
+    if ('initializationVector' in content) {
+      const isDefaultPadding = content.padding === URIEncrypted.DEFAULT_AES_PADDING;
+      const ignoreDefaultPadding = !alwaysIncludePadding;
 
+      params.append('iv', content.initializationVector);
+      if (!(ignoreDefaultPadding && isDefaultPadding)) {
+        params.append('pad', content.padding);
+      } else if (!alwaysIncludeDefaultArgumentName) {
+        //  iv is only argument and is configured to not show argument name
+        const qs = params.toString();
+        return qs.replace(/iv=/, '');
+      }
+
+    } else if ('numberOnce' in content) {
+      params.append('no', content.numberOnce);
     }
+
+    return params.toString();
   }
 
-  private normalizeConfig(config?: TURIEncryptedConfig): {
+  private encodeAlgorithmAndMode(
+    content: TEncryptedURIResultset,
+    config?: TEncryptedURIConfig
+  ) {
+    const {
+      alwaysIncludeAlgorithm,
+      alwaysIncludeMode
+    } = this.normalizeConfig(config);
+
+    let algorithm: string = content.algorithm;
+    if (content.algorithm === 'aes') {
+      if (alwaysIncludeAlgorithm) {
+        const isDefaultMode = content.mode === URIEncrypted.DEFAULT_AES_MODE;
+        const dontIncludeDefault = !alwaysIncludeMode;
+  
+        if (!(dontIncludeDefault && isDefaultMode)) {
+          algorithm = `${algorithm}/${content.mode}`;
+        }
+      } else {
+        algorithm = '';
+      }
+    }
+
+    return algorithm;
+  }
+
+  private normalizeConfig(config?: TEncryptedURIConfig): {
     alwaysIncludeAlgorithm: boolean;
     alwaysIncludePadding: boolean;
     alwaysIncludeMode: boolean;
@@ -157,6 +216,11 @@ class URIEncrypted  {
   }
 }
 
-class InvalidEncryptedArgument extends Error {
+class AlgorithmNotSuported extends Error {
+
+}
+
+
+class InvalidURIEncrypted extends Error {
 
 }
