@@ -5,28 +5,10 @@
 type TEncryptedURI = {
   algorithm?: string;
   mode?: string;
-  initializationVector?: string;
-  padding?: string;
-  numberOnce?: string;
   queryString?: string;
   cypher?: string;
   params?: {
     [attr: string]: string;
-
-    /**
-     * Initialization vector
-     */
-    iv: string;
-
-    /**
-     * Number Once
-     */
-    no: string;
-
-    /**
-     * Padding
-     */
-    pad: string;
   }
 }
 
@@ -97,7 +79,7 @@ type TEncryptedURIConfig = {
   alwaysIncludeMode?: true;
 });
 
-class URIEncrypted {
+export class URIEncrypted {
 
   readonly encoded: string;
   readonly decoded: TEncryptedURI;
@@ -145,13 +127,9 @@ class URIEncryptedDecode {
   }
 
   private identifySupportedAlgorithm(iterable: IterableString, resultset: TEncryptedURI): void {
-    const algorithm = /^[^\/\?\;]+/;
-    const isSupported = iterable.addCursor(algorithm);
-    if (isSupported) {
-      resultset.algorithm = isSupported;
-    } else {
-      throw new AlgorithmNotSuported('algorithm not supported');
-    }
+    const algorithmMatcher = /^[^\/\?\;]+/;
+    const algorithmValue = iterable.addCursor(algorithmMatcher);
+    resultset.algorithm = algorithmValue;
   }
 
   private identifySupportedOperationMode(iterable: IterableString, resultset: TEncryptedURI): void {
@@ -165,30 +143,17 @@ class URIEncryptedDecode {
   private readQueryString(iterable: IterableString, resultset: TEncryptedURI): void {
     const isQueryStringFormat = /^\?([^=]+=[^=]+)(&([^=]+=[^=]+))*[;]$/;
     const queryString = iterable.addCursor(this.QUERY_STRING_IDENTIFIER);
-    const cleanQueryString = queryString.replace(/;$/, '')
+    const cleanQueryString = queryString.replace(/;$/, '');
+    resultset.queryString = cleanQueryString;
     if (isQueryStringFormat.test(queryString)) {
       const decodedQueryParams = new URL(`encrypted://_${cleanQueryString}`);
-      const params = Array
+      resultset.params = Array
         .from(decodedQueryParams.searchParams.entries())
-        .map(([key, value]) => ({ [key]: value }));
-
-      if ('iv' in params) {
-        resultset.initializationVector = String(params.iv);
-      }
-
-      if ('pad' in params) {
-        resultset.padding = String(params.pad);
-      }
-
-      if ('no' in params) {
-        resultset.numberOnce = String(params.no);
-      }
-    } else {
-      if (resultset.algorithm === 'aes') {
-        resultset.initializationVector = cleanQueryString;
-      } else {
-        resultset.numberOnce = cleanQueryString;
-      }
+        .map(([key, value]) => ({ [key]: decodeURI(String(value)) }))
+        .reduce((result, object) => {
+          Object.keys(object).forEach(key => result[key] = object[key]);
+          return result;
+        });
     }
   }
 

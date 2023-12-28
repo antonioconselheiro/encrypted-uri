@@ -1,6 +1,6 @@
 FROM node:20
 
-RUN npm install typescript -g
+RUN npm install typescript eslint mocha -g
 
 WORKDIR /encrypted-uri
 

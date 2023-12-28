@@ -20,5 +20,13 @@
   "bugs": {
     "url": "https://github.com/antonioconselheiro/encrypted-uri/issues"
   },
-  "homepage": "https://github.com/antonioconselheiro/encrypted-uri#readme"
+  "homepage": "https://github.com/antonioconselheiro/encrypted-uri#readme",
+  "devDependencies": {
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "chai": "^5.0.0",
+    "eslint": "^8.56.0",
+    "husky": "^8.0.3",
+    "mocha": "^10.2.0"
+  }
 }
