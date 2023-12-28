@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "tsc --project .",
-    "lint": "",
+    "lint": "eslint .",
     "test": "mocha -r ts-node/register tests/**/*.test.ts",
     "coverage": "nyc -r lcov -e .ts -x \"*.test.ts\" npm run test"
   },
