@@ -89,6 +89,8 @@ type TEncryptedURIConfig = {
    * included as argument in the final encode.
    * 
    * If true the argument will be always include.
+   * 
+   * @default false
    */
   alwaysIncludePadding?: true;
 
@@ -103,6 +105,8 @@ type TEncryptedURIConfig = {
    * be not included in the encode when it is the only argument.
    * 
    * If true the argument namewill be always include.
+   * 
+   * @default false
    */
   alwaysIncludeDefaultArgumentName?: true;
 } & {
@@ -169,11 +173,7 @@ class URIEncryptedDecode {
     this.identifySupportedOperationMode(iterable, resultset);
     this.readQueryString(iterable, resultset);
 
-    if (this.validateDecoded(resultset)) {
-      return resultset;
-    } else {
-      throw new InvalidURIEncrypted();
-    }
+    return resultset as TEncryptedURIResultset;
   }
 
   private checkURI(iterable: IterableString): void {
@@ -229,10 +229,6 @@ class URIEncryptedDecode {
         resultset.numberOnce = cleanQueryString;
       }
     }
-  }
-
-  private validateDecoded(resultset: TEncryptedUnkown): resultset is TEncryptedURIResultset {
-    return true;
   }
 
   private removeNotAlphaNumerical(content: string): string {
@@ -483,7 +479,6 @@ export class IterableString {
 class AlgorithmNotSuported extends Error {
 
 }
-
 
 class InvalidURIEncrypted extends Error {
 
