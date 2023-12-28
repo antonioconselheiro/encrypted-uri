@@ -1,5 +1,6 @@
 {
   "name": "@encrypted-uri/encode-parser",
+  "type": "module",
   "version": "0.1.0",
   "description": "encode and decode encrypted uri to resultset",
   "main": "index.js",
@@ -10,7 +11,7 @@
   "scripts": {
     "build": "tsc --project .",
     "lint": "eslint .",
-    "test": "mocha -r ts-node/register tests/**/*.test.ts",
+    "test": "mocha -r ts-node/register **/*.test.ts",
     "coverage": "nyc -r lcov -e .ts -x \"*.test.ts\" npm run test"
   },
   "keywords": [
