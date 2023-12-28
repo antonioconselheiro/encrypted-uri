@@ -7,6 +7,12 @@
     "type": "git",
     "url": "git+https://github.com/antonioconselheiro/encrypted-uri.git"
   },
+  "scripts": {
+    "build": "tsc --project .",
+    "lint": "",
+    "test": "mocha -r ts-node/register tests/**/*.test.ts",
+    "coverage": "nyc -r lcov -e .ts -x \"*.test.ts\" npm run test"
+  },
   "keywords": [
     "uri",
     "encrypted",
@@ -24,9 +30,13 @@
   "devDependencies": {
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
+    "@typescript-eslint/eslint-plugin": "^6.16.0",
     "chai": "^5.0.0",
     "eslint": "^8.56.0",
+    "eslint-plugin-ban": "^1.6.0",
     "husky": "^8.0.3",
-    "mocha": "^10.2.0"
+    "mocha": "^10.2.0",
+    "nyc": "^15.1.0",
+    "ts-node": "^10.9.2"
   }
 }
