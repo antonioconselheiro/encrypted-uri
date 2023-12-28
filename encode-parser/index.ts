@@ -51,6 +51,18 @@ type TEncryptedNumberOnceParams = {
 
 type TEncryptedURIResultset = (TEncryptedAESParams | TEncryptedNumberOnceParams) & TEncryptedURIDefaultParams;
 
+/**
+ * When the uri is still being interpreted
+ * and has not yet gone through validation
+ */
+type TEncryptedUnkown = {
+  algorithm?: string;
+  mode?: string;
+  initializationVector?: string;
+  padding?: string;
+  numberOnce?: string;
+}
+
 type TEncryptedURIConfig = {
   includeDefaults: true;
 } | ({
@@ -149,31 +161,82 @@ class URIEncryptedDecode {
   private readonly QUERY_STRING_IDENTIFIER = /^?.*;+/;
 
   decode(content: string): TEncryptedURIResultset {
+    const resultset: TEncryptedUnkown = {};
     const iterable = new IterableString(content);
+
+    this.checkURI(iterable);
+    this.identifySupportedAlgorithm(iterable, resultset);
+    this.identifySupportedOperationMode(iterable, resultset);
+    this.readQueryString(iterable, resultset);
+
+    if (this.validateDecoded(resultset)) {
+      return resultset;
+    } else {
+      throw new InvalidURIEncrypted();
+    }
+  }
+
+  private checkURI(iterable: IterableString): void {
     const is = iterable.addCursor(this.ENCRYPTED_URI_IDENTIFIER);
     if (!is) {
       throw new InvalidURIEncrypted('missing \'encrypted\' keyword');
     }
+  }
 
+  private identifySupportedAlgorithm(iterable: IterableString, resultset: TEncryptedUnkown): void {
     const identifySupportedAlgorithm = this.getSupportedAlgorithmMatcher();
     const isSupported = iterable.addCursor(identifySupportedAlgorithm);
-    if (!isSupported) {
+    if (isSupported) {
+      resultset.algorithm = isSupported;
+    } else {
       throw new AlgorithmNotSuported('algorithm not supported');
     }
+  }
 
+  private identifySupportedOperationMode(iterable: IterableString, resultset: TEncryptedUnkown): void {
     const identifyOperationMode = this.getIdentifyOperationModeMatcher();
     const hasOperationMode = iterable.addCursor(identifyOperationMode);
     if (hasOperationMode) {
-
+      resultset.mode = this.removeNotAlphaNumerical(hasOperationMode);
     }
+  }
 
-    
+  private readQueryString(iterable: IterableString, resultset: TEncryptedUnkown): void {
+    const isQueryStringFormat = /^\?([^=]+=[^=]+)(&([^=]+=[^=]+))*[;]$/;
     const queryString = iterable.addCursor(this.QUERY_STRING_IDENTIFIER);
-    if (queryString) {
+    const cleanQueryString = queryString.replace(/;$/, '')
+    if (isQueryStringFormat.test(queryString)) {
+      const decodedQueryParams = new URL(`encrypted://_${cleanQueryString}`);
+      const params = Array
+        .from(decodedQueryParams.searchParams.entries())
+        .map(([key, value]) => ({ [key]: value }));
 
+      if ('iv' in params) {
+        resultset.initializationVector = String(params.iv);
+      }
+
+      if ('pad' in params) {
+        resultset.padding = String(params.pad);
+      }
+
+      if ('no' in params) {
+        resultset.numberOnce = String(params.no);
+      }
+    } else {
+      if (resultset.algorithm === 'aes') {
+        resultset.initializationVector = cleanQueryString;
+      } else {
+        resultset.numberOnce = cleanQueryString;
+      }
     }
+  }
 
-    
+  private validateDecoded(resultset: TEncryptedUnkown): resultset is TEncryptedURIResultset {
+    return true;
+  }
+
+  private removeNotAlphaNumerical(content: string): string {
+    return content.replace(/[^a-z\d]/g, '');
   }
 
   private getSupportedAlgorithmMatcher(): RegExp {
