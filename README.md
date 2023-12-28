@@ -12,8 +12,20 @@ Encrypted URI are composed of four parts: a prefix (encrypted:), the algorithm n
 
 ```encrypted:[algorithm]?[args];[cypher]```
 
-Example:
+## Example:
+With all parameters include:
+```encrypted:aes/cbc?iv=249704f119c3d09e4e0fb3b6a275e519&pad=pkcs7;U2FsdGVkX1/mxOv5WpmRGHXZouip6GOw+P+Jdks6c1Z/uMfwBl7Me+dzJjioF72z9E+bKY/GlcL8HlWnWrs7fTlqVvzmsC3b2dm+JfL2rTH+60dNlk6PJ+41pLRDWA/l```
+
+With default values ignored:
+```encrypted:?249704f119c3d09e4e0fb3b6a275e519;U2FsdGVkX1/mxOv5WpmRGHXZouip6GOw+P+Jdks6c1Z/uMfwBl7Me+dzJjioF72z9E+bKY/GlcL8HlWnWrs7fTlqVvzmsC3b2dm+JfL2rTH+60dNlk6PJ+41pLRDWA/l```
+
+Customized:
 ```encrypted:aes?iv=249704f119c3d09e4e0fb3b6a275e519;U2FsdGVkX1/mxOv5WpmRGHXZouip6GOw+P+Jdks6c1Z/uMfwBl7Me+dzJjioF72z9E+bKY/GlcL8HlWnWrs7fTlqVvzmsC3b2dm+JfL2rTH+60dNlk6PJ+41pLRDWA/l```
+
+## Default value
+Default encryptation is ```AES``` with ```CBC``` operation mode with the default web crypto api padding (padding scheme for block ciphers, ```PCKCS#7```, pkcs7).
+
+If the arguments are not a query string, the content is assumed to be the value of the ```initialization vector``` for AES, if is not AES it will be assumed as ```nonce```
 
 ## Example of practical use:
  - [Private QRcode](https://antonioconselheiro.github.io/private-qrcode/#/home), allow you to create private qrcode using encrypted URI with AES algorithm fixed in it. It allow you to save your seeds, nsec and keys physically printed.
