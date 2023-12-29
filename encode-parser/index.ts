@@ -237,6 +237,8 @@ class URIEncryptedEncode {
     let lastAttributeValue = '';
     if (paramsKeys.length) {
       paramsKeys.forEach(key => lastAttributeValue = params[key] = contentParams[key]);
+    } else {
+      return content.queryString || '';
     }
 
     if (Object.keys(params).length === 1) {
