@@ -278,14 +278,17 @@ class URIEncryptedDecode {
     resultset.queryString = cleanQueryString;
 
     if (parametersMatcher.test(queryString)) {
-      const decodedQueryParams = new URL(`encrypted://_${cleanQueryString}`);
-      resultset.params = Array
+      const decodedQueryParams = new URL(`encrypted://_?${cleanQueryString}`);
+      const paramsList = Array
         .from(decodedQueryParams.searchParams.entries())
-        .map(([key, value]) => ({ [key]: decodeURI(String(value)) }))
-        .reduce((result, object) => {
+        .map(([key, value]) => ({ [key]: decodeURI(String(value)) }));
+
+      if (paramsList.length) {
+        resultset.params = paramsList.reduce((result, object) => {
           Object.keys(object).forEach(key => result[key] = object[key]);
           return result;
         });
+      }
     }
   }
 
