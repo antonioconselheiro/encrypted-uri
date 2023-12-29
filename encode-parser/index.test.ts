@@ -4,8 +4,6 @@ describe('decode uri with default values', () => {
   it('[1] decode uri with default values not include', () => {
     expect(new URIEncrypted('encrypted:?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
-        algorithm: 'aes',
-        mode: 'cbc',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: '2345678wertyui'
       })
@@ -15,7 +13,6 @@ describe('decode uri with default values', () => {
     expect(new URIEncrypted('encrypted:aes?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'aes',
-        mode: 'cbc',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: '2345678wertyui'
       })
@@ -34,8 +31,6 @@ describe('decode uri with default values', () => {
   it('[4] decode uri with default values not include', () => {
     expect(new URIEncrypted('encrypted:?iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
-        algorithm: 'aes',
-        mode: 'cbc',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: 'iv=2345678wertyui',
         params: {
@@ -48,7 +43,6 @@ describe('decode uri with default values', () => {
     expect(new URIEncrypted('encrypted:aes?pad=pkcs7&iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'aes',
-        mode: 'cbc',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: 'pad=pkcs7&iv=2345678wertyui',
         params: {
@@ -75,7 +69,6 @@ describe('decode uri with default values', () => {
 
 describe('decode uri with customized values', () => {
   it('[1] decode aes/gcm with customized values', () => {
-    console.info(' >>>> [1] decode aes/gcm with customized values', new URIEncrypted('encrypted:aes/gcm?iv=2345678wertyui&pad=ecb;en1e3kj3e31jn2algoritmgenerateddata').decoded)
     expect(new URIEncrypted('encrypted:aes/gcm?iv=2345678wertyui&pad=ecb;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'aes',
@@ -162,7 +155,6 @@ describe('encode uri with configs using default values', () => {
       algorithm: 'aes',
       mode: 'cbc',
       cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-      queryString: 'iv=2345678wertyui&pad=pkcs7',
       params: {
         iv: '2345678wertyui',
         pad: 'pkcs7'
@@ -174,7 +166,6 @@ describe('encode uri with configs using default values', () => {
     expect(new URIEncrypted({
       algorithm: 'aes',
       cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-      queryString: 'iv=2345678wertyui',
       params: {
         iv: '2345678wertyui'
       }
@@ -186,10 +177,7 @@ describe('encode uri with configs using default values', () => {
       algorithm: 'aes',
       mode: 'cbc',
       cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-      queryString: 'iv=2345678wertyui',
-      params: {
-        iv: '2345678wertyui'
-      }
+      queryString: 'iv=2345678wertyui'
     }).encoded).toEqual('encrypted:aes/cbc?iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
   });
 

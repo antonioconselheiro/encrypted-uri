@@ -12,73 +12,6 @@ type TEncryptedURI = {
   }
 }
 
-type TEncryptedURIConfig = {
-  includeDefaults: true;
-} | ({
-  /**
-   * The default algorithm is not needed to be set, but
-   * you can force setting alwaysIncludeAlgorithm with true,
-   * false is the default value.
-   * 
-   * If false, the default algorithm (AES) will be not included
-   * in the final encode.
-   * 
-   * If true the algorithm information will be always include.
-   * 
-   * @default false
-   */
-  alwaysIncludeAlgorithm?: true;
-
-  /**
-   * The default padding argument is not needed to be set, but
-   * you can force by setting alwaysIncludePadding with true,
-   * false is the default value.
-   * 
-   * If false, the default padding argument (pkcs7) will be not
-   * included as argument in the final encode.
-   * 
-   * If true the argument will be always include.
-   * 
-   * @default false
-   */
-  alwaysIncludePadding?: true;
-
-  /**
-   * If there is no argument but the only mandatory argument
-   * (initialization vector and number once), the name of
-   * argument and the attribution symbol are not included, but
-   * you can force by setting alwaysIncludeDefaultArgumentName
-   * with true, false is the default value.
-   * 
-   * If false, the name of 'iv' argument and 'no' argument will
-   * be not included in the encode when it is the only argument.
-   * 
-   * If true the argument namewill be always include.
-   * 
-   * @default false
-   */
-  alwaysIncludeDefaultArgumentName?: true;
-} & {
-  alwaysIncludeAlgorithm: true;
-
-  /**
-   * The default algorithm and default operation mode (aes/cbc)
-   * don't need to be included, but you can force include it by
-   * setting alwaysIncludeAlgorithm with true and alwaysIncludeMode
-   * with true too, false is the default value for both config and
-   * you can't set alwaysIncludeMode without alwaysIncludeAlgorithm.
-   * 
-   * If false, the default algorithm and mode (AES-CBC) will be not
-   * included in the final encode.
-   * 
-   * If true the algorithm and mode will be always include in the
-   * encode.
-   * 
-   * @default false
-   */
-  alwaysIncludeMode?: true;
-});
-
 class InvalidURIEncrypted extends Error {
 
 }
@@ -212,12 +145,6 @@ export class IterableString {
   }
 }
 
-const URIEncryptedDefaults = {
-  DEFAULT_ALGORITHM: 'aes',
-  DEFAULT_AES_MODE: 'cbc',
-  DEFAULT_AES_PADDING: 'pkcs7'
-};
-
 class URIEncryptedSyntaxMatcher {
   match(uri: string): boolean {
     return /^encrypted:/.test(uri);
@@ -253,9 +180,8 @@ class URIEncryptedDecode {
     const algorithmMatcher = /^[^/?;]*/;
     const algorithmValue = iterable.addCursor(algorithmMatcher);
 
-    resultset.algorithm = algorithmValue;
-    if (!algorithmValue) {
-      resultset.algorithm = URIEncryptedDefaults.DEFAULT_ALGORITHM;
+    if (algorithmValue) {
+      resultset.algorithm = algorithmValue;
     }
   }
 
@@ -264,10 +190,6 @@ class URIEncryptedDecode {
     const hasOperationMode = iterable.addCursor(operationModeMatcher);
     if (hasOperationMode) {
       resultset.mode = this.removeNotAlphaNumerical(hasOperationMode);
-    }
-
-    if (!resultset.mode && resultset.algorithm === URIEncryptedDefaults.DEFAULT_ALGORITHM) {
-      resultset.mode = URIEncryptedDefaults.DEFAULT_AES_MODE;
     }
   }
 
@@ -299,39 +221,25 @@ class URIEncryptedDecode {
 
 class URIEncryptedEncode {
 
-  encode(content: TEncryptedURI, config?: TEncryptedURIConfig): string {
-    const algorithm = this.encodeAlgorithmAndMode(content, config);
-    const parameters = this.encodeParameters(content, config);
+  encode(content: TEncryptedURI): string {
+    const algorithm = this.encodeAlgorithmAndMode(content);
+    const parameters = this.encodeParameters(content);
 
     return `encrypted:${algorithm}?${parameters};${content.cypher}`;
   }
 
   private encodeParameters(
-    content: TEncryptedURI,
-    config?: TEncryptedURIConfig
+    content: TEncryptedURI
   ): string {
-    const {
-      alwaysIncludePadding,
-      alwaysIncludeDefaultArgumentName
-    } = this.normalizeConfig(config);
-
     const params: { [attr: string]: string } = {};
     const contentParams = content.params || {};
     const paramsKeys = Object.keys(contentParams);
     let lastAttributeValue = '';
     if (paramsKeys.length) {
-      paramsKeys.forEach(key => {
-        const isPadding = key === 'pad';
-        const ignoreDefaultPadding = !alwaysIncludePadding;
-        const isDefaultValueSelected = contentParams[key] === URIEncryptedDefaults.DEFAULT_AES_PADDING;
-
-        if (!isPadding || !ignoreDefaultPadding || !isDefaultValueSelected) {
-          lastAttributeValue = params[key] = contentParams[key];
-        }
-      });
+      paramsKeys.forEach(key => lastAttributeValue = params[key] = contentParams[key]);
     }
 
-    if (alwaysIncludeDefaultArgumentName && Object.keys(params).length === 1) {
+    if (Object.keys(params).length === 1) {
       return lastAttributeValue;
     } else {
       const serializer = new URLSearchParams();
@@ -342,64 +250,13 @@ class URIEncryptedEncode {
   }
 
   private encodeAlgorithmAndMode(
-    content: TEncryptedURI,
-    config?: TEncryptedURIConfig
+    content: TEncryptedURI
   ): string {
-    const {
-      alwaysIncludeAlgorithm,
-      alwaysIncludeMode
-    } = this.normalizeConfig(config);
-
-    let algorithm = content.algorithm || '';
-    if (content.algorithm === 'aes') {
-      if (alwaysIncludeAlgorithm) {
-        const isDefaultMode = content.mode === URIEncryptedDefaults.DEFAULT_AES_MODE;
-        const dontIncludeDefault = !alwaysIncludeMode;
-  
-        if (!(dontIncludeDefault && isDefaultMode)) {
-          algorithm = `${algorithm}/${content.mode}`;
-        }
-      } else {
-        algorithm = '';
-      }
+    if (content.algorithm && content.mode) {
+      return `${content.algorithm}/${content.mode}`;
     }
 
-    return algorithm;
-  }
-
-  private normalizeConfig(config?: TEncryptedURIConfig): {
-    alwaysIncludeAlgorithm: boolean;
-    alwaysIncludePadding: boolean;
-    alwaysIncludeMode: boolean;
-    alwaysIncludeDefaultArgumentName: boolean;
-  } {
-    const includeDefaults = this.readConfig(config, 'includeDefaults');
-
-    const alwaysIncludeAlgorithm = includeDefaults ||
-      this.readConfig(config, 'alwaysIncludeAlgorithm');
-
-    const alwaysIncludePadding = includeDefaults ||
-      this.readConfig(config, 'alwaysIncludePadding');
-
-    const alwaysIncludeMode = includeDefaults ||
-      this.readConfig(config, 'alwaysIncludeMode');
-
-    const alwaysIncludeDefaultArgumentName = includeDefaults ||
-      this.readConfig(config, 'alwaysIncludeDefaultArgumentName');
-
-    return {
-      alwaysIncludeAlgorithm,
-      alwaysIncludePadding,
-      alwaysIncludeMode,
-      alwaysIncludeDefaultArgumentName
-    }
-  }
-
-  private readConfig(config: { [attr: string]: boolean } | undefined, configName: string): boolean {
-    return config &&
-      configName in config &&
-      config[configName]
-      || false;
+    return content.algorithm || '';
   }
 }
 
@@ -412,12 +269,9 @@ export class URIEncrypted {
   readonly encoded: string;
   readonly decoded: TEncryptedURI;
 
-  constructor(content: TEncryptedURI, config?: TEncryptedURIConfig);
+  constructor(content: TEncryptedURI);
   constructor(content: string);
-  constructor(
-    content: string | TEncryptedURI,
-    config?: TEncryptedURIConfig
-  ) {
+  constructor(content: string | TEncryptedURI) {
     if (typeof content === 'string') {
       const decoder = new URIEncryptedDecode();
       this.decoded = decoder.decode(this.encoded = content);
@@ -425,7 +279,7 @@ export class URIEncrypted {
     } else {
       const encoder = new URIEncryptedEncode();
       this.decoded = content;
-      this.encoded = encoder.encode(content, config);
+      this.encoded = encoder.encode(content);
     }
   }
 }
