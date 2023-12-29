@@ -234,9 +234,8 @@ class URIEncryptedEncode {
     const params: { [attr: string]: string } = {};
     const contentParams = content.params || {};
     const paramsKeys = Object.keys(contentParams);
-    let lastAttributeValue = '';
     if (paramsKeys.length) {
-      paramsKeys.forEach(key => lastAttributeValue = params[key] = contentParams[key]);
+      paramsKeys.forEach(key => params[key] = contentParams[key]);
     } else {
       return content.queryString || '';
     }
