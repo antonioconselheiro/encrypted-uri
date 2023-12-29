@@ -298,3 +298,61 @@ describe('decode uri with customized values', () => {
       }));
   });
 });
+
+describe('uri matcher', () => {
+  it('match valid encrypted uri', () => {
+    expect(URIEncrypted.matcher('encrypted:?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata'))
+      .toEqual(true);
+  });
+
+  it('match valid encrypted uri', () => {
+    expect(URIEncrypted.matcher('encrypted:aes?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata'))
+      .toEqual(true);
+  });
+
+  it('match valid encrypted uri', () => {
+    expect(URIEncrypted.matcher('encrypted:aes/cbc?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata'))
+      .toEqual(true);
+  });
+
+  it('match valid encrypted uri', () => {
+    expect(URIEncrypted.matcher('encrypted:?iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata'))
+      .toEqual(true);
+  });
+
+  it('match valid encrypted uri', () => {
+    expect(URIEncrypted.matcher('encrypted:aes?pad=pkcs7&iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata'))
+      .toEqual(true);
+  });
+
+  it('match valid encrypted uri', () => {
+    expect(URIEncrypted.matcher('encrypted:aes/cbc?iv=2345678wertyui&pad=pkcs7;en1e3kj3e31jn2algoritmgenerateddata'))
+      .toEqual(true);
+  });
+
+  it('match valid encrypted uri', () => {
+    expect(URIEncrypted.matcher('encrypted:?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata'))
+      .toEqual(true);
+  });
+
+  it('match valid encrypted uri', () => {
+    expect(URIEncrypted.matcher('encrypted:aes/gcm?iv=2345678wertyui&pad=ecb;en1e3kj3e31jn2algoritmgenerateddata'))
+      .toEqual(true);
+  });
+
+  it('match valid encrypted uri', () => {
+    expect(URIEncrypted.matcher('encrypted:salsa20?no=871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata'))
+      .toEqual(true);
+  });
+
+  it('match valid encrypted uri', () => {
+    expect(URIEncrypted.matcher('encrypted:xchacha?no=871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata'))
+      .toEqual(true);
+  });
+
+  it('match valid encrypted uri', () => {
+    expect(URIEncrypted.matcher('encrypted:chacha12?no=871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata'))
+    .toEqual(true);
+  });
+});
+

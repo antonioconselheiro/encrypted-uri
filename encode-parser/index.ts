@@ -81,6 +81,10 @@ type TEncryptedURIConfig = {
 
 export class URIEncrypted {
 
+  static matcher(uri: string): boolean {
+    return new URIEncryptedSyntaxMatcher().match(uri);
+  }
+
   readonly encoded: string;
   readonly decoded: TEncryptedURI;
 
@@ -99,6 +103,12 @@ export class URIEncrypted {
       this.decoded = content;
       this.encoded = encoder.encode(content, config);
     }
+  }
+}
+
+class URIEncryptedSyntaxMatcher {
+  match(uri: string): boolean {
+    return /^encrypted:/.test(uri);
   }
 }
 
