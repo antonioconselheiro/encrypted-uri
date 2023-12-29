@@ -104,8 +104,8 @@ export class URIEncrypted {
 
 class URIEncryptedDecode {
 
-  private readonly ENCRYPTED_URI_IDENTIFIER = /^encrypted:/;
-  private readonly QUERY_STRING_IDENTIFIER = /^?.*;+/;
+  private readonly ENCRYPTED_URI_MATCHER = /^encrypted:/;
+  private readonly QUERY_STRING_MATCHER = /^\?[^;]+;/;
 
   decode(content: string): TEncryptedURI {
     const resultset: TEncryptedURI = {};
@@ -120,7 +120,7 @@ class URIEncryptedDecode {
   }
 
   private checkURI(iterable: IterableString): void {
-    const is = iterable.addCursor(this.ENCRYPTED_URI_IDENTIFIER);
+    const is = iterable.addCursor(this.ENCRYPTED_URI_MATCHER);
     if (!is) {
       throw new InvalidURIEncrypted('missing \'encrypted\' keyword');
     }
@@ -141,11 +141,11 @@ class URIEncryptedDecode {
   }
 
   private readQueryString(iterable: IterableString, resultset: TEncryptedURI): void {
-    const isQueryStringFormat = /^\?([^=]+=[^=]+)(&([^=]+=[^=]+))*[;]$/;
-    const queryString = iterable.addCursor(this.QUERY_STRING_IDENTIFIER);
+    const parametersMatcher = /^\?([^=]+=[^=]+)(&([^=]+=[^=]+))*[;]$/;
+    const queryString = iterable.addCursor(this.QUERY_STRING_MATCHER);
     const cleanQueryString = queryString.replace(/;$/, '');
     resultset.queryString = cleanQueryString;
-    if (isQueryStringFormat.test(queryString)) {
+    if (parametersMatcher.test(queryString)) {
       const decodedQueryParams = new URL(`encrypted://_${cleanQueryString}`);
       resultset.params = Array
         .from(decodedQueryParams.searchParams.entries())
@@ -193,7 +193,7 @@ class URIEncryptedEncode {
       paramsKeys.forEach(key => {
         const isPadding = key === 'pad';
         const ignoreDefaultPadding = !alwaysIncludePadding;
-        const isDefaultValueSelected = paramsKeys[key] === URIEncryptedEncode.DEFAULT_AES_PADDING;
+        const isDefaultValueSelected = contentParams[key] === URIEncryptedEncode.DEFAULT_AES_PADDING;
 
         if (!isPadding || !ignoreDefaultPadding || !isDefaultValueSelected) {
           lastAttributeValue = params[key] = contentParams[key];
