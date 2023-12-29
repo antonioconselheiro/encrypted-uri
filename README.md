@@ -30,6 +30,18 @@ If the arguments are not a query string, the content is assumed to be the value 
 ## Example of practical use:
  - [Private QRcode](https://antonioconselheiro.github.io/private-qrcode/#/home), allow you to create private qrcode using encrypted URI with AES algorithm fixed in it. It allow you to save your seeds, nsec and keys physically printed.
 
-## Other URI specification:
- - https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
- - https://www.ietf.org/rfc/rfc6068.txt
+## Donate
+Help me continue working on tools for the bitcoin and nostr universe, like this one. #zapthedev
+
+There's still a lot of work to do.
+
+Lighting donate: <a href="lightning:antonioconselheiro@getalby.com">lightning:antonioconselheiro@getalby.com</a>
+
+![zap me](https://raw.githubusercontent.com/antonioconselheiro/antonioconselheiro/main/img/qrcode-wallet-lighting.png)
+
+Bitcoin onchain donate: <a href="bitcoin:bc1qrm99lmmpwk7zsh7njpgthw87yvdm38j2lzpq7q">bc1qrm99lmmpwk7zsh7njpgthw87yvdm38j2lzpq7q</a>
+
+![zap me](https://raw.githubusercontent.com/antonioconselheiro/antonioconselheiro/main/img/qrcode-wallet-bitcoin.png)
+
+## Contribute
+[CONTRIBUTE.md](./CONTRIBUTE.md)
