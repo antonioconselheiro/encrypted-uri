@@ -18,7 +18,7 @@ const AESOperationMode = {
 };
 
 const AESPadding = {
-  pkcs7: 'pkcs7',
+  pkcs7: 'pkcs#7',
   ansix923: 'ansix923',
   iso10126: 'iso10126',
   iso97971: 'iso97971',

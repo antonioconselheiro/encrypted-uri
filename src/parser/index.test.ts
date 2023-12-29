@@ -40,28 +40,28 @@ describe('decode uri with default values', () => {
   });
 
   it('[5] decode uri with some default values not include', () => {
-    expect(new URIEncrypted('encrypted:aes?pad=pkcs7&iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata').decoded)
+    expect(new URIEncrypted('encrypted:aes?pad=pkcs#7&iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'aes',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-        queryString: 'pad=pkcs7&iv=2345678wertyui',
+        queryString: 'pad=pkcs#7&iv=2345678wertyui',
         params: {
           iv: '2345678wertyui',
-          pad: 'pkcs7'
+          pad: 'pkcs#7'
         }
       })
   });
 
   it('[6] decode uri with some default values not include', () => {
-    expect(new URIEncrypted('encrypted:aes/cbc?iv=2345678wertyui&pad=pkcs7;en1e3kj3e31jn2algoritmgenerateddata').decoded)
+    expect(new URIEncrypted('encrypted:aes/cbc?iv=2345678wertyui&pad=pkcs%237;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'aes',
         mode: 'cbc',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-        queryString: 'iv=2345678wertyui&pad=pkcs7',
+        queryString: 'iv=2345678wertyui&pad=pkcs#7',
         params: {
           iv: '2345678wertyui',
-          pad: 'pkcs7'
+          pad: 'pkcs#7'
         }
       });
   });
@@ -157,9 +157,9 @@ describe('encode uri with configs using default values', () => {
       cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
       params: {
         iv: '2345678wertyui',
-        pad: 'pkcs7'
+        pad: 'pkcs#7'
       }
-    }).encoded).toEqual('encrypted:aes/cbc?iv=2345678wertyui&pad=pkcs7;en1e3kj3e31jn2algoritmgenerateddata')
+    }).encoded).toEqual('encrypted:aes/cbc?iv=2345678wertyui&pad=pkcs%237;en1e3kj3e31jn2algoritmgenerateddata')
   });
 
   it('[6] encode with default config with default values', () => {
@@ -188,9 +188,9 @@ describe('encode uri with configs using default values', () => {
       cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
       params: {
         iv: '2345678wertyui',
-        pad: 'pkcs7'
+        pad: 'pkcs#7'
       }
-    }).encoded).toEqual('encrypted:aes/cbc?iv=2345678wertyui&pad=pkcs7;en1e3kj3e31jn2algoritmgenerateddata')
+    }).encoded).toEqual('encrypted:aes/cbc?iv=2345678wertyui&pad=pkcs%237;en1e3kj3e31jn2algoritmgenerateddata')
   });
 });
 
@@ -263,12 +263,12 @@ describe('uri matcher', () => {
   });
 
   it('[5] match valid encrypted uri', () => {
-    expect(URIEncrypted.matcher('encrypted:aes?pad=pkcs7&iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata'))
+    expect(URIEncrypted.matcher('encrypted:aes?pad=pkcs#7&iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata'))
       .toEqual(true);
   });
 
   it('[6] match valid encrypted uri', () => {
-    expect(URIEncrypted.matcher('encrypted:aes/cbc?iv=2345678wertyui&pad=pkcs7;en1e3kj3e31jn2algoritmgenerateddata'))
+    expect(URIEncrypted.matcher('encrypted:aes/cbc?iv=2345678wertyui&pad=pkcs%237;en1e3kj3e31jn2algoritmgenerateddata'))
       .toEqual(true);
   });
 
