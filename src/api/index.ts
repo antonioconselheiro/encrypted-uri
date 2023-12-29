@@ -4,7 +4,6 @@ const supportedAlgorithm = {
   chacha: 'chacha',
   xsalsa20: 'xsalsa20',
   xchacha: 'xchacha',
-  poly1305: 'poly1305',
   chacha8: 'chacha8',
   chacha12: 'chacha12'
 };
@@ -44,7 +43,7 @@ type TEncryptedAESParams = {
 }
 
 type TEncryptedNumberOnceParams = {
-  algorithm: 'salsa20' | 'chacha' | 'xsalsa20' | 'xchacha' | 'poly1305' | 'chacha8' | 'chacha12';
+  algorithm: 'salsa20' | 'chacha' | 'xsalsa20' | 'xchacha' | 'chacha8' | 'chacha12';
   numberOnce: string;
 };
 
