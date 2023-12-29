@@ -7,10 +7,7 @@ describe('decode uri with default values', () => {
         algorithm: 'aes',
         mode: 'cbc',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-        params: {
-          iv: '2345678wertyui',
-          pad: 'pkcs7'
-        }
+        queryString: '2345678wertyui'
       })
   });
 
@@ -20,10 +17,7 @@ describe('decode uri with default values', () => {
         algorithm: 'aes',
         mode: 'cbc',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-        params: {
-          iv: '2345678wertyui',
-          pad: 'pkcs7'
-        }
+        queryString: '2345678wertyui'
       })
   });
 
@@ -33,10 +27,7 @@ describe('decode uri with default values', () => {
         algorithm: 'aes',
         mode: 'cbc',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-        params: {
-          iv: '2345678wertyui',
-          pad: 'pkcs7'
-        }
+        queryString: '2345678wertyui'
       });
   });
 
@@ -46,9 +37,9 @@ describe('decode uri with default values', () => {
         algorithm: 'aes',
         mode: 'cbc',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        queryString: 'iv=2345678wertyui',
         params: {
-          iv: '2345678wertyui',
-          pad: 'pkcs7'
+          iv: '2345678wertyui'
         }
       })
   });
@@ -59,6 +50,7 @@ describe('decode uri with default values', () => {
         algorithm: 'aes',
         mode: 'cbc',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        queryString: 'pad=pkcs7&iv=2345678wertyui',
         params: {
           iv: '2345678wertyui',
           pad: 'pkcs7'
@@ -72,11 +64,59 @@ describe('decode uri with default values', () => {
         algorithm: 'aes',
         mode: 'cbc',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        queryString: 'iv=2345678wertyui&pad=pkcs7',
         params: {
           iv: '2345678wertyui',
           pad: 'pkcs7'
         }
       });
+  });
+});
+
+describe('decode uri with customized values', () => {
+  it('decode aes/gcm with customized values', () => {
+    expect(new URIEncrypted('encrypted:aes/gcm?iv=2345678wertyui&pad=ecb;en1e3kj3e31jn2algoritmgenerateddata').decoded)
+      .toEqual(new URIEncrypted({
+        algorithm: 'aes',
+        mode: 'gcm',
+        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        queryString: 'iv=2345678wertyui&pad=ecb',
+        params: {
+          iv: '2345678wertyui',
+          pad: 'ecb'
+        }
+      }));
+  });
+
+  it('decode salsa20 with customized values', () => {
+    expect(new URIEncrypted('encrypted:salsa20?no=871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata').decoded)
+      .toEqual(new URIEncrypted({
+        algorithm: 'salsa20',
+        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        queryString: 'no=871232183987132082713',
+        params: {
+          //  nonce
+          no: '871232183987132082713'
+        }
+      }));
+  });
+
+  it('decode xchacha with customized values', () => {
+    expect(new URIEncrypted('encrypted:xchacha?871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata').decoded)
+      .toEqual(new URIEncrypted({
+        algorithm: 'xchacha',
+        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        queryString: '871232183987132082713'
+      }));
+  });
+
+  it('decode chacha12 with customized values', () => {
+    expect(new URIEncrypted('encrypted:chacha12?871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata').decoded)
+      .toEqual(new URIEncrypted({
+        algorithm: 'chacha12',
+        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        queryString: '871232183987132082713'
+      }));
   });
 });
 
@@ -245,57 +285,6 @@ describe('encode uri with customized values', () => {
         no: '871232183987132082713'
       }
     }).encoded).toEqual('encrypted:chacha12?no=871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata')
-  });
-});
-
-describe('decode uri with customized values', () => {
-  it('decode aes/gcm with customized values', () => {
-    expect(new URIEncrypted('encrypted:aes/gcm?iv=2345678wertyui&pad=ecb;en1e3kj3e31jn2algoritmgenerateddata').decoded)
-      .toEqual(new URIEncrypted({
-        algorithm: 'aes',
-        mode: 'gcm',
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-        params: {
-          iv: '2345678wertyui',
-          pad: 'ecb'
-        }
-      }));
-  });
-
-  it('decode salsa20 with customized values', () => {
-    expect(new URIEncrypted('encrypted:salsa20?no=871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata').decoded)
-      .toEqual(new URIEncrypted({
-        algorithm: 'salsa20',
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-        params: {
-          //  nonce
-          no: '871232183987132082713'
-        }
-      }));
-  });
-
-  it('decode xchacha with customized values', () => {
-    expect(new URIEncrypted('encrypted:xchacha?no=871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata').decoded)
-      .toEqual(new URIEncrypted({
-        algorithm: 'xchacha',
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-        params: {
-          //  nonce
-          no: '871232183987132082713'
-        }
-      }));
-  });
-
-  it('decode chacha12 with customized values', () => {
-    expect(new URIEncrypted('encrypted:chacha12?no=871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata').decoded)
-      .toEqual(new URIEncrypted({
-        algorithm: 'chacha12',
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-        params: {
-          //  nonce
-          no: '871232183987132082713'
-        }
-      }));
   });
 });
 

@@ -197,6 +197,12 @@ export class IterableString {
     return piece;
   }
 
+  toTheEnd(): string {
+    const content = this.str.substring(this.cursor);
+    this.cursor += content.length;
+    return content;
+  }
+
   endContent(): boolean {
     return this.end() || !!this.spy(/^\s*$/, false);
   }
@@ -231,6 +237,7 @@ class URIEncryptedDecode {
     this.identifyAlgorithm(iterable, resultset);
     this.identifyOperationMode(iterable, resultset);
     this.readQueryString(iterable, resultset);
+    resultset.cypher = iterable.toTheEnd();
 
     return resultset as TEncryptedURI;
   }
@@ -267,8 +274,9 @@ class URIEncryptedDecode {
   private readQueryString(iterable: IterableString, resultset: TEncryptedURI): void {
     const parametersMatcher = /^\?([^=]+=[^=]+)(&([^=]+=[^=]+))*[;]$/;
     const queryString = iterable.addCursor(this.QUERY_STRING_MATCHER);
-    const cleanQueryString = queryString.replace(/;$/, '');
+    const cleanQueryString = queryString.replace(/^\?|;$/g, '');
     resultset.queryString = cleanQueryString;
+
     if (parametersMatcher.test(queryString)) {
       const decodedQueryParams = new URL(`encrypted://_${cleanQueryString}`);
       resultset.params = Array
