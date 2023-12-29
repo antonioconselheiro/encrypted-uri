@@ -1,5 +1,5 @@
 {
-  "name": "@encrypted-uri/encode-parser",
+  "name": "@encrypted-uri/parser",
   "version": "0.1.0",
   "description": "encode and decode encrypted uri to resultset",
   "main": "index.js",

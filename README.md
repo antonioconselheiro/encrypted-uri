@@ -5,7 +5,7 @@
 # Encrypted URI
 ## URI Encrypted Scheme Specification
 
-Encode to standardize different types of encrypted content into a query string that allows the user to customize his cyphers with his preferred encryption algorithm.
+Encode to standardize different types of encrypted content into a URI that allows the user to customize his cyphers with his preferred encryption algorithm.
 
 ## Syntax
 Encrypted URI are composed of four parts: a prefix (encrypted:), the algorithm name indicating the type of encrypted data, a set of parameters that may vary depending on the type of encryption selected, and the cypher itself.
