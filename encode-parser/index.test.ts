@@ -75,8 +75,9 @@ describe('decode uri with default values', () => {
 
 describe('decode uri with customized values', () => {
   it('[1] decode aes/gcm with customized values', () => {
+    console.info(' >>>> [1] decode aes/gcm with customized values', new URIEncrypted('encrypted:aes/gcm?iv=2345678wertyui&pad=ecb;en1e3kj3e31jn2algoritmgenerateddata').decoded)
     expect(new URIEncrypted('encrypted:aes/gcm?iv=2345678wertyui&pad=ecb;en1e3kj3e31jn2algoritmgenerateddata').decoded)
-      .toEqual(new URIEncrypted({
+      .toEqual({
         algorithm: 'aes',
         mode: 'gcm',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
@@ -85,12 +86,12 @@ describe('decode uri with customized values', () => {
           iv: '2345678wertyui',
           pad: 'ecb'
         }
-      }));
+      });
   });
 
   it('[2] decode salsa20 with customized values', () => {
     expect(new URIEncrypted('encrypted:salsa20?no=871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata').decoded)
-      .toEqual(new URIEncrypted({
+      .toEqual({
         algorithm: 'salsa20',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: 'no=871232183987132082713',
@@ -98,38 +99,33 @@ describe('decode uri with customized values', () => {
           //  nonce
           no: '871232183987132082713'
         }
-      }));
+      });
   });
 
   it('[3] decode xchacha with customized values', () => {
     expect(new URIEncrypted('encrypted:xchacha?871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata').decoded)
-      .toEqual(new URIEncrypted({
+      .toEqual({
         algorithm: 'xchacha',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: '871232183987132082713'
-      }));
+      });
   });
 
   it('[4] decode chacha12 with customized values', () => {
     expect(new URIEncrypted('encrypted:chacha12?871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata').decoded)
-      .toEqual(new URIEncrypted({
+      .toEqual({
         algorithm: 'chacha12',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: '871232183987132082713'
-      }));
+      });
   });
 });
 
 describe('encode uri with configs using default values', () => {
   it('[1] encode with default config with default values', () => {
     expect(new URIEncrypted({
-      algorithm: 'aes',
-      mode: 'cbc',
       cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-      params: {
-        iv: '2345678wertyui',
-        pad: 'pkcs7'
-      }
+      queryString: '2345678wertyui'
     }).encoded).toEqual('encrypted:?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
   });
 
@@ -139,25 +135,16 @@ describe('encode uri with configs using default values', () => {
       mode: 'cbc',
       cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
       params: {
-        iv: '2345678wertyui',
-        pad: 'pkcs7'
+        iv: '2345678wertyui'
       }
-    }, {
-      includeDefaults: true
     }).encoded).toEqual('encrypted:aes/cbc?iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
   });
 
   it('[3] encode with default config with default values', () => {
     expect(new URIEncrypted({
       algorithm: 'aes',
-      mode: 'cbc',
       cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-      params: {
-        iv: '2345678wertyui',
-        pad: 'pkcs7'
-      }
-    }, {
-      alwaysIncludeAlgorithm: true
+      queryString: '2345678wertyui'
     }).encoded).toEqual('encrypted:aes?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
   });
 
@@ -166,13 +153,7 @@ describe('encode uri with configs using default values', () => {
       algorithm: 'aes',
       mode: 'cbc',
       cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-      params: {
-        iv: '2345678wertyui',
-        pad: 'pkcs7'
-      }
-    }, {
-      alwaysIncludeAlgorithm: true,
-      alwaysIncludeMode: true
+      queryString: '2345678wertyui'
     }).encoded).toEqual('encrypted:aes/cbc?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
   });
 
@@ -181,29 +162,22 @@ describe('encode uri with configs using default values', () => {
       algorithm: 'aes',
       mode: 'cbc',
       cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      queryString: 'iv=2345678wertyui&pad=pkcs7',
       params: {
         iv: '2345678wertyui',
         pad: 'pkcs7'
       }
-    }, {
-      alwaysIncludeAlgorithm: true,
-      alwaysIncludeMode: true,
-      alwaysIncludePadding: true
     }).encoded).toEqual('encrypted:aes/cbc?iv=2345678wertyui&pad=pkcs7;en1e3kj3e31jn2algoritmgenerateddata')
   });
 
   it('[6] encode with default config with default values', () => {
     expect(new URIEncrypted({
       algorithm: 'aes',
-      mode: 'cbc',
       cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      queryString: 'iv=2345678wertyui',
       params: {
-        iv: '2345678wertyui',
-        pad: 'pkcs7'
+        iv: '2345678wertyui'
       }
-    }, {
-      alwaysIncludeDefaultArgumentName: true,
-      alwaysIncludeAlgorithm: true
     }).encoded).toEqual('encrypted:aes?iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
   });
 
@@ -212,14 +186,10 @@ describe('encode uri with configs using default values', () => {
       algorithm: 'aes',
       mode: 'cbc',
       cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      queryString: 'iv=2345678wertyui',
       params: {
-        iv: '2345678wertyui',
-        pad: 'pkcs7'
+        iv: '2345678wertyui'
       }
-    }, {
-      alwaysIncludeAlgorithm: true,
-      alwaysIncludeMode: true,
-      alwaysIncludeDefaultArgumentName: true
     }).encoded).toEqual('encrypted:aes/cbc?iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
   });
 
@@ -232,11 +202,6 @@ describe('encode uri with configs using default values', () => {
         iv: '2345678wertyui',
         pad: 'pkcs7'
       }
-    }, {
-      alwaysIncludeAlgorithm: true,
-      alwaysIncludeMode: true,
-      alwaysIncludePadding: true,
-      alwaysIncludeDefaultArgumentName: true
     }).encoded).toEqual('encrypted:aes/cbc?iv=2345678wertyui&pad=pkcs7;en1e3kj3e31jn2algoritmgenerateddata')
   });
 });
