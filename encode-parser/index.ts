@@ -79,216 +79,8 @@ type TEncryptedURIConfig = {
   alwaysIncludeMode?: true;
 });
 
-export class URIEncrypted {
+class InvalidURIEncrypted extends Error {
 
-  static matcher(uri: string): boolean {
-    return new URIEncryptedSyntaxMatcher().match(uri);
-  }
-
-  readonly encoded: string;
-  readonly decoded: TEncryptedURI;
-
-  constructor(content: TEncryptedURI, config?: TEncryptedURIConfig);
-  constructor(content: string);
-  constructor(
-    content: string | TEncryptedURI,
-    config?: TEncryptedURIConfig
-  ) {
-    if (typeof content === 'string') {
-      const decoder = new URIEncryptedDecode();
-      this.decoded = decoder.decode(this.encoded = content);
-      this.encoded = content;
-    } else {
-      const encoder = new URIEncryptedEncode();
-      this.decoded = content;
-      this.encoded = encoder.encode(content, config);
-    }
-  }
-}
-
-class URIEncryptedSyntaxMatcher {
-  match(uri: string): boolean {
-    return /^encrypted:/.test(uri);
-  }
-}
-
-class URIEncryptedDecode {
-
-  private readonly ENCRYPTED_URI_MATCHER = /^encrypted:/;
-  private readonly QUERY_STRING_MATCHER = /^\?[^;]+;/;
-
-  decode(content: string): TEncryptedURI {
-    const resultset: TEncryptedURI = {};
-    const iterable = new IterableString(content);
-
-    this.checkURI(iterable);
-    this.identifySupportedAlgorithm(iterable, resultset);
-    this.identifySupportedOperationMode(iterable, resultset);
-    this.readQueryString(iterable, resultset);
-
-    return resultset as TEncryptedURI;
-  }
-
-  private checkURI(iterable: IterableString): void {
-    const is = iterable.addCursor(this.ENCRYPTED_URI_MATCHER);
-    if (!is) {
-      throw new InvalidURIEncrypted('missing \'encrypted\' keyword');
-    }
-  }
-
-  private identifySupportedAlgorithm(iterable: IterableString, resultset: TEncryptedURI): void {
-    const algorithmMatcher = /^[^\/\?\;]+/;
-    const algorithmValue = iterable.addCursor(algorithmMatcher);
-    resultset.algorithm = algorithmValue;
-  }
-
-  private identifySupportedOperationMode(iterable: IterableString, resultset: TEncryptedURI): void {
-    const operationModeMatcher = /^\/[^\?\;]+/;
-    const hasOperationMode = iterable.addCursor(operationModeMatcher);
-    if (hasOperationMode) {
-      resultset.mode = this.removeNotAlphaNumerical(hasOperationMode);
-    }
-  }
-
-  private readQueryString(iterable: IterableString, resultset: TEncryptedURI): void {
-    const parametersMatcher = /^\?([^=]+=[^=]+)(&([^=]+=[^=]+))*[;]$/;
-    const queryString = iterable.addCursor(this.QUERY_STRING_MATCHER);
-    const cleanQueryString = queryString.replace(/;$/, '');
-    resultset.queryString = cleanQueryString;
-    if (parametersMatcher.test(queryString)) {
-      const decodedQueryParams = new URL(`encrypted://_${cleanQueryString}`);
-      resultset.params = Array
-        .from(decodedQueryParams.searchParams.entries())
-        .map(([key, value]) => ({ [key]: decodeURI(String(value)) }))
-        .reduce((result, object) => {
-          Object.keys(object).forEach(key => result[key] = object[key]);
-          return result;
-        });
-    }
-  }
-
-  private removeNotAlphaNumerical(content: string): string {
-    return content.replace(/[^a-z\d]/g, '');
-  }
-}
-
-class URIEncryptedEncode {
-
-  static readonly DEFAULT_ALGORITHM = 'aes';
-  static readonly DEFAULT_AES_MODE = 'cbc';
-  static readonly DEFAULT_AES_PADDING = 'pkcs7';
-
-  encode(content: TEncryptedURI, config?: TEncryptedURIConfig): string {
-    const algorithm = this.encodeAlgorithmAndMode(content, config);
-    const parameters = this.encodeParameters(content, config);
-
-    return `encrypted:${algorithm}?${parameters};${content.cypher}`;
-  }
-
-  private encodeParameters(
-    content: TEncryptedURI,
-    config?: TEncryptedURIConfig
-  ): string {
-    const {
-      alwaysIncludePadding,
-      alwaysIncludeDefaultArgumentName
-    } = this.normalizeConfig(config);
-
-    const params: { [attr: string]: string } = {};
-    const contentParams = content.params || {};
-    const paramsKeys = Object.keys(contentParams);
-    let lastAttributeValue = '';
-    content.queryString = content.queryString;
-    if (paramsKeys.length) {
-      paramsKeys.forEach(key => {
-        const isPadding = key === 'pad';
-        const ignoreDefaultPadding = !alwaysIncludePadding;
-        const isDefaultValueSelected = contentParams[key] === URIEncryptedEncode.DEFAULT_AES_PADDING;
-
-        if (!isPadding || !ignoreDefaultPadding || !isDefaultValueSelected) {
-          lastAttributeValue = params[key] = contentParams[key];
-        }
-      });
-    }
-
-    if (alwaysIncludeDefaultArgumentName && Object.keys(params).length === 1) {
-      return lastAttributeValue;
-    } else {
-      const serializer = new URLSearchParams();
-      paramsKeys.forEach(key => serializer.append(key, params[key]));
-
-      return serializer.toString();
-    }
-  }
-
-  private encodeAlgorithmAndMode(
-    content: TEncryptedURI,
-    config?: TEncryptedURIConfig
-  ) {
-    const {
-      alwaysIncludeAlgorithm,
-      alwaysIncludeMode
-    } = this.normalizeConfig(config);
-
-    let algorithm = content.algorithm;
-    if (content.algorithm === 'aes') {
-      if (alwaysIncludeAlgorithm) {
-        const isDefaultMode = content.mode === URIEncryptedEncode.DEFAULT_AES_MODE;
-        const dontIncludeDefault = !alwaysIncludeMode;
-  
-        if (!(dontIncludeDefault && isDefaultMode)) {
-          algorithm = `${algorithm}/${content.mode}`;
-        }
-      } else {
-        algorithm = '';
-      }
-    }
-
-    return algorithm;
-  }
-
-  private normalizeConfig(config?: TEncryptedURIConfig): {
-    alwaysIncludeAlgorithm: boolean;
-    alwaysIncludePadding: boolean;
-    alwaysIncludeMode: boolean;
-    alwaysIncludeDefaultArgumentName: boolean;
-  } {
-    const includeDefaults = config &&
-      'includeDefaults' in config &&
-      config.includeDefaults ||
-      false;
-
-    const alwaysIncludeAlgorithm = includeDefaults ||
-      config &&
-      'alwaysIncludeAlgorithm' in config &&
-      config.alwaysIncludeAlgorithm
-      || false;
-
-    const alwaysIncludePadding = includeDefaults ||
-      config &&
-      'alwaysIncludePadding' in config &&
-      config.alwaysIncludePadding
-      || false;
-
-      const alwaysIncludeMode = includeDefaults ||
-      config &&
-      'alwaysIncludeMode' in config &&
-      config.alwaysIncludeMode
-      || false;
-
-    const alwaysIncludeDefaultArgumentName = includeDefaults ||
-      config &&
-      'alwaysIncludeDefaultArgumentName' in config &&
-      config.alwaysIncludeDefaultArgumentName
-      || false;
-
-    return {
-      alwaysIncludeAlgorithm,
-      alwaysIncludePadding,
-      alwaysIncludeMode,
-      alwaysIncludeDefaultArgumentName
-    }
-  }
 }
 
 export class IterableString {
@@ -413,10 +205,205 @@ export class IterableString {
   }
 }
 
-class AlgorithmNotSuported extends Error {
-
+class URIEncryptedSyntaxMatcher {
+  match(uri: string): boolean {
+    return /^encrypted:/.test(uri);
+  }
 }
 
-class InvalidURIEncrypted extends Error {
+class URIEncryptedDecode {
 
+  private readonly ENCRYPTED_URI_MATCHER = /^encrypted:/;
+  private readonly QUERY_STRING_MATCHER = /^\?[^;]+;/;
+
+  decode(content: string): TEncryptedURI {
+    const resultset: TEncryptedURI = {};
+    const iterable = new IterableString(content);
+
+    this.checkURI(iterable);
+    this.identifySupportedAlgorithm(iterable, resultset);
+    this.identifySupportedOperationMode(iterable, resultset);
+    this.readQueryString(iterable, resultset);
+
+    return resultset as TEncryptedURI;
+  }
+
+  private checkURI(iterable: IterableString): void {
+    const is = iterable.addCursor(this.ENCRYPTED_URI_MATCHER);
+    if (!is) {
+      throw new InvalidURIEncrypted('missing \'encrypted\' keyword');
+    }
+  }
+
+  private identifySupportedAlgorithm(iterable: IterableString, resultset: TEncryptedURI): void {
+    const algorithmMatcher = /^[^/?;]+/;
+    const algorithmValue = iterable.addCursor(algorithmMatcher);
+    resultset.algorithm = algorithmValue;
+  }
+
+  private identifySupportedOperationMode(iterable: IterableString, resultset: TEncryptedURI): void {
+    const operationModeMatcher = /^\/[^?;]+/;
+    const hasOperationMode = iterable.addCursor(operationModeMatcher);
+    if (hasOperationMode) {
+      resultset.mode = this.removeNotAlphaNumerical(hasOperationMode);
+    }
+  }
+
+  private readQueryString(iterable: IterableString, resultset: TEncryptedURI): void {
+    const parametersMatcher = /^\?([^=]+=[^=]+)(&([^=]+=[^=]+))*[;]$/;
+    const queryString = iterable.addCursor(this.QUERY_STRING_MATCHER);
+    const cleanQueryString = queryString.replace(/;$/, '');
+    resultset.queryString = cleanQueryString;
+    if (parametersMatcher.test(queryString)) {
+      const decodedQueryParams = new URL(`encrypted://_${cleanQueryString}`);
+      resultset.params = Array
+        .from(decodedQueryParams.searchParams.entries())
+        .map(([key, value]) => ({ [key]: decodeURI(String(value)) }))
+        .reduce((result, object) => {
+          Object.keys(object).forEach(key => result[key] = object[key]);
+          return result;
+        });
+    }
+  }
+
+  private removeNotAlphaNumerical(content: string): string {
+    return content.replace(/[^a-z\d]/g, '');
+  }
+}
+
+class URIEncryptedEncode {
+
+  static readonly DEFAULT_ALGORITHM = 'aes';
+  static readonly DEFAULT_AES_MODE = 'cbc';
+  static readonly DEFAULT_AES_PADDING = 'pkcs7';
+
+  encode(content: TEncryptedURI, config?: TEncryptedURIConfig): string {
+    const algorithm = this.encodeAlgorithmAndMode(content, config);
+    const parameters = this.encodeParameters(content, config);
+
+    return `encrypted:${algorithm}?${parameters};${content.cypher}`;
+  }
+
+  private encodeParameters(
+    content: TEncryptedURI,
+    config?: TEncryptedURIConfig
+  ): string {
+    const {
+      alwaysIncludePadding,
+      alwaysIncludeDefaultArgumentName
+    } = this.normalizeConfig(config);
+
+    const params: { [attr: string]: string } = {};
+    const contentParams = content.params || {};
+    const paramsKeys = Object.keys(contentParams);
+    let lastAttributeValue = '';
+    if (paramsKeys.length) {
+      paramsKeys.forEach(key => {
+        const isPadding = key === 'pad';
+        const ignoreDefaultPadding = !alwaysIncludePadding;
+        const isDefaultValueSelected = contentParams[key] === URIEncryptedEncode.DEFAULT_AES_PADDING;
+
+        if (!isPadding || !ignoreDefaultPadding || !isDefaultValueSelected) {
+          lastAttributeValue = params[key] = contentParams[key];
+        }
+      });
+    }
+
+    if (alwaysIncludeDefaultArgumentName && Object.keys(params).length === 1) {
+      return lastAttributeValue;
+    } else {
+      const serializer = new URLSearchParams();
+      paramsKeys.forEach(key => serializer.append(key, params[key]));
+
+      return serializer.toString();
+    }
+  }
+
+  private encodeAlgorithmAndMode(
+    content: TEncryptedURI,
+    config?: TEncryptedURIConfig
+  ): string {
+    const {
+      alwaysIncludeAlgorithm,
+      alwaysIncludeMode
+    } = this.normalizeConfig(config);
+
+    let algorithm = content.algorithm || '';
+    if (content.algorithm === 'aes') {
+      if (alwaysIncludeAlgorithm) {
+        const isDefaultMode = content.mode === URIEncryptedEncode.DEFAULT_AES_MODE;
+        const dontIncludeDefault = !alwaysIncludeMode;
+  
+        if (!(dontIncludeDefault && isDefaultMode)) {
+          algorithm = `${algorithm}/${content.mode}`;
+        }
+      } else {
+        algorithm = '';
+      }
+    }
+
+    return algorithm;
+  }
+
+  private normalizeConfig(config?: TEncryptedURIConfig): {
+    alwaysIncludeAlgorithm: boolean;
+    alwaysIncludePadding: boolean;
+    alwaysIncludeMode: boolean;
+    alwaysIncludeDefaultArgumentName: boolean;
+  } {
+    const includeDefaults = this.readConfig(config, 'includeDefaults');
+
+    const alwaysIncludeAlgorithm = includeDefaults ||
+      this.readConfig(config, 'alwaysIncludeAlgorithm');
+
+    const alwaysIncludePadding = includeDefaults ||
+      this.readConfig(config, 'alwaysIncludePadding');
+
+    const alwaysIncludeMode = includeDefaults ||
+      this.readConfig(config, 'alwaysIncludeMode');
+
+    const alwaysIncludeDefaultArgumentName = includeDefaults ||
+      this.readConfig(config, 'alwaysIncludeDefaultArgumentName');
+
+    return {
+      alwaysIncludeAlgorithm,
+      alwaysIncludePadding,
+      alwaysIncludeMode,
+      alwaysIncludeDefaultArgumentName
+    }
+  }
+
+  private readConfig(config: { [attr: string]: boolean } | undefined, configName: string): boolean {
+    return config &&
+      configName in config &&
+      config[configName]
+      || false;
+  }
+}
+
+export class URIEncrypted {
+
+  static matcher(uri: string): boolean {
+    return new URIEncryptedSyntaxMatcher().match(uri);
+  }
+
+  readonly encoded: string;
+  readonly decoded: TEncryptedURI;
+
+  constructor(content: TEncryptedURI, config?: TEncryptedURIConfig);
+  constructor(content: string);
+  constructor(
+    content: string | TEncryptedURI,
+    config?: TEncryptedURIConfig
+  ) {
+    if (typeof content === 'string') {
+      const decoder = new URIEncryptedDecode();
+      this.decoded = decoder.decode(this.encoded = content);
+      this.encoded = content;
+    } else {
+      const encoder = new URIEncryptedEncode();
+      this.decoded = content;
+      this.encoded = encoder.encode(content, config);
+    }
+  }
 }
