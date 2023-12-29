@@ -241,14 +241,10 @@ class URIEncryptedEncode {
       return content.queryString || '';
     }
 
-    if (Object.keys(params).length === 1) {
-      return lastAttributeValue;
-    } else {
-      const serializer = new URLSearchParams();
-      paramsKeys.forEach(key => serializer.append(key, params[key]));
+    const serializer = new URLSearchParams();
+    paramsKeys.forEach(key => serializer.append(key, params[key]));
 
-      return serializer.toString();
-    }
+    return serializer.toString();
   }
 
   private encodeAlgorithmAndMode(
