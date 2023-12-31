@@ -285,16 +285,16 @@ export interface URIEncryptedDecrypter {
   decrypt(): string;
 }
 
-type TEncryptedURIDefaultParams = {
+export type TEncryptedURIDefaultParams = {
   algorithm?: string;
   [param: string]: any;
 }
 
-type TEncryptedURIEncryptedDefaultParams = {
+export type TEncryptedURIEncryptedDefaultParams = {
   cypher: string;
 } & TEncryptedURIDefaultParams;
 
-type TEncryptedURIEncryptableDefaultParams = {
+export type TEncryptedURIEncryptableDefaultParams = {
   content: string;
   key: string;
 } & TEncryptedURIDefaultParams;
