@@ -48,4 +48,11 @@ type TEncryptedNumberOnceParams = {
 };
 
 type TEncryptedURIResultset = (TEncryptedAESParams | TEncryptedNumberOnceParams) & TEncryptedURIDefaultParams;
+
+class URIEncryptedDecrypter {
   
+}
+
+class URIEncryptedEncrypter {
+  
+}

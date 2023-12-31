@@ -2,7 +2,7 @@
  * When the uri is still being interpreted
  * and has not yet gone through validation
  */
-type TEncryptedURI = {
+export type TEncryptedURI = {
   algorithm?: string;
   mode?: string;
   queryString?: string;
@@ -12,11 +12,7 @@ type TEncryptedURI = {
   }
 }
 
-class InvalidURIEncrypted extends Error {
-
-}
-
-export class IterableString {
+class IterableString {
 
   private cursor = 0;
   private readonly DEBUG_CHARS_PREVIEW = 100;
@@ -151,7 +147,7 @@ class URIEncryptedSyntaxMatcher {
   }
 }
 
-class URIEncryptedDecode {
+class URIEncryptedDecoder {
 
   private readonly ENCRYPTED_URI_MATCHER = /^encrypted:/;
   private readonly QUERY_STRING_MATCHER = /^\?[^;]*;/;
@@ -172,7 +168,7 @@ class URIEncryptedDecode {
   private checkURI(iterable: IterableString): void {
     const is = iterable.addCursor(this.ENCRYPTED_URI_MATCHER);
     if (!is) {
-      throw new InvalidURIEncrypted('not an encrypted uri');
+      throw new Error('not an encrypted uri');
     }
   }
 
@@ -219,7 +215,7 @@ class URIEncryptedDecode {
   }
 }
 
-class URIEncryptedEncode {
+class URIEncryptedEncoder {
 
   encode(content: TEncryptedURI): string {
     const algorithm = this.encodeAlgorithmAndMode(content);
@@ -257,7 +253,7 @@ class URIEncryptedEncode {
   }
 }
 
-export class URIEncrypted {
+export class URIEncryptedParser {
 
   static matcher(uri: string): boolean {
     return new URIEncryptedSyntaxMatcher().match(uri);
@@ -270,11 +266,11 @@ export class URIEncrypted {
   constructor(content: string);
   constructor(content: string | TEncryptedURI) {
     if (typeof content === 'string') {
-      const decoder = new URIEncryptedDecode();
+      const decoder = new URIEncryptedDecoder();
       this.decoded = decoder.decode(this.encoded = content);
       this.encoded = content;
     } else {
-      const encoder = new URIEncryptedEncode();
+      const encoder = new URIEncryptedEncoder();
       this.decoded = content;
       this.encoded = encoder.encode(content);
     }

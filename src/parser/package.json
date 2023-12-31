@@ -1,6 +1,6 @@
 {
   "name": "@encrypted-uri/parser",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "encode and decode encrypted uri to resultset",
   "main": "index.js",
   "repository": {
@@ -8,7 +8,7 @@
     "url": "git+https://github.com/antonioconselheiro/encrypted-uri.git"
   },
   "scripts": {
-    "build": "tsc --project .",
+    "build": "rm -rf ../../dist && tsc --project . && cp ../../README.md package.json package-lock.json ../../dist/parser/",
     "lint": "eslint .",
     "test": "jest"
   },

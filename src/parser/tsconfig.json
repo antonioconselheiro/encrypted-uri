@@ -2,7 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "./dist/encode-parser",
+    "outDir": "../../dist/parser",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
@@ -23,5 +23,8 @@
       "ES2022",
       "dom"
     ]
-  }
+  },
+  "exclude": [
+    "**/*.test.ts"
+  ]
 }

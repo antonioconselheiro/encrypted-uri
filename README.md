@@ -5,6 +5,8 @@
 # Encrypted URI
 ## URI Encrypted Scheme Specification
 
+** this is a beta test version **
+
 Encode to standardize different types of encrypted content into a URI that allows the user to customize his cyphers with his preferred encryption algorithm.
 
 ## Syntax
