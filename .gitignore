@@ -1,0 +1,10 @@
+# Credentials
+.gitconfig
+.ssh
+
+# Dependencies
+/node_modules
+**/node_modules
+
+# Build
+dist
