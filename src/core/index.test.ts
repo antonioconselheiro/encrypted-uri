@@ -1,4 +1,4 @@
-import { URIEncryptedParser } from ".";
+import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, URIEncrypted, URIEncryptedDecrypter, URIEncryptedEncrypter, URIEncryptedParser } from ".";
 
 describe('decode uri with default values', () => {
   it('[1] decode uri with default values not include', () => {
@@ -298,3 +298,57 @@ describe('uri matcher', () => {
   });
 });
 
+describe('URIEncrypted object', () => {
+  class CustomDecrypter extends URIEncryptedDecrypter {
+
+    constructor(
+      decoded: TEncryptedURI
+    ) {
+      super(decoded);
+    }
+  
+    decrypt(): string {
+      console.info('[this.decoded]: ', this.decoded);
+      console.info('[this.decoded.cypher]: ', this.decoded.cypher);
+
+      return atob(this.decoded.cypher || '');
+    }
+  }
+  
+  class CustomEncrypter extends URIEncryptedEncrypter {
+    constructor(
+      params: TEncryptedURIEncryptableDefaultParams
+    ) {
+      super(params);
+    }
+  
+    encrypt(): TEncryptedURI {
+      return {
+        algorithm: 'custom',
+        cypher: btoa(this.params.content)
+      };
+    }
+  }
+
+  const encoded = 'encrypted:custom;YmFzZTY0IG7jbyDpIGNyaXB0b2dyYWZpYQ==';
+
+  it('[1] match valid encrypted uri', () => {
+    URIEncrypted.setAlgorithm('custom', CustomEncrypter, CustomDecrypter);
+    expect(URIEncrypted.matcher(encoded)).toEqual(true);
+  });
+
+  it('[2] URIEncrypted must run decrypt for custom algorithm', () => {
+    URIEncrypted.setAlgorithm('custom', CustomEncrypter, CustomDecrypter);
+    expect(URIEncrypted.decrypt(encoded, 'key here')).toEqual('base64 não é criptografia');
+  });
+
+  it('[3] URIEncrypted must run encrypt for custom algorithm', () => {
+    URIEncrypted.setAlgorithm('custom', CustomEncrypter, CustomDecrypter);
+    expect(URIEncrypted.encrypt({
+      algorithm: 'custom',
+      content: 'base64 não é criptografia',
+      key: 'key here'
+    })).toEqual(encoded);
+  });
+
+});

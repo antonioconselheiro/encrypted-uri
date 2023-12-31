@@ -160,7 +160,7 @@ class URIEncryptedDecoder {
     this.identifyAlgorithm(iterable, resultset);
     this.identifyOperationMode(iterable, resultset);
     this.readQueryString(iterable, resultset);
-    resultset.cypher = iterable.toTheEnd();
+    resultset.cypher = iterable.toTheEnd().replace(/^;/, '');
 
     return resultset as TEncryptedURI;
   }
@@ -221,7 +221,11 @@ class URIEncryptedEncoder {
     const algorithm = this.encodeAlgorithmAndMode(content);
     const parameters = this.encodeParameters(content);
 
-    return `encrypted:${algorithm}?${parameters};${content.cypher}`;
+    if (parameters) {
+      return `encrypted:${algorithm}?${parameters};${content.cypher}`;
+    } else {
+      return `encrypted:${algorithm};${content.cypher}`;
+    }
   }
 
   private encodeParameters(
@@ -277,12 +281,18 @@ export class URIEncryptedParser {
   }
 }
 
-export interface URIEncryptedEncrypter {
-  encrypt(): string;
+export abstract class URIEncryptedEncrypter {
+
+  constructor(protected params: TEncryptedURIEncryptableDefaultParams) { }
+  
+  abstract encrypt(): TEncryptedURI;
 }
 
-export interface URIEncryptedDecrypter {
-  decrypt(): string;
+export abstract class URIEncryptedDecrypter {
+
+  constructor(protected decoded: TEncryptedURI) { }
+
+  abstract decrypt(): string;
 }
 
 export type TEncryptedURIDefaultParams = {
@@ -306,41 +316,41 @@ export class URIEncrypted {
   static readonly supportedAlgorithm: {
     [algorithm: string]: [
       { new (...args: any[]): URIEncryptedEncrypter },
-      { new (...args: any[]): URIEncryptedDecrypter }
+      { new (decoded: TEncryptedURI, ...args: any[]): URIEncryptedDecrypter }
     ]
   } = { }
 
   static matcher(uri: string): boolean {
-    return URIEncryptedParser.matcher(uri);
+    return new URIEncryptedSyntaxMatcher().match(uri);
   }
 
-  static encode(params: TEncryptedURIEncryptedDefaultParams): string {
+  static encode(params: TEncryptedURI): string {
     return new URIEncryptedParser(params).encoded;
   }
 
   static encrypt(params: TEncryptedURIEncryptableDefaultParams) {
     const [ encryptor ] = this.getAlgorithm(params.algorithm);
-    return new encryptor(params).encrypt();
+    return this.encode(new encryptor(params).encrypt());
   }
 
   static decrypt(uri: string, key: string): string;
   static decrypt(uri: string, ...args: any[]): string {
     const uriDecoded = new URIEncryptedParser(uri).decoded;
     const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);
-    return new decryptor(...args).decrypt();
+    return new decryptor(uriDecoded, ...args).decrypt();
   }
 
   static setAlgorithm(
     algorithm: string,
     encrypter: { new (...args: any[]): URIEncryptedEncrypter },
-    decrypter: { new (...args: any[]): URIEncryptedDecrypter }
+    decrypter: { new (decoded: TEncryptedURI, ...args: any[]): URIEncryptedDecrypter }
   ) {
     this.supportedAlgorithm[algorithm] = [encrypter, decrypter];
   }
 
   private static getAlgorithm(algorithm?: string): [
     { new (...args: any[]): URIEncryptedEncrypter },
-    { new (...args: any[]): URIEncryptedDecrypter }
+    { new (decoded: TEncryptedURI, ...args: any[]): URIEncryptedDecrypter }
   ] {
     algorithm = algorithm || URIEncrypted.DEFAULT_ALGORITHM;
     const [ encryptor, decryptor ] = this.supportedAlgorithm[algorithm] || [ null, null];

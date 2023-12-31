@@ -5,7 +5,7 @@ module.exports = {
   reporters: [
     'default',
     ['jest-html-reporters', {
-      publicPath: '../docs/ciphers',
+      publicPath: '../../docs/ciphers',
       filename: 'test-report.html',
       expand: true,
     }],

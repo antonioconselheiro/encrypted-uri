@@ -2,7 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "../../dist/api",
+    "outDir": "../../dist/ciphers",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
