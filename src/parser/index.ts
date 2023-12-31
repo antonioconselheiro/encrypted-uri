@@ -276,3 +276,78 @@ export class URIEncryptedParser {
     }
   }
 }
+
+export interface URIEncryptedEncrypter {
+  encrypt(): string;
+}
+
+export interface URIEncryptedDecrypter {
+  decrypt(): string;
+}
+
+type TEncryptedURIDefaultParams = {
+  algorithm?: string;
+  [param: string]: any;
+}
+
+type TEncryptedURIEncryptedDefaultParams = {
+  cypher: string;
+} & TEncryptedURIDefaultParams;
+
+type TEncryptedURIEncryptableDefaultParams = {
+  content: string;
+  key: string;
+} & TEncryptedURIDefaultParams;
+
+export class URIEncrypted {
+
+  static readonly DEFAULT_ALGORITHM = 'aes';
+
+  static readonly supportedAlgorithm: {
+    [algorithm: string]: [
+      { new (...args: any[]): URIEncryptedEncrypter },
+      { new (...args: any[]): URIEncryptedDecrypter }
+    ]
+  } = { }
+
+  static matcher(uri: string): boolean {
+    return URIEncryptedParser.matcher(uri);
+  }
+
+  static encode(params: TEncryptedURIEncryptedDefaultParams): string {
+    return new URIEncryptedParser(params).encoded;
+  }
+
+  static encrypt(params: TEncryptedURIEncryptableDefaultParams) {
+    const [ encryptor ] = this.getAlgorithm(params.algorithm);
+    return new encryptor(params).encrypt();
+  }
+
+  static decrypt(uri: string, key: string): string;
+  static decrypt(uri: string, ...args: any[]): string {
+    const uriDecoded = new URIEncryptedParser(uri).decoded;
+    const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);
+    return new decryptor(...args).decrypt();
+  }
+
+  static setAlgorithm(
+    algorithm: string,
+    encrypter: { new (...args: any[]): URIEncryptedEncrypter },
+    decrypter: { new (...args: any[]): URIEncryptedDecrypter }
+  ) {
+    this.supportedAlgorithm[algorithm] = [encrypter, decrypter];
+  }
+
+  private static getAlgorithm(algorithm?: string): [
+    { new (...args: any[]): URIEncryptedEncrypter },
+    { new (...args: any[]): URIEncryptedDecrypter }
+  ] {
+    algorithm = algorithm || URIEncrypted.DEFAULT_ALGORITHM;
+    const [ encryptor, decryptor ] = this.supportedAlgorithm[algorithm] || [ null, null];
+    if (!encryptor && !decryptor) {
+      throw new Error(`Algorithm '${algorithm}' not supported`);
+    }
+
+    return [ encryptor, decryptor ];
+  }
+}
