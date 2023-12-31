@@ -1,6 +1,6 @@
 {
   "name": "@encrypted-uri/core",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "decrypt and encrypt encrypted uri",
   "main": "index.js",
   "repository": {

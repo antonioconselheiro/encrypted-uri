@@ -277,12 +277,17 @@ export class URIEncryptedParser {
   }
 }
 
-export interface URIEncryptedEncrypter {
-  encrypt(): string;
+export abstract class URIEncryptedEncrypter {
+
+  
+  abstract encrypt(): string;
 }
 
-export interface URIEncryptedDecrypter {
-  decrypt(): string;
+export abstract class URIEncryptedDecrypter {
+
+  constructor(protected decoded: TEncryptedURI) { }
+
+  abstract decrypt(): string;
 }
 
 export type TEncryptedURIDefaultParams = {
@@ -306,12 +311,12 @@ export class URIEncrypted {
   static readonly supportedAlgorithm: {
     [algorithm: string]: [
       { new (...args: any[]): URIEncryptedEncrypter },
-      { new (...args: any[]): URIEncryptedDecrypter }
+      { new (decoded: TEncryptedURI, ...args: any[]): URIEncryptedDecrypter }
     ]
   } = { }
 
   static matcher(uri: string): boolean {
-    return URIEncryptedParser.matcher(uri);
+    return new URIEncryptedSyntaxMatcher().match(uri);
   }
 
   static encode(params: TEncryptedURIEncryptedDefaultParams): string {
@@ -327,20 +332,20 @@ export class URIEncrypted {
   static decrypt(uri: string, ...args: any[]): string {
     const uriDecoded = new URIEncryptedParser(uri).decoded;
     const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);
-    return new decryptor(...args).decrypt();
+    return new decryptor(uriDecoded, ...args).decrypt();
   }
 
   static setAlgorithm(
     algorithm: string,
     encrypter: { new (...args: any[]): URIEncryptedEncrypter },
-    decrypter: { new (...args: any[]): URIEncryptedDecrypter }
+    decrypter: { new (decoded: TEncryptedURI, ...args: any[]): URIEncryptedDecrypter }
   ) {
     this.supportedAlgorithm[algorithm] = [encrypter, decrypter];
   }
 
   private static getAlgorithm(algorithm?: string): [
     { new (...args: any[]): URIEncryptedEncrypter },
-    { new (...args: any[]): URIEncryptedDecrypter }
+    { new (decoded: TEncryptedURI, ...args: any[]): URIEncryptedDecrypter }
   ] {
     algorithm = algorithm || URIEncrypted.DEFAULT_ALGORITHM;
     const [ encryptor, decryptor ] = this.supportedAlgorithm[algorithm] || [ null, null];
