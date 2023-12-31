@@ -1,7 +1,7 @@
 {
-  "name": "@encrypted-uri/api",
-  "version": "0.1.0",
-  "description": "encode and decode encrypted uri to resultset",
+  "name": "@encrypted-uri/ciphers",
+  "version": "0.1.1",
+  "description": "encrypt and decrypt from encrypted uri",
   "main": "index.js",
   "repository": {
     "type": "git",
@@ -38,6 +38,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@encrypted-uri/parser": "^0.1.1",
     "@noble/ciphers": "^0.4.1"
   }
 }
