@@ -40,11 +40,11 @@ describe('decode uri with default values', () => {
   });
 
   it('[5] decode uri with some default values not include', () => {
-    expect(new URIEncryptedParser('encrypted:aes?pad=pkcs#7&iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata').decoded)
+    expect(new URIEncryptedParser('encrypted:aes?pad=pkcs%237&iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'aes',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-        queryString: 'pad=pkcs#7&iv=2345678wertyui',
+        queryString: 'pad=pkcs%237&iv=2345678wertyui',
         params: {
           iv: '2345678wertyui',
           pad: 'pkcs#7'
@@ -58,7 +58,7 @@ describe('decode uri with default values', () => {
         algorithm: 'aes',
         mode: 'cbc',
         cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
-        queryString: 'iv=2345678wertyui&pad=pkcs#7',
+        queryString: 'iv=2345678wertyui&pad=pkcs%237',
         params: {
           iv: '2345678wertyui',
           pad: 'pkcs#7'
@@ -263,7 +263,7 @@ describe('uri matcher', () => {
   });
 
   it('[5] match valid encrypted uri', () => {
-    expect(URIEncryptedParser.matcher('encrypted:aes?pad=pkcs#7&iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata'))
+    expect(URIEncryptedParser.matcher('encrypted:aes?pad=pkcs%237&iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata'))
       .toEqual(true);
   });
 

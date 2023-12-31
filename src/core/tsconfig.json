@@ -2,7 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "../../dist/parser",
+    "outDir": "../../dist/core",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,

@@ -8,7 +8,7 @@
     "url": "git+https://github.com/antonioconselheiro/encrypted-uri.git"
   },
   "scripts": {
-    "build": "rm -rf ../../dist && tsc --project . && cp ../../README.md package.json package-lock.json ../../dist/parser/",
+    "build": "rm -rf ../../dist && tsc --project . && cp ../../README.md package.json package-lock.json ../../dist/core/",
     "lint": "eslint .",
     "test": "jest"
   },
