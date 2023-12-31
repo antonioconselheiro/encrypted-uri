@@ -1,4 +1,4 @@
-import { TEncryptedURI, URIEncrypted, URIEncryptedDecrypter, URIEncryptedEncrypter, URIEncryptedParser } from ".";
+import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, URIEncrypted, URIEncryptedDecrypter, URIEncryptedEncrypter, URIEncryptedParser } from ".";
 
 describe('decode uri with default values', () => {
   it('[1] decode uri with default values not include', () => {
@@ -307,18 +307,26 @@ describe('URIEncrypted object', () => {
       super(decoded);
     }
   
-    decrypt(): string {  
+    decrypt(): string {
+      console.info('[this.decoded]: ', this.decoded);
+      console.info('[this.decoded.cypher]: ', this.decoded.cypher);
+
       return atob(this.decoded.cypher || '');
     }
   }
   
-  class CustomEncrypter implements URIEncryptedEncrypter {
+  class CustomEncrypter extends URIEncryptedEncrypter {
     constructor(
-      private content: string
-    ) { }
+      params: TEncryptedURIEncryptableDefaultParams
+    ) {
+      super(params);
+    }
   
-    encrypt(): string {
-      return btoa(this.content);
+    encrypt(): TEncryptedURI {
+      return {
+        algorithm: 'custom',
+        cypher: btoa(this.params.content)
+      };
     }
   }
 

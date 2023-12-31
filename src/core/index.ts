@@ -160,7 +160,7 @@ class URIEncryptedDecoder {
     this.identifyAlgorithm(iterable, resultset);
     this.identifyOperationMode(iterable, resultset);
     this.readQueryString(iterable, resultset);
-    resultset.cypher = iterable.toTheEnd();
+    resultset.cypher = iterable.toTheEnd().replace(/^;/, '');
 
     return resultset as TEncryptedURI;
   }
@@ -221,7 +221,11 @@ class URIEncryptedEncoder {
     const algorithm = this.encodeAlgorithmAndMode(content);
     const parameters = this.encodeParameters(content);
 
-    return `encrypted:${algorithm}?${parameters};${content.cypher}`;
+    if (parameters) {
+      return `encrypted:${algorithm}?${parameters};${content.cypher}`;
+    } else {
+      return `encrypted:${algorithm};${content.cypher}`;
+    }
   }
 
   private encodeParameters(
@@ -279,8 +283,9 @@ export class URIEncryptedParser {
 
 export abstract class URIEncryptedEncrypter {
 
+  constructor(protected params: TEncryptedURIEncryptableDefaultParams) { }
   
-  abstract encrypt(): string;
+  abstract encrypt(): TEncryptedURI;
 }
 
 export abstract class URIEncryptedDecrypter {
@@ -319,13 +324,13 @@ export class URIEncrypted {
     return new URIEncryptedSyntaxMatcher().match(uri);
   }
 
-  static encode(params: TEncryptedURIEncryptedDefaultParams): string {
+  static encode(params: TEncryptedURI): string {
     return new URIEncryptedParser(params).encoded;
   }
 
   static encrypt(params: TEncryptedURIEncryptableDefaultParams) {
     const [ encryptor ] = this.getAlgorithm(params.algorithm);
-    return new encryptor(params).encrypt();
+    return this.encode(new encryptor(params).encrypt());
   }
 
   static decrypt(uri: string, key: string): string;
