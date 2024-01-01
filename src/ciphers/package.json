@@ -38,7 +38,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@encrypted-uri/parser": "^0.1.1",
+    "@encrypted-uri/core": "^0.1.4",
     "@noble/ciphers": "^0.4.1"
   }
 }

@@ -4,6 +4,8 @@
 # Encrypted URI
 ## URI Encrypted Scheme Specification
 
+*under beta test*
+
 Encode to standardize different types of encrypted content into a URI that allows the user to customize his cyphers with his preferred encryption algorithm.
 
 ## Installation
@@ -120,6 +122,8 @@ class CustomEncrypter extends URIEncryptedEncrypter {
     };
   }
 }
+
+URIEncrypted.setAlgorithm('custom', CustomEncrypter, CustomDecrypter);
 ```
 
 As you can see in the library code, is not preserved the instance of the object that has a key associated with it in protected:
