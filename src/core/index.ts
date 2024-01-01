@@ -199,10 +199,6 @@ class URIEncryptedDecoder {
       }
     }
   }
-
-  private removeNotAlphaNumerical(content: string): string {
-    return content.replace(/[^a-z\d]/g, '');
-  }
 }
 
 class URIEncryptedEncoder {

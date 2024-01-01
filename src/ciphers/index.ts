@@ -44,16 +44,11 @@ type TEncryptedURISupportedChachaAlgorithm = keyof typeof supportedAlgorithmChac
 type TEncryptedURISupportedAlgorithm = keyof typeof supportedAlgorithm;
 
 
-type TEncryptedAESParams = {
+type TEncryptedAESCBCParams = {
   /**
    * @default aes
    */
-  algorithm?: 'aes';
-
-  /**
-   * @default CBC
-   */
-  mode?: keyof typeof AESOperationMode;
+  algorithm?: 'aes' | 'aes/cbc';
 
   params: {
     /**
@@ -77,29 +72,68 @@ type TEncryptedChachaParams = {
 class URIEncryptedAESCBCEncrypter extends URIEncryptedEncrypter {
 
   constructor(
-    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedAESParams
+    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedAESCBCParams
   ) {
     super(params);
   }
 
   encrypt(): TEncryptedURI {
+    const key = new Uint8Array(
+      new TextEncoder()
+        .encode(this.params.key)
+    );
+
+    const iv = new Uint8Array(
+      new TextEncoder()
+        .encode(this.params.params.iv)
+    );
+
+    const content = new Uint8Array(
+      new TextEncoder()
+        .encode(this.params.content)
+    );
+
     return {
-      algorithm: 'aes'
+      algorithm: 'aes/cbc',
+      cypher: AESOperationMode
+        .cbc(key, iv)
+        .encrypt(content)
+        .toString(),
+      params: {
+        iv: this.params.params.iv
+      }
     };
   }
 }
 
 class URIEncryptedAESCBCDecrypter extends URIEncryptedDecrypter {
   constructor(
-    decoded: TEncryptedURI,
+    decoded: TEncryptedAESCBCParams,
     private key: string
   ) {
     super(decoded);
   }
 
   decrypt(): string {
+    const key = new Uint8Array(
+      new TextEncoder()
+        .encode(this.key)
+    );
 
-    return '';
+    const iv = new Uint8Array(
+      new TextEncoder()
+        .encode(this.decoded.params['iv'] || '')
+    );
+
+    const content = new Uint8Array(
+      new TextEncoder()
+        .encode(this.params.content)
+    );
+
+    return AESOperationMode
+      .cbc(key, iv)
+      .encrypt(content)
+      .toString();
   }
 }
 
@@ -109,7 +143,9 @@ class URIEncryptedChachaEncrypter implements URIEncryptedEncrypter {
   ) { }
 
   encrypt(): TEncryptedURI {
-    return '';
+    return {
+      
+    };
   }
 }
 
