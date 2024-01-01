@@ -4,7 +4,6 @@
  */
 export type TEncryptedURI = {
   algorithm?: string;
-  mode?: string;
   queryString?: string;
   cypher?: string;
   params?: {
@@ -158,7 +157,6 @@ class URIEncryptedDecoder {
 
     this.checkURI(iterable);
     this.identifyAlgorithm(iterable, resultset);
-    this.identifyOperationMode(iterable, resultset);
     this.readQueryString(iterable, resultset);
     resultset.cypher = iterable.toTheEnd().replace(/^;/, '');
 
@@ -173,19 +171,11 @@ class URIEncryptedDecoder {
   }
 
   private identifyAlgorithm(iterable: IterableString, resultset: TEncryptedURI): void {
-    const algorithmMatcher = /^[^/?;]*/;
+    const algorithmMatcher = /^[^?;]*/;
     const algorithmValue = iterable.addCursor(algorithmMatcher);
 
     if (algorithmValue) {
       resultset.algorithm = algorithmValue;
-    }
-  }
-
-  private identifyOperationMode(iterable: IterableString, resultset: TEncryptedURI): void {
-    const operationModeMatcher = /^\/[^?;]+/;
-    const hasOperationMode = iterable.addCursor(operationModeMatcher);
-    if (hasOperationMode) {
-      resultset.mode = this.removeNotAlphaNumerical(hasOperationMode);
     }
   }
 
@@ -218,7 +208,7 @@ class URIEncryptedDecoder {
 class URIEncryptedEncoder {
 
   encode(content: TEncryptedURI): string {
-    const algorithm = this.encodeAlgorithmAndMode(content);
+    const algorithm = this.encodeAlgorithm(content);
     const parameters = this.encodeParameters(content);
 
     if (parameters) {
@@ -246,13 +236,9 @@ class URIEncryptedEncoder {
     return serializer.toString();
   }
 
-  private encodeAlgorithmAndMode(
+  private encodeAlgorithm(
     content: TEncryptedURI
   ): string {
-    if (content.algorithm && content.mode) {
-      return `${content.algorithm}/${content.mode}`;
-    }
-
     return content.algorithm || '';
   }
 }

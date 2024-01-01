@@ -1,4 +1,5 @@
-import { URIEncryptedParser } from "@encrypted-uri/parser";
+import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, URIEncryptedDecrypter, URIEncryptedEncrypter } from "@encrypted-uri/core";
+import { cbc, ecb, ctr, gcm, siv } from '@noble/ciphers/aes';
 
 const supportedAlgorithmAes = {
   aes: 'aes'
@@ -20,11 +21,11 @@ const supportedAlgorithm = {
 };
 
 const AESOperationMode = {
-  cbc: 'cbc',
-  ecb: 'ecb',
-  ctr: 'ctr',
-  gcm: 'gcm',
-  siv: 'siv'
+  cbc,
+  ecb,
+  ctr,
+  gcm,
+  siv
 };
 
 const AESPadding = {
@@ -56,10 +57,9 @@ type TEncryptedAESParams = {
 
   params: {
     /**
-     * initializationVector
+     * Initialization Vector
      */
     iv: string;
-
 
     /**
      * padding system
@@ -74,27 +74,30 @@ type TEncryptedChachaParams = {
   numberOnce: string;
 };
 
-type TEncryptedURIArguments = (TEncryptedAESParams | TEncryptedChachaParams);
+class URIEncryptedAESCBCEncrypter extends URIEncryptedEncrypter {
 
-class URIEncryptedAESEncrypter implements URIEncryptedEncrypter {
   constructor(
-    private params: TEncryptedURIEncryptableDefaultParams & TEncryptedAESParams
-  ) { }
+    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedAESParams
+  ) {
+    super(params);
+  }
 
-  encrypt(): string {
-    return '';
+  encrypt(): TEncryptedURI {
+    return {
+      algorithm: 'aes'
+    };
   }
 }
 
-class URIEncryptedAESDecrypter implements URIEncryptedDecrypter {
+class URIEncryptedAESCBCDecrypter extends URIEncryptedDecrypter {
   constructor(
-    private encoded: string,
+    decoded: TEncryptedURI,
     private key: string
-  ) { }
+  ) {
+    super(decoded);
+  }
 
   decrypt(): string {
-    const parser = new URIEncryptedParser(this.encoded);
-    const decoded = parser.decoded;
 
     return '';
   }
@@ -102,22 +105,24 @@ class URIEncryptedAESDecrypter implements URIEncryptedDecrypter {
 
 class URIEncryptedChachaEncrypter implements URIEncryptedEncrypter {
   constructor(
-    private params: TEncryptedURIEncryptableDefaultParams & TEncryptedChachaParams
+    protected params: TEncryptedURIEncryptableDefaultParams & TEncryptedChachaParams
   ) { }
 
-  encrypt(): string {
+  encrypt(): TEncryptedURI {
     return '';
   }
 }
 
-class URIEncryptedChachaDecrypter implements URIEncryptedDecrypter {
+class URIEncryptedChachaDecrypter extends URIEncryptedDecrypter {
   constructor(
-    private encoded: string,
+    decoded: TEncryptedURI,
     private key: string
-  ) { }
+  ) {
+    super(decoded);
+  }
 
   decrypt(): string {
-    const parser = new URIEncryptedParser(this.encoded);
+    const parser = new URIEncryptedParser(this.decoded);
     const decoded = parser.decoded;
 
     return '';
@@ -125,13 +130,13 @@ class URIEncryptedChachaDecrypter implements URIEncryptedDecrypter {
 }
 
 
-static readonly supportedAlgorithm: {
+const supportedAlgorithm: {
   [algorithm in TEncryptedURISupportedAlgorithm | string]: [
     { new (...args: any[]): URIEncryptedEncrypter },
     { new (...args: any[]): URIEncryptedDecrypter }
   ]
 } = {
-  aes: [URIEncryptedAESEncrypter, URIEncryptedAESDecrypter],
+  aes: [URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter],
   salsa20: [URIEncryptedChachaEncrypter, URIEncryptedChachaDecrypter],
   chacha: [URIEncryptedChachaEncrypter, URIEncryptedChachaDecrypter],
   xsalsa20: [URIEncryptedChachaEncrypter, URIEncryptedChachaDecrypter],
