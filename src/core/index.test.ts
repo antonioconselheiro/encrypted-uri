@@ -308,9 +308,6 @@ describe('URIEncrypted object', () => {
     }
   
     decrypt(): string {
-      console.info('[this.decoded]: ', this.decoded);
-      console.info('[this.decoded.cypher]: ', this.decoded.cypher);
-
       return atob(this.decoded.cypher || '');
     }
   }

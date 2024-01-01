@@ -50,6 +50,7 @@ Customized:
 ```encrypted:aes?iv=249c3d09119;U2FsdGVkX1mxOv5WpmRGHXZouip```
 
 ## How to use
+Basic use, how to decode and encrypt and how to decode and decrypt: 
 
 ```typescript
 import { URIEncrypted } from '@encrypted-uri/core';
@@ -85,8 +86,63 @@ URIEncrypted.encrypt({
   key: 'secretkey',
   queryString: '1234567812345678'
 });
+```
 
+Advanced use, how to add encrypters and decrypters: 
+```typescript
+import { algorithm } from 'algorithms';
 
+class CustomDecrypter extends URIEncryptedDecrypter {
+
+  constructor(
+    decoded: TEncryptedURI,
+    private key: string
+  ) {
+    super(decoded);
+  }
+
+  decrypt(): string {
+    return algorithm.decrypt(this.decoded.cypher || '', this.key);
+  }
+}
+
+class CustomEncrypter extends URIEncryptedEncrypter {
+  constructor(
+    params: TEncryptedURIEncryptableDefaultParams
+  ) {
+    super(params);
+  }
+
+  encrypt(): TEncryptedURI {
+    return {
+      algorithm: 'custom',
+      cypher: algorithm.encrypt(this.decoded.cypher || '', this.key)
+    };
+  }
+}
+```
+
+As you can see in the library code, is not preserved the instance of the object that has a key associated with it in protected:
+
+```typescript
+export class URIEncrypted {
+
+  [...]
+
+  static encrypt(params: TEncryptedURIEncryptableDefaultParams) {
+    const [ encryptor ] = this.getAlgorithm(params.algorithm);
+    return this.encode(new encryptor(params).encrypt());
+  }
+
+  static decrypt(uri: string, key: string): string;
+  static decrypt(uri: string, ...args: any[]): string {
+    const uriDecoded = new URIEncryptedParser(uri).decoded;
+    const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);
+    return new decryptor(uriDecoded, ...args).decrypt();
+  }
+
+  [...]
+}
 ```
 
 ## Example of practical application
