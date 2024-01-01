@@ -12,7 +12,7 @@ const supportedAlgorithmChacha = {
   xchacha: 'xchacha',
   chacha8: 'chacha8',
   chacha12: 'chacha12',
-  'xchacha20-poly1305': 'xchacha20-poly1305'
+  'xchacha20/poly1305': 'xchacha20/poly1305'
 };
 
 const supportedAlgorithm = {
@@ -43,6 +43,12 @@ const AESOperationModeList = Object.keys(AESOperationMode);
 type TEncryptedURISupportedChachaAlgorithm = keyof typeof supportedAlgorithmChacha;
 type TEncryptedURISupportedAlgorithm = keyof typeof supportedAlgorithm;
 
+function toUint8Array(content: string): Uint8Array {
+  return new Uint8Array(
+    new TextEncoder()
+      .encode(content)
+  );
+}
 
 type TEncryptedAESCBCParams = {
   /**
@@ -78,20 +84,9 @@ class URIEncryptedAESCBCEncrypter extends URIEncryptedEncrypter {
   }
 
   encrypt(): TEncryptedURI {
-    const key = new Uint8Array(
-      new TextEncoder()
-        .encode(this.params.key)
-    );
-
-    const iv = new Uint8Array(
-      new TextEncoder()
-        .encode(this.params.params.iv)
-    );
-
-    const content = new Uint8Array(
-      new TextEncoder()
-        .encode(this.params.content)
-    );
+    const key = toUint8Array(this.params.key);
+    const iv = toUint8Array(this.params.params.iv);
+    const content = toUint8Array(this.params.content);
 
     return {
       algorithm: 'aes/cbc',
@@ -106,7 +101,13 @@ class URIEncryptedAESCBCEncrypter extends URIEncryptedEncrypter {
   }
 }
 
-class URIEncryptedAESCBCDecrypter extends URIEncryptedDecrypter {
+export type TEncryptedURIAESCBCParams = TEncryptedURI & {
+  params: {
+    iv: string
+  }
+}
+
+export class URIEncryptedAESCBCDecrypter extends URIEncryptedDecrypter<TEncryptedURIAESCBCParams> {
   constructor(
     decoded: TEncryptedAESCBCParams,
     private key: string
@@ -115,24 +116,13 @@ class URIEncryptedAESCBCDecrypter extends URIEncryptedDecrypter {
   }
 
   decrypt(): string {
-    const key = new Uint8Array(
-      new TextEncoder()
-        .encode(this.key)
-    );
-
-    const iv = new Uint8Array(
-      new TextEncoder()
-        .encode(this.decoded.params['iv'] || '')
-    );
-
-    const content = new Uint8Array(
-      new TextEncoder()
-        .encode(this.params.content)
-    );
+    const key = toUint8Array(this.key);
+    const iv = toUint8Array(this.decoded.params.iv);
+    const cypher = toUint8Array(this.decoded.cypher || '');
 
     return AESOperationMode
       .cbc(key, iv)
-      .encrypt(content)
+      .decrypt(cypher)
       .toString();
   }
 }

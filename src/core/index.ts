@@ -5,7 +5,7 @@
 export type TEncryptedURI = {
   algorithm?: string;
   queryString?: string;
-  cypher?: string;
+  cypher: string;
   params?: {
     [attr: string]: string;
   }
