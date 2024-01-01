@@ -12,7 +12,7 @@ export type TEncryptedURI = {
   }
 }
 
-class IterableString {
+export class IterableString {
 
   private cursor = 0;
   private readonly DEBUG_CHARS_PREVIEW = 100;
@@ -290,7 +290,9 @@ export abstract class URIEncryptedEncrypter {
 
 export abstract class URIEncryptedDecrypter {
 
-  constructor(protected decoded: TEncryptedURI) { }
+  constructor(
+    protected decoded: TEncryptedURI
+  ) { }
 
   abstract decrypt(): string;
 }
@@ -328,9 +330,9 @@ export class URIEncrypted {
     return new URIEncryptedParser(params).encoded;
   }
 
-  static encrypt(params: TEncryptedURIEncryptableDefaultParams) {
+  static encrypt(params: TEncryptedURIEncryptableDefaultParams, ...args: any[]): string {
     const [ encryptor ] = this.getAlgorithm(params.algorithm);
-    return this.encode(new encryptor(params).encrypt());
+    return this.encode(new encryptor(params, ...args).encrypt());
   }
 
   static decrypt(uri: string, key: string): string;
