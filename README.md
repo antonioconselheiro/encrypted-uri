@@ -1,36 +1,51 @@
-> "He that hath an ear, let him hear what the Spirit saith unto the churches; To him that overcometh will I give to eat of the hidden
-> manna, and will give him a white stone, and in the stone a new name written, which no man knoweth saving he that receiveth it."
+> "He that hath an ear, let him hear what the Spirit saith unto the churches; To him that overcometh will I give to eat of the hidden manna, and will give him a white stone, and in the stone a new name written, which no man knoweth saving he that receiveth it."
 > Apocalypse 2:17
 
 # Encrypted URI
 ## URI Encrypted Scheme Specification
 
-** this is a beta test version **
-
 Encode to standardize different types of encrypted content into a URI that allows the user to customize his cyphers with his preferred encryption algorithm.
 
-## Syntax
-Encrypted URI are composed of four parts: a prefix (encrypted:), the algorithm name indicating the type of encrypted data, a set of parameters that may vary depending on the type of encryption selected, and the cypher itself.
+## Purpose
 
-```encrypted:[algorithm]?[args];[cypher]```
+The practical purpose for which the encrypted uri is specified and implemented is the storage of encrypted information in qrcode. Through this encode it is possible to represent an encryption cipher with its main parameters in a lean way (to generate less dense qrcodes).
+
+Encryption keys, private document signing keys and wallet seeds are examples of extremely sensitive information, which leads to a demand not to store them digitally, but only physically and encrypted.
+
+Its fundamental proposal proposes the use of the encode for algorithms that have the means of being decrypted with one or more opening keys, but nothing prevents transmitting other types of algorithms if this encode is a solution to this need.
+
+The encode allows applications that use it to limit their support to a group or a single algorithm, but it also allows applications to provide the user with the option to customize the algorithm in which it will store the information in its custody.
+
+The encode helps to receive updates to new algorithms, maintaining compatibility with previously used algorithms.
+
+## Syntax
+Encrypted URI are composed of five parts:
+
+```encrypted:[algorithm[/mode]][?[args]];[cypher]```
+
+The ```encrypted``` keyword identifies the string as encrypted uri.
+
+The ```algorithm``` is the algorithm name, if not set, ```aes/cbc``` MUST be  assumed. If the algorithm is set just as ```aes```, the operation mode MUST be  assumed as CBC.
+
+The ```args``` are query string format arguments with values encoded into percent-encoded. If the algorithm requires one single mandatory argument, when this argument is send alone in ```args``` it's not needed to include the attribute name.
+
+The ```cypher``` is the cypher itself.
 
 ## Example:
-With all parameters include:
-```encrypted:aes/cbc?iv=249704f119c3d09e4e0fb3b6a275e519&pad=pkcs7;U2FsdGVkX1/mxOv5WpmRGHXZouip6GOw+P+Jdks6c1Z/uMfwBl7Me+dzJjioF72z9E+bKY/GlcL8HlWnWrs7fTlqVvzmsC3b2dm+JfL2rTH+60dNlk6PJ+41pLRDWA/l```
+The default, with default values ignored:
+```encrypted:;249c3d09119;U2FsdGVkX1mxOv5WpmRGHXZouip```
 
-With default values ignored:
-```encrypted:?249704f119c3d09e4e0fb3b6a275e519;U2FsdGVkX1/mxOv5WpmRGHXZouip6GOw+P+Jdks6c1Z/uMfwBl7Me+dzJjioF72z9E+bKY/GlcL8HlWnWrs7fTlqVvzmsC3b2dm+JfL2rTH+60dNlk6PJ+41pLRDWA/l```
+With all parameters include:
+```encrypted:aes/cbc?iv=249c3d09119&pad=pkcs%237;U2FsdGVkX1mxOv5WpmRGHXZouip```
 
 Customized:
-```encrypted:aes?iv=249704f119c3d09e4e0fb3b6a275e519;U2FsdGVkX1/mxOv5WpmRGHXZouip6GOw+P+Jdks6c1Z/uMfwBl7Me+dzJjioF72z9E+bKY/GlcL8HlWnWrs7fTlqVvzmsC3b2dm+JfL2rTH+60dNlk6PJ+41pLRDWA/l```
-
-## Default value
-Default encryptation is ```AES``` with ```CBC``` operation mode with the default web crypto api padding (padding scheme for block ciphers, ```PCKCS#7```, pkcs7).
-
-If the arguments are not a query string, the content is assumed to be the value of the ```initialization vector``` for AES, if is not AES it will be assumed as ```nonce```
+```encrypted:aes?iv=249c3d09119;U2FsdGVkX1mxOv5WpmRGHXZouip```
 
 ## Example of practical use:
  - [Private QRcode](https://antonioconselheiro.github.io/private-qrcode/#/home), allow you to create private qrcode using encrypted URI with AES algorithm fixed in it. It allow you to save your seeds, nsec and keys physically printed.
+
+## Contribute
+[CONTRIBUTE.md](./CONTRIBUTE.md)
 
 ## Donate
 Help me continue working on tools for the bitcoin and nostr universe, like this one. #zapthedev
@@ -44,6 +59,3 @@ Lighting donate: <a href="lightning:antonioconselheiro@getalby.com">lightning:an
 Bitcoin onchain donate: <a href="bitcoin:bc1qrm99lmmpwk7zsh7njpgthw87yvdm38j2lzpq7q">bc1qrm99lmmpwk7zsh7njpgthw87yvdm38j2lzpq7q</a>
 
 ![zap me](https://raw.githubusercontent.com/antonioconselheiro/antonioconselheiro/main/img/qrcode-wallet-bitcoin.png)
-
-## Contribute
-[CONTRIBUTE.md](./CONTRIBUTE.md)
