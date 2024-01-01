@@ -4,6 +4,10 @@
 # Encrypted URI
 ## URI Encrypted Scheme Specification
 
+[![npm version](https://badge.fury.io/js/@encrypted-uri%2Fcore.svg)](https://github.com/antonioconselheiro/encrypted-uri)
+[![Npm Total Downloads](https://img.shields.io/npm/dt/@encrypted-uri/core.svg)](https://github.com/antonioconselheiro/encrypted-uri)
+[![Npm Monthly Downloads](https://img.shields.io/npm/dm/@encrypted-uri/core.svg)](https://github.com/antonioconselheiro/encrypted-uri)
+
 *under beta test*
 
 Encode to standardize different types of encrypted content into a URI that allows the user to customize his cyphers with his preferred encryption algorithm.
@@ -31,7 +35,7 @@ The encode helps to receive updates to new algorithms, maintaining compatibility
 ## Syntax
 Encrypted URI are composed of five parts:
 
-```encrypted:[algorithm[/mode]][?[args]];[cypher]```
+```encrypted:[algorithm][?[args]];[cypher]```
 
 The ```encrypted``` keyword identifies the string as encrypted uri.
 
