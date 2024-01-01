@@ -152,7 +152,7 @@ class URIEncryptedDecoder {
   private readonly QUERY_STRING_MATCHER = /^\?[^;]*;/;
 
   decode(content: string): TEncryptedURI {
-    const resultset: TEncryptedURI = {};
+    const resultset: TEncryptedURI = { cypher: '' };
     const iterable = new IterableString(content);
 
     this.checkURI(iterable);
