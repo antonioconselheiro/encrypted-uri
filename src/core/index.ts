@@ -12,7 +12,7 @@ export type TEncryptedURI = {
   }
 }
 
-class IterableString {
+export class IterableString {
 
   private cursor = 0;
   private readonly DEBUG_CHARS_PREVIEW = 100;

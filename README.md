@@ -6,6 +6,14 @@
 
 Encode to standardize different types of encrypted content into a URI that allows the user to customize his cyphers with his preferred encryption algorithm.
 
+## Installation
+
+```npm install @encrypted-uri/core --save```
+
+The core will provide you with the main tools to interpret an Encrypted URI and to direct the content to the correct decryption algorithm, but the core does not include any algorithm, you will need to install this separately.
+
+```npm install @encrypted-uri/ciphers --save```
+
 ## Purpose
 
 The practical purpose for which the encrypted uri is specified and implemented is the storage of encrypted information in qrcode. Through this encode it is possible to represent an encryption cipher with its main parameters in a lean way (to generate less dense qrcodes).
@@ -25,15 +33,15 @@ Encrypted URI are composed of five parts:
 
 The ```encrypted``` keyword identifies the string as encrypted uri.
 
-The ```algorithm``` is the algorithm name, if not set, ```aes/cbc``` MUST be  assumed. If the algorithm is set just as ```aes```, the operation mode MUST be  assumed as CBC.
+The ```algorithm``` is the algorithm name, if not set, ```aes/cbc``` MUST be  assumed. The ```mode``` is separatted from algorithm name by a bar, like ```aes/cbc```. If the algorithm is set just as ```aes```, the operation mode MUST be  assumed as CBC.
 
 The ```args``` are query string format arguments with values encoded into percent-encoded. If the algorithm requires one single mandatory argument, when this argument is send alone in ```args``` it's not needed to include the attribute name.
 
 The ```cypher``` is the cypher itself.
 
-## Example:
+## Example
 The default, with default values ignored:
-```encrypted:;249c3d09119;U2FsdGVkX1mxOv5WpmRGHXZouip```
+```encrypted:?249c3d09119;U2FsdGVkX1mxOv5WpmRGHXZouip```
 
 With all parameters include:
 ```encrypted:aes/cbc?iv=249c3d09119&pad=pkcs%237;U2FsdGVkX1mxOv5WpmRGHXZouip```
@@ -41,7 +49,47 @@ With all parameters include:
 Customized:
 ```encrypted:aes?iv=249c3d09119;U2FsdGVkX1mxOv5WpmRGHXZouip```
 
-## Example of practical use:
+## How to use
+
+```typescript
+import { URIEncrypted } from '@encrypted-uri/core';
+
+//  generates encrypted:aes?iv=1234567812345678;<cypher>
+const encoded = URIEncrypted.encrypt({
+  algorithm: 'aes',
+  content: 'mensagem secreta',
+  key: 'secretkey',
+  params: {
+    iv: '1234567812345678'
+  }
+});
+
+//  check if it's and encrypted uri
+if (URIEncrypted.matcher(encoded)) {
+  //  decrypt
+  URIEncrypted.decrypt(encoded, 'secretkey');
+}
+
+//  generates encrypted:?1234567812345678;<cypher>
+URIEncrypted.encrypt({
+  content: 'mensagem secreta',
+  key: 'secretkey',
+  queryString: '1234567812345678'
+});
+
+//  generates encrypted:aes/cbc?1234567812345678;<cypher>
+URIEncrypted.encrypt({
+  algorithm: 'aes',
+  mode: 'cbc',
+  content: 'mensagem secreta',
+  key: 'secretkey',
+  queryString: '1234567812345678'
+});
+
+
+```
+
+## Example of practical application
  - [Private QRcode](https://antonioconselheiro.github.io/private-qrcode/#/home), allow you to create private qrcode using encrypted URI with AES algorithm fixed in it. It allow you to save your seeds, nsec and keys physically printed.
 
 ## Contribute
