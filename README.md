@@ -108,7 +108,7 @@ class CustomDecrypter extends URIEncryptedDecrypter {
   }
 
   decrypt(): string {
-    return algorithm.decrypt(this.decoded.cypher || '', this.key);
+    return algorithm.decrypt(this.decoded.cypher, this.key);
   }
 }
 
@@ -122,7 +122,7 @@ class CustomEncrypter extends URIEncryptedEncrypter {
   encrypt(): TEncryptedURI {
     return {
       algorithm: 'custom',
-      cypher: algorithm.encrypt(this.decoded.cypher || '', this.key)
+      cypher: algorithm.encrypt(this.decoded.cypher, this.key)
     };
   }
 }

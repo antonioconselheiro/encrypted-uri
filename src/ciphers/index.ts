@@ -1,4 +1,4 @@
-import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, URIEncryptedDecrypter, URIEncryptedEncrypter } from "@encrypted-uri/core";
+import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, URIEncrypted, URIEncryptedDecrypter, URIEncryptedEncrypter } from "@encrypted-uri/core";
 import { cbc, ecb, ctr, gcm, siv } from '@noble/ciphers/aes';
 
 const supportedAlgorithmAes = {
@@ -101,13 +101,13 @@ class URIEncryptedAESCBCEncrypter extends URIEncryptedEncrypter {
   }
 }
 
-export type TEncryptedURIAESCBCParams = TEncryptedURI & {
+type TEncryptedURIAESCBCParams = TEncryptedURI & {
   params: {
     iv: string
   }
 }
 
-export class URIEncryptedAESCBCDecrypter extends URIEncryptedDecrypter<TEncryptedURIAESCBCParams> {
+class URIEncryptedAESCBCDecrypter extends URIEncryptedDecrypter<TEncryptedURIAESCBCParams> {
   constructor(
     decoded: TEncryptedAESCBCParams,
     private key: string
@@ -127,47 +127,6 @@ export class URIEncryptedAESCBCDecrypter extends URIEncryptedDecrypter<TEncrypte
   }
 }
 
-class URIEncryptedChachaEncrypter implements URIEncryptedEncrypter {
-  constructor(
-    protected params: TEncryptedURIEncryptableDefaultParams & TEncryptedChachaParams
-  ) { }
-
-  encrypt(): TEncryptedURI {
-    return {
-      
-    };
-  }
-}
-
-class URIEncryptedChachaDecrypter extends URIEncryptedDecrypter {
-  constructor(
-    decoded: TEncryptedURI,
-    private key: string
-  ) {
-    super(decoded);
-  }
-
-  decrypt(): string {
-    const parser = new URIEncryptedParser(this.decoded);
-    const decoded = parser.decoded;
-
-    return '';
-  }
-}
-
-
-const supportedAlgorithm: {
-  [algorithm in TEncryptedURISupportedAlgorithm | string]: [
-    { new (...args: any[]): URIEncryptedEncrypter },
-    { new (...args: any[]): URIEncryptedDecrypter }
-  ]
-} = {
-  aes: [URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter],
-  salsa20: [URIEncryptedChachaEncrypter, URIEncryptedChachaDecrypter],
-  chacha: [URIEncryptedChachaEncrypter, URIEncryptedChachaDecrypter],
-  xsalsa20: [URIEncryptedChachaEncrypter, URIEncryptedChachaDecrypter],
-  xchacha: [URIEncryptedChachaEncrypter, URIEncryptedChachaDecrypter],
-  chacha8: [URIEncryptedChachaEncrypter, URIEncryptedChachaDecrypter],
-  chacha12: [URIEncryptedChachaEncrypter, URIEncryptedChachaDecrypter],
-  'xchacha20-poly1305': [URIEncryptedChachaEncrypter, URIEncryptedChachaDecrypter]
-}
+URIEncrypted.setAlgorithm('', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
+URIEncrypted.setAlgorithm('aes', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
+URIEncrypted.setAlgorithm('aes/cbc', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
