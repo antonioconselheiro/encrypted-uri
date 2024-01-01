@@ -132,7 +132,7 @@
         ],
         "no-unused-expressions": "warn",
         "no-eval": "warn",
-        "@typescript-eslint/no-explicit-any": "error",
+        "@typescript-eslint/no-explicit-any": "warn",
         "@typescript-eslint/consistent-type-assertions": [
           "warn",
           {

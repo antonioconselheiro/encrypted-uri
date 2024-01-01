@@ -263,17 +263,17 @@ export class URIEncryptedParser {
   }
 }
 
-export abstract class URIEncryptedEncrypter {
+export abstract class URIEncryptedEncrypter<T extends TEncryptedURIEncryptableDefaultParams = TEncryptedURIEncryptableDefaultParams> {
 
-  constructor(protected params: TEncryptedURIEncryptableDefaultParams) { }
+  constructor(protected params: T) { }
   
   abstract encrypt(): TEncryptedURI;
 }
 
-export abstract class URIEncryptedDecrypter {
+export abstract class URIEncryptedDecrypter<T extends TEncryptedURI = TEncryptedURI> {
 
   constructor(
-    protected decoded: TEncryptedURI
+    protected decoded: T
   ) { }
 
   abstract decrypt(): string;
@@ -328,7 +328,7 @@ export class URIEncrypted {
     algorithm: string,
     encrypter: { new (...args: any[]): URIEncryptedEncrypter },
     decrypter: { new (decoded: TEncryptedURI, ...args: any[]): URIEncryptedDecrypter }
-  ) {
+  ): void {
     this.supportedAlgorithm[algorithm] = [encrypter, decrypter];
   }
 
