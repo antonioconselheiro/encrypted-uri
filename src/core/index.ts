@@ -347,14 +347,15 @@ export class URIEncrypted {
   }
 }
 
-export function URIEncryptedAlgorithm(args: {
-  algorithm: string,
-  decrypter: typeof URIEncryptedDecrypter
-}) {
-  return function (
-    target: typeof URIEncryptedEncrypter,
-    key: string,
-    descriptor: PropertyDescriptor
-  ) {
-  };
-}
+//  TODO: decorator
+// export function URIEncryptedAlgorithm(args: {
+//   algorithm: string,
+//   decrypter: typeof URIEncryptedDecrypter
+// }) {
+//   return function (
+//     target: typeof URIEncryptedEncrypter,
+//     key: string,
+//     decryptor: PropertyDescriptor
+//   ) {
+//   };
+// }
