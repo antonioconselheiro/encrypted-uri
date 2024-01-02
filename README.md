@@ -62,10 +62,10 @@ Algorithm with no param:
 Basic use, how to decode and encrypt and how to decode and decrypt: 
 
 ```typescript
-import { URIEncrypted } from '@encrypted-uri/core';
+import { EncryptedURI } from '@encrypted-uri/core';
 
 //  generates encrypted:aes?iv=1234567812345678;<cypher>
-const encoded = URIEncrypted.encrypt({
+const encoded = EncryptedURI.encrypt({
   algorithm: 'aes',
   content: 'mensagem secreta',
   key: 'secretkey',
@@ -75,20 +75,20 @@ const encoded = URIEncrypted.encrypt({
 });
 
 //  check if it's and encrypted uri
-if (URIEncrypted.matcher(encoded)) {
+if (EncryptedURI.matcher(encoded)) {
   //  decrypt
-  URIEncrypted.decrypt(encoded, 'secretkey');
+  EncryptedURI.decrypt(encoded, 'secretkey');
 }
 
 //  generates encrypted:?1234567812345678;<cypher>
-URIEncrypted.encrypt({
+EncryptedURI.encrypt({
   content: 'mensagem secreta',
   key: 'secretkey',
   queryString: '1234567812345678'
 });
 
 //  generates encrypted:aes/cbc?1234567812345678;<cypher>
-URIEncrypted.encrypt({
+EncryptedURI.encrypt({
   algorithm: 'aes',
   mode: 'cbc',
   content: 'mensagem secreta',
@@ -101,7 +101,7 @@ Advanced use, how to add encrypters and decrypters:
 ```typescript
 import { algorithm } from 'algorithms';
 
-class CustomDecrypter extends URIEncryptedDecrypter {
+class CustomDecrypter extends EncryptedDecrypterURI {
 
   constructor(
     decoded: TEncryptedURI,
@@ -115,7 +115,7 @@ class CustomDecrypter extends URIEncryptedDecrypter {
   }
 }
 
-class CustomEncrypter extends URIEncryptedEncrypter {
+class CustomEncrypter extends EncryptedEncrypterURI {
   constructor(
     params: TEncryptedURIEncryptableDefaultParams
   ) {
@@ -130,13 +130,13 @@ class CustomEncrypter extends URIEncryptedEncrypter {
   }
 }
 
-URIEncrypted.setAlgorithm('custom', CustomEncrypter, CustomDecrypter);
+EncryptedURI.setAlgorithm('custom', CustomEncrypter, CustomDecrypter);
 ```
 
 As you can see in the library code, is not preserved the instance of the object that has a key associated with it in protected:
 
 ```typescript
-export class URIEncrypted {
+export class EncryptedURI {
 
   [...]
 
@@ -147,7 +147,7 @@ export class URIEncrypted {
 
   static decrypt(uri: string, key: string): string;
   static decrypt(uri: string, ...args: any[]): string {
-    const uriDecoded = new URIEncryptedParser(uri).decoded;
+    const uriDecoded = new EncryptedParserURI(uri).decoded;
     const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);
     return new decryptor(uriDecoded, ...args).decrypt();
   }
