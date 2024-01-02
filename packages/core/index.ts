@@ -264,14 +264,14 @@ export class URIEncryptedParser {
   }
 }
 
-export abstract class URIEncryptedEncrypter<T extends TEncryptedURIEncryptableDefaultParams = TEncryptedURIEncryptableDefaultParams> {
+export abstract class EncryptedURIEncrypter<T extends TEncryptedURIEncryptableDefaultParams = TEncryptedURIEncryptableDefaultParams> {
 
   constructor(protected params: T) { }
   
   abstract encrypt(): TEncryptedURI;
 }
 
-export abstract class URIEncryptedDecrypter<T extends TEncryptedURI = TEncryptedURI> {
+export abstract class EncryptedURIDecrypter<T extends TEncryptedURI = TEncryptedURI> {
 
   constructor(
     protected decoded: T
@@ -294,14 +294,14 @@ export type TEncryptedURIEncryptableDefaultParams = {
   key: string;
 } & TEncryptedURIDefaultParams;
 
-export class URIEncrypted {
+export class EncryptedURI {
 
   static readonly DEFAULT_ALGORITHM = 'aes';
 
   static readonly supportedAlgorithm: {
     [algorithm: string]: [
-      { new (...args: any[]): URIEncryptedEncrypter<any> },
-      { new (...args: any[]): URIEncryptedDecrypter<any> }
+      { new (...args: any[]): EncryptedURIEncrypter<any> },
+      { new (...args: any[]): EncryptedURIDecrypter<any> }
     ]
   } = { }
 
@@ -327,17 +327,17 @@ export class URIEncrypted {
 
   static setAlgorithm<T extends TEncryptedURI>(
     algorithm: string,
-    encrypter: { new (...args: any[]): URIEncryptedEncrypter },
-    decrypter: { new (decoded: T, ...args: any[]): URIEncryptedDecrypter<T> }
+    encrypter: { new (...args: any[]): EncryptedURIEncrypter },
+    decrypter: { new (decoded: T, ...args: any[]): EncryptedURIDecrypter<T> }
   ): void {
     this.supportedAlgorithm[algorithm] = [encrypter, decrypter];
   }
 
   private static getAlgorithm(algorithm?: string): [
-    { new (...args: any[]): URIEncryptedEncrypter },
-    { new (decoded: TEncryptedURI, ...args: any[]): URIEncryptedDecrypter }
+    { new (...args: any[]): EncryptedURIEncrypter },
+    { new (decoded: TEncryptedURI, ...args: any[]): EncryptedURIDecrypter }
   ] {
-    algorithm = algorithm || URIEncrypted.DEFAULT_ALGORITHM;
+    algorithm = algorithm || EncryptedURI.DEFAULT_ALGORITHM;
     const [ encryptor, decryptor ] = this.supportedAlgorithm[algorithm] || [ null, null];
     if (!encryptor && !decryptor) {
       throw new Error(`Algorithm '${algorithm}' not supported`);

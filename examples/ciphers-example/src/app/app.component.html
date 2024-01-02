@@ -1,10 +1,12 @@
-<form [formGroup]="encryptForm">
+<h1>Working Example</h1>
+
+<form (submit)="onEncryptSubmit()" [formGroup]="encryptForm">
   <fieldset>
-    <legend>Working Example</legend>
+    <legend>Encrypt</legend>
 
     <div>
       <label for="algorithm">Select an algorithm</label>
-      <select id="algorithm" formControlName="algorithm">
+      <select id="algorithm" formControlName="algorithm" name="algorithm">
         <option value="aes/cbc">aes/cbc</option>
         <option value="aes/ecb">aes/ecb</option>
         <option value="aes/ctr">aes/ctr</option>
@@ -15,14 +17,32 @@
 
     <div>
       <label for="content">Content to encrypt:</label>
-      <textarea formControlName="content" id="content"></textarea>
+      <textarea name="content" formControlName="content" id="content"></textarea>
     </div>
 
     <div>
       <label for="key">Encryptation key:</label>
-      <input formControlName="key" id="key" type="password" />
+      <input formControlName="key" id="key" type="password" name="key" />
     </div>
   </fieldset>
 
-  <input type="submit" />
+  <button type="submit">encrypt</button>
+</form>
+
+<form (submit)="onDecryptSubmit()" [formGroup]="decryptForm">
+  <fieldset>
+    <legend>Decrypt</legend>
+
+    <div>
+      <label for="content">Content to encrypt:</label>
+      <input type="text" formControlName="content" id="content" name="content" />
+    </div>
+
+    <div>
+      <label for="key">Encryptation key:</label>
+      <input formControlName="key" id="key" type="password" name="key" />
+    </div>
+  </fieldset>
+
+  <button type="submit">decrypt</button>
 </form>
