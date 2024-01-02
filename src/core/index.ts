@@ -1,14 +1,16 @@
+export type TEncryptedURIParams = {
+  [attr: string]: string;
+}
+
 /**
  * When the uri is still being interpreted
  * and has not yet gone through validation
  */
-export type TEncryptedURI = {
+export type TEncryptedURI<T extends TEncryptedURIParams = TEncryptedURIParams> = {
   algorithm?: string;
   queryString?: string;
   cypher: string;
-  params?: {
-    [attr: string]: string;
-  }
+  params?: T;
 }
 
 export class IterableString {
