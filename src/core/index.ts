@@ -20,8 +20,7 @@ export class IterableString {
 
   constructor(
     private str: string
-  ) {
-  }
+  ) { }
 
   get debugInfo(): string {
     return String(this).substring(0, this.DEBUG_CHARS_PREVIEW);
@@ -347,3 +346,16 @@ export class URIEncrypted {
     return [ encryptor, decryptor ];
   }
 }
+
+//  TODO: decorator
+// export function URIEncryptedAlgorithm(args: {
+//   algorithm: string,
+//   decrypter: typeof URIEncryptedDecrypter
+// }) {
+//   return function (
+//     target: typeof URIEncryptedEncrypter,
+//     key: string,
+//     decryptor: PropertyDescriptor
+//   ) {
+//   };
+// }
