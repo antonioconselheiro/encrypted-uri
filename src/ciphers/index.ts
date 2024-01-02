@@ -51,7 +51,6 @@ function toUint8Array(content: string): Uint8Array {
 }
 
 type TEncryptedURIAESCBCParams = TEncryptedURI<{ iv: string }>;
-
 class URIEncryptedAESCBCEncrypter extends URIEncryptedEncrypter {
 
   constructor(
@@ -100,6 +99,56 @@ class URIEncryptedAESCBCDecrypter extends URIEncryptedDecrypter<TEncryptedURIAES
   }
 }
 
+type TEncryptedURIAESEBCParams = TEncryptedURI<{ iv: string }>;
+class URIEncryptedAESEBCEncrypter extends URIEncryptedEncrypter {
+
+  constructor(
+    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESEBCParams
+  ) {
+    super(params);
+  }
+
+  encrypt(): TEncryptedURI {
+    const ivString = this.params?.params?.iv || this.params.queryString || '';
+    const key = toUint8Array(this.params.key);
+    const iv = toUint8Array(ivString);
+    const content = toUint8Array(this.params.content);
+
+    return {
+      algorithm: 'aes/cbc',
+      cypher: AESOperationMode
+        .ebc(key, iv)
+        .encrypt(content)
+        .toString(),
+      params: {
+        iv: ivString
+      }
+    };
+  }
+}
+
+class URIEncryptedAESEBCDecrypter extends URIEncryptedDecrypter<TEncryptedURIAESEBCParams> {
+  constructor(
+    decoded: TEncryptedURIAESEBCParams,
+    private key: string
+  ) {
+    super(decoded);
+  }
+
+  decrypt(): string {
+    const ivString = this.decoded?.params?.iv || this.decoded.queryString || '';
+    const key = toUint8Array(this.key);
+    const iv = toUint8Array(ivString);
+    const cypher = toUint8Array(this.decoded.cypher || '');
+
+    return AESOperationMode
+      .ebc(key, iv)
+      .decrypt(cypher)
+      .toString();
+  }
+}
+
 URIEncrypted.setAlgorithm('', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
 URIEncrypted.setAlgorithm('aes', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
 URIEncrypted.setAlgorithm('aes/cbc', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
+URIEncrypted.setAlgorithm('aes/ebc', URIEncryptedAESEBCEncrypter, URIEncryptedAESEBCDecrypter);
