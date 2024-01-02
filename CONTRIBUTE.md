@@ -42,8 +42,7 @@ Follow the steps:
 
 # Tools
 ## Devcontainer
-I do know if this work on Windows or Mac, but surely run on linux.
-If you _suffer of_ Windows or Mac and want to contribute to the functioning of the devcontainer for these platforms, feel free to open an issue and start the task.
+Run the `.devcontainer/setup.sh` to configure .devcontainer volumes and credentials. Open devcontainer with: `devcontainer open .`
 
 ### Para os brasileiros (pt-BR)
 Veja como o instalar docker, docker-compose e devcontainer em [meu vídeo em português](https://odysee.com/@anarcanudos:5/instalacao-do-docker-docker-compose-e-devcontainer:9)
@@ -63,15 +62,6 @@ The files for this environment are in the `.devcontainer` folder, where you can 
 
 ### Devcontainer VSCode Extensions
 If you contribute code you can suggest including extensions to the development environment vscode and request changes in linter rules.
-
-### Volumes
-To start the Docker development environment, ensure that all dependent volumes have been created by running `.devcontainer/setup.sh`. You can verify if the volumes have been mounted successfully by executing the following commands:
-
-Build the Docker containers with no caching:
-`docker-compose -f .devcontainer/docker-compose.yml build --no-cache`
-
-Start the Docker containers:
-`docker-compose -f .devcontainer/docker-compose.yml up`
 
 ## Important Docs
 and interesting technologies to master to enhance your ability to contribute:

@@ -1,6 +1,6 @@
 FROM node:20
 
-RUN npm install typescript eslint jest -g
+RUN npm install typescript eslint jest @angular/cli -g
 
 WORKDIR /encrypted-uri
 
