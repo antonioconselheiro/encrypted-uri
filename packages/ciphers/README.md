@@ -16,7 +16,17 @@ import { loadAES } from '@encrypted-uri/ciphers';
 
 EncryptedURI.encrypt({
    algorithm: 'aes/cbc',
-   params: { iv: '12345678' },
+   params: { iv: 'a24567b823f5c7918736194ab5c2e83d' },
    content: 'secret message'
 }, 'secret key');
+
+// encrypted:aes/cbc?iv=a24567b823f5c7918736194ab5c2e83d;rtyu...<cypher>
+
+EncryptedURI.encrypt({
+   algorithm: 'aes/cbc',
+   queryString: 'a24567b823f5c7918736194ab5c2e83d',
+   content: 'secret message'
+}, 'secret key');
+
+// encrypted:aes/cbc?a24567b823f5c7918736194ab5c2e83d;rtyu...<cypher>
 ```

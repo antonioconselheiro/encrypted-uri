@@ -1,0 +1,28 @@
+<form [formGroup]="encryptForm">
+  <fieldset>
+    <legend>Working Example</legend>
+
+    <div>
+      <label for="algorithm">Select an algorithm</label>
+      <select id="algorithm" formControlName="algorithm">
+        <option value="aes/cbc">aes/cbc</option>
+        <option value="aes/ecb">aes/ecb</option>
+        <option value="aes/ctr">aes/ctr</option>
+        <option value="aes/gcm">aes/gcm</option>
+        <option value="aes/siv">aes/siv</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="content">Content to encrypt:</label>
+      <textarea formControlName="content" id="content"></textarea>
+    </div>
+
+    <div>
+      <label for="key">Encryptation key:</label>
+      <input formControlName="key" id="key" type="password" />
+    </div>
+  </fieldset>
+
+  <input type="submit" />
+</form>
