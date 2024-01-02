@@ -8,7 +8,7 @@ Include AES algorithms from @noble/ciphers into Encrypted URI (@encrypted-uri/co
 
 ## Installation
 
-```npm install @encrypted-uri/ciphers --save```
+```npm install @encrypted-uri/core @encrypted-uri/ciphers --save```
 
 ```typescript
 import { EncryptedURI } from '@encrypted-uri/core';

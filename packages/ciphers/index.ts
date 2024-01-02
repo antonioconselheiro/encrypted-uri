@@ -1,4 +1,4 @@
-import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, URIEncrypted, URIEncryptedDecrypter, URIEncryptedEncrypter } from "@encrypted-uri/core";
+import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter } from "@encrypted-uri/core";
 import { cbc, ecb, ctr, gcm, siv } from '@noble/ciphers/aes';
 import { utf8ToBytes } from "@noble/ciphers/utils";
 
@@ -14,7 +14,7 @@ function getNumberOnce(encryptedUriDecoded: TEncryptedURIAESWithNumberOnceParams
   return encryptedUriDecoded?.params?.no || encryptedUriDecoded?.queryString || '';
 }
 
-class URIEncryptedAESCBCEncrypter extends URIEncryptedEncrypter {
+class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter {
 
   constructor(
     protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithInitializationVectorParams
@@ -37,7 +37,7 @@ class URIEncryptedAESCBCEncrypter extends URIEncryptedEncrypter {
   }
 }
 
-class URIEncryptedAESCBCDecrypter extends URIEncryptedDecrypter<TEncryptedURIAESWithInitializationVectorParams> {
+class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithInitializationVectorParams> {
   constructor(
     decoded: TEncryptedURIAESWithInitializationVectorParams,
     private key: string
@@ -56,7 +56,7 @@ class URIEncryptedAESCBCDecrypter extends URIEncryptedDecrypter<TEncryptedURIAES
   }
 }
 
-class URIEncryptedAESCTREncrypter extends URIEncryptedEncrypter {
+class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter {
 
   constructor(
     protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithInitializationVectorParams
@@ -79,7 +79,7 @@ class URIEncryptedAESCTREncrypter extends URIEncryptedEncrypter {
   }
 }
 
-class URIEncryptedAESCTRDecrypter extends URIEncryptedDecrypter<TEncryptedURIAESWithInitializationVectorParams> {
+class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithInitializationVectorParams> {
   constructor(
     decoded: TEncryptedURIAESWithInitializationVectorParams,
     private key: string
@@ -98,7 +98,7 @@ class URIEncryptedAESCTRDecrypter extends URIEncryptedDecrypter<TEncryptedURIAES
   }
 }
 
-class URIEncryptedAESECBEncrypter extends URIEncryptedEncrypter {
+class EncryptedURIAESECBEncrypter extends EncryptedURIEncrypter {
 
   constructor(
     protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURI
@@ -119,7 +119,7 @@ class URIEncryptedAESECBEncrypter extends URIEncryptedEncrypter {
   }
 }
 
-class URIEncryptedAESECBDecrypter extends URIEncryptedDecrypter<TEncryptedURI> {
+class EncryptedURIAESECBDecrypter extends EncryptedURIDecrypter<TEncryptedURI> {
   constructor(
     decoded: TEncryptedURI,
     private key: string
@@ -137,7 +137,7 @@ class URIEncryptedAESECBDecrypter extends URIEncryptedDecrypter<TEncryptedURI> {
   }
 }
 
-class URIEncryptedAESGCMEncrypter extends URIEncryptedEncrypter {
+class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter {
 
   constructor(
     protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithNumberOnceParams
@@ -160,7 +160,7 @@ class URIEncryptedAESGCMEncrypter extends URIEncryptedEncrypter {
   }
 }
 
-class URIEncryptedAESSIVDecrypter extends URIEncryptedDecrypter<TEncryptedURIAESWithNumberOnceParams> {
+class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithNumberOnceParams> {
   constructor(
     decoded: TEncryptedURIAESWithNumberOnceParams,
     private key: string
@@ -179,7 +179,7 @@ class URIEncryptedAESSIVDecrypter extends URIEncryptedDecrypter<TEncryptedURIAES
   }
 }
 
-class URIEncryptedAESSIVEncrypter extends URIEncryptedEncrypter {
+class EncryptedURIAESSIVEncrypter extends EncryptedURIEncrypter {
 
   constructor(
     protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithNumberOnceParams
@@ -202,7 +202,7 @@ class URIEncryptedAESSIVEncrypter extends URIEncryptedEncrypter {
   }
 }
 
-class URIEncryptedAESGCMDecrypter extends URIEncryptedDecrypter<TEncryptedURIAESWithNumberOnceParams> {
+class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithNumberOnceParams> {
   constructor(
     decoded: TEncryptedURIAESWithNumberOnceParams,
     private key: string
@@ -222,11 +222,11 @@ class URIEncryptedAESGCMDecrypter extends URIEncryptedDecrypter<TEncryptedURIAES
 }
 
 export function supportAES(): void {
-  URIEncrypted.setAlgorithm('', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
-  URIEncrypted.setAlgorithm('aes', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
-  URIEncrypted.setAlgorithm('aes/cbc', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
-  URIEncrypted.setAlgorithm('aes/ebc', URIEncryptedAESECBEncrypter, URIEncryptedAESECBDecrypter);
-  URIEncrypted.setAlgorithm('aes/ctr', URIEncryptedAESCTREncrypter, URIEncryptedAESCTRDecrypter);
-  URIEncrypted.setAlgorithm('aes/gcm', URIEncryptedAESGCMEncrypter, URIEncryptedAESGCMDecrypter);
-  URIEncrypted.setAlgorithm('aes/siv', URIEncryptedAESSIVEncrypter, URIEncryptedAESSIVDecrypter);
+  EncryptedURI.setAlgorithm('', EncryptedURIAESCBCEncrypter, EncryptedURIAESCBCDecrypter);
+  EncryptedURI.setAlgorithm('aes', EncryptedURIAESCBCEncrypter, EncryptedURIAESCBCDecrypter);
+  EncryptedURI.setAlgorithm('aes/cbc', EncryptedURIAESCBCEncrypter, EncryptedURIAESCBCDecrypter);
+  EncryptedURI.setAlgorithm('aes/ebc', EncryptedURIAESECBEncrypter, EncryptedURIAESECBDecrypter);
+  EncryptedURI.setAlgorithm('aes/ctr', EncryptedURIAESCTREncrypter, EncryptedURIAESCTRDecrypter);
+  EncryptedURI.setAlgorithm('aes/gcm', EncryptedURIAESGCMEncrypter, EncryptedURIAESGCMDecrypter);
+  EncryptedURI.setAlgorithm('aes/siv', EncryptedURIAESSIVEncrypter, EncryptedURIAESSIVDecrypter);
 }
