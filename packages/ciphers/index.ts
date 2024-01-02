@@ -221,7 +221,7 @@ class URIEncryptedAESGCMDecrypter extends URIEncryptedDecrypter<TEncryptedURIAES
   }
 }
 
-export function loadAES(): void {
+export function supportAES(): void {
   URIEncrypted.setAlgorithm('', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
   URIEncrypted.setAlgorithm('aes', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
   URIEncrypted.setAlgorithm('aes/cbc', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
