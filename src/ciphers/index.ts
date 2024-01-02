@@ -50,42 +50,20 @@ function toUint8Array(content: string): Uint8Array {
   );
 }
 
-type TEncryptedAESCBCParams = {
-  /**
-   * @default aes
-   */
-  algorithm?: 'aes' | 'aes/cbc';
-
-  params: {
-    /**
-     * Initialization Vector
-     */
-    iv: string;
-
-    /**
-     * padding system
-     * @default pkcs#7
-     */
-    pad?: keyof typeof AESPadding;
-  }
-}
-
-type TEncryptedChachaParams = {
-  algorithm?: TEncryptedURISupportedChachaAlgorithm;
-  numberOnce: string;
-};
+type TEncryptedURIAESCBCParams = TEncryptedURI<{ iv: string }>;
 
 class URIEncryptedAESCBCEncrypter extends URIEncryptedEncrypter {
 
   constructor(
-    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedAESCBCParams
+    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESCBCParams
   ) {
     super(params);
   }
 
   encrypt(): TEncryptedURI {
+    const ivString = this.params?.params?.iv || this.params.queryString || '';
     const key = toUint8Array(this.params.key);
-    const iv = toUint8Array(this.params.params.iv);
+    const iv = toUint8Array(ivString);
     const content = toUint8Array(this.params.content);
 
     return {
@@ -95,29 +73,24 @@ class URIEncryptedAESCBCEncrypter extends URIEncryptedEncrypter {
         .encrypt(content)
         .toString(),
       params: {
-        iv: this.params.params.iv
+        iv: ivString
       }
     };
   }
 }
 
-type TEncryptedURIAESCBCParams = TEncryptedURI & {
-  params: {
-    iv: string
-  }
-}
-
 class URIEncryptedAESCBCDecrypter extends URIEncryptedDecrypter<TEncryptedURIAESCBCParams> {
   constructor(
-    decoded: TEncryptedAESCBCParams,
+    decoded: TEncryptedURIAESCBCParams,
     private key: string
   ) {
     super(decoded);
   }
 
   decrypt(): string {
+    const ivString = this.decoded?.params?.iv || this.decoded.queryString || '';
     const key = toUint8Array(this.key);
-    const iv = toUint8Array(this.decoded.params.iv);
+    const iv = toUint8Array(ivString);
     const cypher = toUint8Array(this.decoded.cypher || '');
 
     return AESOperationMode

@@ -301,8 +301,8 @@ export class URIEncrypted {
 
   static readonly supportedAlgorithm: {
     [algorithm: string]: [
-      { new (...args: any[]): URIEncryptedEncrypter },
-      { new (decoded: TEncryptedURI, ...args: any[]): URIEncryptedDecrypter }
+      { new (...args: any[]): URIEncryptedEncrypter<any> },
+      { new (decoded: TEncryptedURI<any>, ...args: any[]): URIEncryptedDecrypter<any> }
     ]
   } = { }
 
@@ -326,10 +326,10 @@ export class URIEncrypted {
     return new decryptor(uriDecoded, ...args).decrypt();
   }
 
-  static setAlgorithm(
+  static setAlgorithm<T extends TEncryptedURI>(
     algorithm: string,
     encrypter: { new (...args: any[]): URIEncryptedEncrypter },
-    decrypter: { new (decoded: TEncryptedURI, ...args: any[]): URIEncryptedDecrypter }
+    decrypter: { new (decoded: TEncryptedURI, ...args: any[]): URIEncryptedDecrypter<T> }
   ): void {
     this.supportedAlgorithm[algorithm] = [encrypter, decrypter];
   }
