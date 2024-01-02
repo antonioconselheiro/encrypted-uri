@@ -18,7 +18,7 @@ jobs:
         node-version: 20.10.0
 
     - name: Install dependencies
-      run: npm ci
+      run: npm -C src/core ci
 
     - name: Lint
       run: npm -C src/core run lint
