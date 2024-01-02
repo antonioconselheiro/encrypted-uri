@@ -2,47 +2,6 @@ import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, URIEncrypted, URI
 import { cbc, ecb, ctr, gcm, siv } from '@noble/ciphers/aes';
 import { utf8ToBytes } from "@noble/ciphers/utils";
 
-const supportedAlgorithmAes = {
-  aes: 'aes'
-};
-
-const supportedAlgorithmChacha = {
-  salsa20: 'salsa20',
-  chacha: 'chacha',
-  xsalsa20: 'xsalsa20',
-  xchacha: 'xchacha',
-  chacha8: 'chacha8',
-  chacha12: 'chacha12',
-  'xchacha20/poly1305': 'xchacha20/poly1305'
-};
-
-const supportedAlgorithm = {
-  ...supportedAlgorithmAes,
-  ...supportedAlgorithmChacha
-};
-
-const AESOperationMode = {
-  cbc,
-  ecb,
-  ctr,
-  gcm,
-  siv
-};
-
-const AESPadding = {
-  'pkcs#7': 'pkcs#7',
-  'ansix.923': 'ansix.923',
-  iso10126: 'iso10126',
-  iso97971: 'iso97971',
-  zeropadding: 'zeropadding',
-  nopadding: 'nopadding'
-};
-
-const supportedAlgorithmList = Object.keys(supportedAlgorithm);
-const AESOperationModeList = Object.keys(AESOperationMode);
-
-type TEncryptedURISupportedChachaAlgorithm = keyof typeof supportedAlgorithmChacha;
-type TEncryptedURISupportedAlgorithm = keyof typeof supportedAlgorithm;
 
 type TEncryptedURIAESWithInitializationVectorParams = TEncryptedURI<{ iv: string }>;
 type TEncryptedURIAESWithNumberOnceParams = TEncryptedURI<{ no: string }>;
@@ -54,7 +13,6 @@ function getInitializationVector(encryptedUriDecoded: TEncryptedURIAESWithInitia
 function getNumberOnce(encryptedUriDecoded: TEncryptedURIAESWithNumberOnceParams | undefined): string {
   return encryptedUriDecoded?.params?.no || encryptedUriDecoded?.queryString || '';
 }
-
 
 class URIEncryptedAESCBCEncrypter extends URIEncryptedEncrypter {
 
@@ -71,8 +29,7 @@ class URIEncryptedAESCBCEncrypter extends URIEncryptedEncrypter {
 
     return {
       algorithm: 'aes/cbc',
-      cypher: AESOperationMode
-        .cbc(key, utf8ToBytes(iv))
+      cypher: cbc(key, utf8ToBytes(iv))
         .encrypt(content)
         .toString(),
       params: { iv }
@@ -93,8 +50,7 @@ class URIEncryptedAESCBCDecrypter extends URIEncryptedDecrypter<TEncryptedURIAES
     const iv = utf8ToBytes(getInitializationVector(this.decoded));
     const cypher = utf8ToBytes(this.decoded.cypher);
 
-    return AESOperationMode
-      .cbc(key, iv)
+    return cbc(key, iv)
       .decrypt(cypher)
       .toString();
   }
@@ -115,8 +71,7 @@ class URIEncryptedAESCTREncrypter extends URIEncryptedEncrypter {
 
     return {
       algorithm: 'aes/ctr',
-      cypher: AESOperationMode
-        .ctr(key, utf8ToBytes(iv))
+      cypher: ctr(key, utf8ToBytes(iv))
         .encrypt(content)
         .toString(),
       params: { iv }
@@ -137,8 +92,7 @@ class URIEncryptedAESCTRDecrypter extends URIEncryptedDecrypter<TEncryptedURIAES
     const iv = utf8ToBytes(getInitializationVector(this.decoded));
     const cypher = utf8ToBytes(this.decoded.cypher || '');
 
-    return AESOperationMode
-      .ctr(key, iv)
+    return ctr(key, iv)
       .decrypt(cypher)
       .toString();
   }
@@ -158,8 +112,7 @@ class URIEncryptedAESECBEncrypter extends URIEncryptedEncrypter {
 
     return {
       algorithm: 'aes/ecb',
-      cypher: AESOperationMode
-        .ecb(key)
+      cypher: ecb(key)
         .encrypt(content)
         .toString()
     };
@@ -178,8 +131,7 @@ class URIEncryptedAESECBDecrypter extends URIEncryptedDecrypter<TEncryptedURI> {
     const key = utf8ToBytes(this.key);
     const cypher = utf8ToBytes(this.decoded.cypher || '');
 
-    return AESOperationMode
-      .ecb(key)
+    return ecb(key)
       .decrypt(cypher)
       .toString();
   }
@@ -200,8 +152,7 @@ class URIEncryptedAESGCMEncrypter extends URIEncryptedEncrypter {
 
     return {
       algorithm: 'aes/gcm',
-      cypher: AESOperationMode
-        .cbc(key, utf8ToBytes(nonce))
+      cypher: gcm(key, utf8ToBytes(nonce))
         .encrypt(content)
         .toString(),
       params: { no: nonce }
@@ -222,8 +173,7 @@ class URIEncryptedAESSIVDecrypter extends URIEncryptedDecrypter<TEncryptedURIAES
     const nonce = utf8ToBytes(getNumberOnce(this.decoded));
     const cypher = utf8ToBytes(this.decoded.cypher);
 
-    return AESOperationMode
-      .siv(key, nonce)
+    return siv(key, nonce)
       .decrypt(cypher)
       .toString();
   }
@@ -244,8 +194,7 @@ class URIEncryptedAESSIVEncrypter extends URIEncryptedEncrypter {
 
     return {
       algorithm: 'aes/gcm',
-      cypher: AESOperationMode
-        .siv(key, utf8ToBytes(nonce))
+      cypher: siv(key, utf8ToBytes(nonce))
         .encrypt(content)
         .toString(),
       params: { no: nonce }
@@ -266,17 +215,18 @@ class URIEncryptedAESGCMDecrypter extends URIEncryptedDecrypter<TEncryptedURIAES
     const nonce = utf8ToBytes(getNumberOnce(this.decoded));
     const cypher = utf8ToBytes(this.decoded.cypher);
 
-    return AESOperationMode
-      .cbc(key, nonce)
+    return gcm(key, nonce)
       .decrypt(cypher)
       .toString();
   }
 }
 
-URIEncrypted.setAlgorithm('', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
-URIEncrypted.setAlgorithm('aes', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
-URIEncrypted.setAlgorithm('aes/cbc', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
-URIEncrypted.setAlgorithm('aes/ebc', URIEncryptedAESECBEncrypter, URIEncryptedAESECBDecrypter);
-URIEncrypted.setAlgorithm('aes/ctr', URIEncryptedAESCTREncrypter, URIEncryptedAESCTRDecrypter);
-URIEncrypted.setAlgorithm('aes/gcm', URIEncryptedAESGCMEncrypter, URIEncryptedAESGCMDecrypter);
-URIEncrypted.setAlgorithm('aes/siv', URIEncryptedAESSIVEncrypter, URIEncryptedAESSIVDecrypter);
+export function loadAES(): void {
+  URIEncrypted.setAlgorithm('', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
+  URIEncrypted.setAlgorithm('aes', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
+  URIEncrypted.setAlgorithm('aes/cbc', URIEncryptedAESCBCEncrypter, URIEncryptedAESCBCDecrypter);
+  URIEncrypted.setAlgorithm('aes/ebc', URIEncryptedAESECBEncrypter, URIEncryptedAESECBDecrypter);
+  URIEncrypted.setAlgorithm('aes/ctr', URIEncryptedAESCTREncrypter, URIEncryptedAESCTRDecrypter);
+  URIEncrypted.setAlgorithm('aes/gcm', URIEncryptedAESGCMEncrypter, URIEncryptedAESGCMDecrypter);
+  URIEncrypted.setAlgorithm('aes/siv', URIEncryptedAESSIVEncrypter, URIEncryptedAESSIVDecrypter);
+}

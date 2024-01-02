@@ -55,6 +55,9 @@ With all parameters include:
 Customized:
 ```encrypted:aes?iv=249c3d09119;U2FsdGVkX1mxOv5WpmRGHXZouip```
 
+Algorithm with no param:
+```encrypted:aes/ecb;U2FsdGVkX1mxOv5WpmRGHXZouip```
+
 ## How to use
 Basic use, how to decode and encrypt and how to decode and decrypt: 
 
