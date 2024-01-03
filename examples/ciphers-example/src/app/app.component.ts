@@ -18,6 +18,10 @@ import { EncryptedURI } from '@encrypted-uri/core';
 export class AppComponent {
 
   generatedEncryptedURI?: string;
+  decryptedContent?: string;
+
+  submittedEncrypt = false;
+  submittedDecrypt = false;
 
   encryptForm = this.formBuilder.group({
     algorithm: ['aes/cbc', [
@@ -32,7 +36,7 @@ export class AppComponent {
   });
 
   decryptForm = this.formBuilder.group({
-    encoded: ['', [
+    uri: ['', [
       Validators.required.bind(this)
     ]],
     key: ['', [
@@ -44,20 +48,35 @@ export class AppComponent {
     private formBuilder: FormBuilder
   ) { }
 
+  getEncryptErrors(property: string, errorName: string): boolean {
+    const controls: any = this.encryptForm.controls;
+    return this.submittedEncrypt && controls[property].errors[errorName] || false;
+  }
+
+  getDecryptErrors(property: string, errorName: string): boolean {
+    const controls: any = this.decryptForm.controls;
+    return this.submittedDecrypt && controls[property].errors[errorName] || false;
+  }
+
   onEncryptSubmit(): void {
     if (this.encryptForm.valid) {
       const raw = this.encryptForm.getRawValue();
-      this.generatedEncryptedURI = EncryptedURI.encrypt({
-        algorithm: raw.algorithm,
-        content: raw.content
-     }, raw.key);
+      if (raw.algorithm && raw.content && raw.key) {
+        this.generatedEncryptedURI = EncryptedURI.encrypt({
+          algorithm: raw.algorithm,
+          content: raw.content,
+          key: raw.key
+       });
+      }
     }
   }
 
   onDecryptSubmit(): void {
     if (this.decryptForm.valid) {
       const raw = this.decryptForm.getRawValue();
-      console.info(EncryptedURI.decrypt(raw.encoded, raw.key));
+      if (raw.uri && raw.key) {
+        this.decryptedContent = EncryptedURI.decrypt(raw.uri, raw.key);
+      }
     }
   }
 }
