@@ -1,17 +1,18 @@
 import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter } from "@encrypted-uri/core";
-import { cbc, ecb, ctr, gcm, siv } from '@noble/ciphers/aes';
-import { utf8ToBytes } from "@noble/ciphers/utils";
-
+import { gcm, ctr, cbc } from '@noble/ciphers/webcrypto/aes';
+import { ecb, siv } from '@noble/ciphers/aes';
+import { bytesToUtf8, utf8ToBytes } from "@noble/ciphers/utils";
+import { randomBytes } from '@noble/ciphers/webcrypto/utils';
 
 type TEncryptedURIAESWithInitializationVectorParams = TEncryptedURI<{ iv: string }>;
 type TEncryptedURIAESWithNumberOnceParams = TEncryptedURI<{ no: string }>;
 
-function getInitializationVector(encryptedUriDecoded: TEncryptedURIAESWithInitializationVectorParams | undefined): string {
-  return encryptedUriDecoded?.params?.iv || encryptedUriDecoded?.queryString || '';
+function getInitializationVector(args: TEncryptedURIAESWithInitializationVectorParams | undefined): string {
+  return args?.params?.iv || args?.queryString || bytesToUtf8(randomBytes(12));
 }
 
-function getNumberOnce(encryptedUriDecoded: TEncryptedURIAESWithNumberOnceParams | undefined): string {
-  return encryptedUriDecoded?.params?.no || encryptedUriDecoded?.queryString || '';
+function getNumberOnce(args: TEncryptedURIAESWithNumberOnceParams | undefined): string {
+  return args?.params?.no || args?.queryString || bytesToUtf8(randomBytes(16));
 }
 
 class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter {

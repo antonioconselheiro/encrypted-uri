@@ -12,21 +12,32 @@ Include AES algorithms from @noble/ciphers into Encrypted URI (@encrypted-uri/co
 
 ```typescript
 import { EncryptedURI } from '@encrypted-uri/core';
-import { loadAES } from '@encrypted-uri/ciphers';
+import { supportAES } from '@encrypted-uri/ciphers';
+
+supportAES();
 
 EncryptedURI.encrypt({
    algorithm: 'aes/cbc',
    params: { iv: 'a24567b823f5c7918736194ab5c2e83d' },
-   content: 'secret message'
-}, 'secret key');
-
+   content: 'secret message',
+   key: 'secret key'
+});
 // encrypted:aes/cbc?iv=a24567b823f5c7918736194ab5c2e83d;rtyu...<cypher>
 
 EncryptedURI.encrypt({
    algorithm: 'aes/cbc',
    queryString: 'a24567b823f5c7918736194ab5c2e83d',
-   content: 'secret message'
-}, 'secret key');
-
+   content: 'secret message',
+   key: 'secret key'
+});
 // encrypted:aes/cbc?a24567b823f5c7918736194ab5c2e83d;rtyu...<cypher>
+
+
+EncryptedURI.encrypt({
+   content: 'secret message',
+   key: 'secret key'
+});
+// default algorithm is aes/cbc from webcrypto
+// encrypted:?a24567b823f5c7918736194ab5c2e83d;rtyu...<cypher>
+
 ```
