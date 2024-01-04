@@ -1,6 +1,6 @@
 <h1>Working Example</h1>
 
-<div>
+<section>
   <form (submit)="onEncryptSubmit()" [formGroup]="encryptForm" novalidate autocomplete="off">
     <fieldset>
       <legend>Encrypt</legend>
@@ -27,15 +27,18 @@
         <input formControlName="key" id="key" type="password" name="key" />
         <span *ngIf="getEncryptErrors('key', 'required')" class="error">* required</span>
       </div>
-    </fieldset>
-  
-    <button type="submit">encrypt</button>
+
+      <button type="submit">encrypt</button>
+    </fieldset>  
   </form>
 
-  <div *ngIf="generatedEncryptedURI">Generated URI: {{generatedEncryptedURI}}</div>
-</div>
+  <div class="show-result" *ngIf="generatedEncryptedURI">
+    <strong>Generated URI:</strong>
+    {{generatedEncryptedURI}}
+  </div>
+</section>
 
-<div>
+<section>
   <form (submit)="onDecryptSubmit()" [formGroup]="decryptForm" novalidate autocomplete="off">
     <fieldset>
       <legend>Decrypt</legend>
@@ -51,10 +54,13 @@
         <input formControlName="key" id="key" type="password" name="key" />
         <span *ngIf="getEncryptErrors('key', 'required')" class="error">* required</span>
       </div>
-    </fieldset>
-  
-    <button type="submit">decrypt</button>
+
+      <button type="submit">decrypt</button>
+    </fieldset>  
   </form>
 
-  <div *ngIf="decryptedContent">Content: {{decryptedContent}}</div>
-</div>
+  <div class="show-result" *ngIf="decryptedContent">
+    <strong>Content:</strong>
+    {{decryptedContent}}
+  </div>
+</section>
