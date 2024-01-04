@@ -12,6 +12,9 @@
 
 Encode to standardize different types of encrypted content into a URI that allows the user to customize his cyphers with his preferred encryption algorithm.
 
+## Run example
+[Open example app](https://antonioconselheiro.github.io/encrypted-uri/ciphers-example/browser/)
+
 ## Installation
 
 ```npm install @encrypted-uri/core --save```
