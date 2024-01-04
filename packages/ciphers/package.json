@@ -1,6 +1,6 @@
 {
   "name": "@encrypted-uri/ciphers",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "encrypt and decrypt from encrypted uri",
   "main": "index.js",
   "repository": {

@@ -1,6 +1,6 @@
 import { EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIEncryptableDefaultParams } from "@encrypted-uri/core";
 import { ecb, siv } from '@noble/ciphers/aes';
-import { bytesToUtf8, utf8ToBytes } from "@noble/ciphers/utils";
+import { bytesToHex, bytesToUtf8, hexToBytes, utf8ToBytes } from "@noble/ciphers/utils";
 import { cbc, ctr, gcm } from '@noble/ciphers/webcrypto/aes';
 import { randomBytes } from '@noble/ciphers/webcrypto/utils';
 import { base64 } from "@scure/base";
@@ -9,11 +9,11 @@ type TEncryptedURIAESWithInitializationVectorParams = TEncryptedURI<{ iv: string
 type TEncryptedURIAESWithNumberOnceParams = TEncryptedURI<{ no: string }>;
 
 function getInitializationVector(args: TEncryptedURIAESWithInitializationVectorParams | undefined): string {
-  return args?.params?.iv || args?.queryString || base64.encode(randomBytes(16));
+  return args?.params?.iv || args?.queryString || bytesToHex(randomBytes(16));
 }
 
 function getNumberOnce(args: TEncryptedURIAESWithNumberOnceParams | undefined): string {
-  return args?.params?.no || args?.queryString || base64.encode(randomBytes(12));
+  return args?.params?.no || args?.queryString || bytesToHex(randomBytes(12));
 }
 
 class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter {
@@ -26,15 +26,15 @@ class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter {
 
   async encrypt(): Promise<TEncryptedURI> {
     const key = utf8ToBytes(this.params.key);
-    const ivb64 = getInitializationVector(this.params);
-    const iv = Uint8Array.from(base64.decode(ivb64));
+    const ivhex = getInitializationVector(this.params);
+    const iv = hexToBytes(ivhex);
     const content = utf8ToBytes(this.params.content);
     const cipher = await cbc(key, iv).encrypt(content);
 
     return Promise.resolve({
       algorithm: 'aes/cbc',
       cipher: base64.encode(cipher),
-      params: { iv: ivb64 }
+      params: { iv: ivhex }
     });
   }
 }
@@ -49,9 +49,9 @@ class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
 
   async decrypt(): Promise<string> {
     const key = utf8ToBytes(this.key);
-    const ivb64 = getInitializationVector(this.decoded);
+    const ivhex = getInitializationVector(this.decoded);
     const cipher = utf8ToBytes(this.decoded.cipher);
-    const result = await cbc(key, Uint8Array.from(base64.decode(ivb64)))
+    const result = await cbc(key, hexToBytes(ivhex))
       .decrypt(cipher);
 
     return bytesToUtf8(result);
@@ -68,15 +68,15 @@ class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter {
 
   async encrypt(): Promise<TEncryptedURI> {
     const key = utf8ToBytes(this.params.key);
-    const ivb64 = getInitializationVector(this.params);
-    const iv = Uint8Array.from(base64.decode(ivb64));
+    const ivhex = getInitializationVector(this.params);
+    const iv = hexToBytes(ivhex);
     const content = utf8ToBytes(this.params.content);
     const cipher = await ctr(key, iv).encrypt(content);
 
     return Promise.resolve({
       algorithm: 'aes/ctr',
       cipher: base64.encode(cipher),
-      params: { iv: ivb64 }
+      params: { iv: ivhex }
     });
   }
 }
@@ -91,9 +91,9 @@ class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
 
   async decrypt(): Promise<string> {
     const key = utf8ToBytes(this.key);
-    const ivb64 = getInitializationVector(this.decoded);
+    const ivhex = getInitializationVector(this.decoded);
     const cipher = utf8ToBytes(this.decoded.cipher);
-    const result = await ctr(key, Uint8Array.from(base64.decode(ivb64)))
+    const result = await ctr(key, hexToBytes(ivhex))
       .decrypt(cipher);
 
     return bytesToUtf8(result);
@@ -147,15 +147,15 @@ class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter {
 
   async encrypt(): Promise<TEncryptedURI> {
     const key = utf8ToBytes(this.params.key);
-    const nonceBase64 = getNumberOnce(this.params);
-    const nonce = Uint8Array.from(base64.decode(nonceBase64));
+    const numberOnceHex = getNumberOnce(this.params);
+    const nonce = hexToBytes(numberOnceHex);
     const content = utf8ToBytes(this.params.content);
     const cipher = await gcm(key, nonce).encrypt(content);
 
     return Promise.resolve({
       algorithm: 'aes/gcm',
       cipher: base64.encode(cipher),
-      params: { no: nonceBase64 }
+      params: { no: numberOnceHex }
     });
   }
 }
@@ -208,15 +208,15 @@ class EncryptedURIAESSIVEncrypter extends EncryptedURIEncrypter {
 
   async encrypt(): Promise<TEncryptedURI> {
     const key = utf8ToBytes(this.params.key);
-    const nonceBase64 = getNumberOnce(this.params);
-    const nonce = Uint8Array.from(base64.decode(nonceBase64));
+    const numberOnceHex = getNumberOnce(this.params);
+    const nonce = hexToBytes(numberOnceHex);
     const content = utf8ToBytes(this.params.content);
     const cipher = await siv(key, nonce).encrypt(content);
 
     return Promise.resolve({
       algorithm: 'aes/siv',
       cipher: base64.encode(cipher),
-      params: { no: nonceBase64 }
+      params: { no: numberOnceHex }
     });
   }
 }
@@ -230,3 +230,16 @@ export function supportAES(): void {
   EncryptedURI.setAlgorithm('aes/gcm', EncryptedURIAESGCMEncrypter, EncryptedURIAESGCMDecrypter);
   EncryptedURI.setAlgorithm('aes/siv', EncryptedURIAESSIVEncrypter, EncryptedURIAESSIVDecrypter);
 }
+
+
+//export function URIEncryptedAlgorithm(args: {
+//  algorithm: string,
+//  decrypter: typeof EncryptedURIDecrypter
+//}) {
+//  return function (
+//    target: typeof URIEncryptedEncrypter,
+//    key: string,
+//    decryptor: PropertyDescriptor
+//  ) {
+//  };
+//}
