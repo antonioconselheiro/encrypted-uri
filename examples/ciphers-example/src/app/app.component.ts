@@ -62,11 +62,13 @@ export class AppComponent {
     if (this.encryptForm.valid) {
       const raw = this.encryptForm.getRawValue();
       if (raw.algorithm && raw.content && raw.key) {
-        this.generatedEncryptedURI = EncryptedURI.encrypt({
+        EncryptedURI.encrypt({
           algorithm: raw.algorithm,
           content: raw.content,
           key: raw.key
-       });
+        }).then(uri => {
+          this.generatedEncryptedURI = uri;
+        });
       }
     }
   }
@@ -75,7 +77,9 @@ export class AppComponent {
     if (this.decryptForm.valid) {
       const raw = this.decryptForm.getRawValue();
       if (raw.uri && raw.key) {
-        this.decryptedContent = EncryptedURI.decrypt(raw.uri, raw.key);
+        EncryptedURI
+          .decrypt(raw.uri, raw.key)
+          .then(decrypted => this.decryptedContent = decrypted);
       }
     }
   }

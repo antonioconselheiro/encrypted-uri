@@ -9,11 +9,11 @@ type TEncryptedURIAESWithInitializationVectorParams = TEncryptedURI<{ iv: string
 type TEncryptedURIAESWithNumberOnceParams = TEncryptedURI<{ no: string }>;
 
 function getInitializationVector(args: TEncryptedURIAESWithInitializationVectorParams | undefined): string {
-  return args?.params?.iv || args?.queryString || base64.encode(randomBytes(12));
+  return args?.params?.iv || args?.queryString || base64.encode(randomBytes(16));
 }
 
 function getNumberOnce(args: TEncryptedURIAESWithNumberOnceParams | undefined): string {
-  return args?.params?.no || args?.queryString || base64.encode(randomBytes(16));
+  return args?.params?.no || args?.queryString || base64.encode(randomBytes(12));
 }
 
 class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter {
