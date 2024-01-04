@@ -4,7 +4,7 @@ describe('decode uri with default values', () => {
   it('[1] decode uri with default values not include', () => {
     expect(new EncryptedURIParser('encrypted:?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: '2345678wertyui'
       })
   });
@@ -13,7 +13,7 @@ describe('decode uri with default values', () => {
     expect(new EncryptedURIParser('encrypted:aes?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'aes',
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: '2345678wertyui'
       })
   });
@@ -22,7 +22,7 @@ describe('decode uri with default values', () => {
     expect(new EncryptedURIParser('encrypted:aes/cbc?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'aes/cbc',
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: '2345678wertyui'
       });
   });
@@ -30,7 +30,7 @@ describe('decode uri with default values', () => {
   it('[4] decode uri with default values not include', () => {
     expect(new EncryptedURIParser('encrypted:?iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: 'iv=2345678wertyui',
         params: {
           iv: '2345678wertyui'
@@ -42,7 +42,7 @@ describe('decode uri with default values', () => {
     expect(new EncryptedURIParser('encrypted:aes?pad=pkcs%237&iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'aes',
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: 'pad=pkcs%237&iv=2345678wertyui',
         params: {
           iv: '2345678wertyui',
@@ -55,7 +55,7 @@ describe('decode uri with default values', () => {
     expect(new EncryptedURIParser('encrypted:aes/cbc?iv=2345678wertyui&pad=pkcs%237;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'aes/cbc',
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: 'iv=2345678wertyui&pad=pkcs%237',
         params: {
           iv: '2345678wertyui',
@@ -70,7 +70,7 @@ describe('decode uri with customized values', () => {
     expect(new EncryptedURIParser('encrypted:aes/gcm?iv=2345678wertyui&pad=ecb;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'aes/gcm',
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: 'iv=2345678wertyui&pad=ecb',
         params: {
           iv: '2345678wertyui',
@@ -83,7 +83,7 @@ describe('decode uri with customized values', () => {
     expect(new EncryptedURIParser('encrypted:salsa20?no=871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'salsa20',
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: 'no=871232183987132082713',
         params: {
           //  nonce
@@ -96,7 +96,7 @@ describe('decode uri with customized values', () => {
     expect(new EncryptedURIParser('encrypted:xchacha?871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'xchacha',
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: '871232183987132082713'
       });
   });
@@ -105,7 +105,7 @@ describe('decode uri with customized values', () => {
     expect(new EncryptedURIParser('encrypted:chacha12?871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata').decoded)
       .toEqual({
         algorithm: 'chacha12',
-        cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+        cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
         queryString: '871232183987132082713'
       });
   });
@@ -114,7 +114,7 @@ describe('decode uri with customized values', () => {
 describe('encode uri with configs using default values', () => {
   it('[1] encode with default config with default values', () => {
     expect(new EncryptedURIParser({
-      cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
       queryString: '2345678wertyui'
     }).encoded).toEqual('encrypted:?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
   });
@@ -122,7 +122,7 @@ describe('encode uri with configs using default values', () => {
   it('[2] encode with default config with default values', () => {
     expect(new EncryptedURIParser({
       algorithm: 'aes/cbc',
-      cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
       params: {
         iv: '2345678wertyui'
       }
@@ -132,7 +132,7 @@ describe('encode uri with configs using default values', () => {
   it('[3] encode with default config with default values', () => {
     expect(new EncryptedURIParser({
       algorithm: 'aes',
-      cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
       queryString: '2345678wertyui'
     }).encoded).toEqual('encrypted:aes?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
   });
@@ -140,7 +140,7 @@ describe('encode uri with configs using default values', () => {
   it('[4] encode with default config with default values', () => {
     expect(new EncryptedURIParser({
       algorithm: 'aes/cbc',
-      cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
       queryString: '2345678wertyui'
     }).encoded).toEqual('encrypted:aes/cbc?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
   });
@@ -148,7 +148,7 @@ describe('encode uri with configs using default values', () => {
   it('[5] encode with default config with default values', () => {
     expect(new EncryptedURIParser({
       algorithm: 'aes/cbc',
-      cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
       params: {
         iv: '2345678wertyui',
         pad: 'pkcs#7'
@@ -159,7 +159,7 @@ describe('encode uri with configs using default values', () => {
   it('[6] encode with default config with default values', () => {
     expect(new EncryptedURIParser({
       algorithm: 'aes',
-      cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
       params: {
         iv: '2345678wertyui'
       }
@@ -169,7 +169,7 @@ describe('encode uri with configs using default values', () => {
   it('[7] encode with default config with default values', () => {
     expect(new EncryptedURIParser({
       algorithm: 'aes/cbc',
-      cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
       queryString: 'iv=2345678wertyui'
     }).encoded).toEqual('encrypted:aes/cbc?iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
   });
@@ -177,7 +177,7 @@ describe('encode uri with configs using default values', () => {
   it('[8] encode with default config with default values', () => {
     expect(new EncryptedURIParser({
       algorithm: 'aes/cbc',
-      cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
       params: {
         iv: '2345678wertyui',
         pad: 'pkcs#7'
@@ -190,7 +190,7 @@ describe('encode uri with customized values', () => {
   it('[1] encode aes/gcm with customized values', () => {
     expect(new EncryptedURIParser({
       algorithm: 'aes/gcm',
-      cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
       params: {
         iv: '2345678wertyui',
         pad: 'ecb'
@@ -201,7 +201,7 @@ describe('encode uri with customized values', () => {
   it('[2] encode salsa20 with customized values', () => {
     expect(new EncryptedURIParser({
       algorithm: 'salsa20',
-      cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
       params: {
         //  nonce
         no: '871232183987132082713'
@@ -212,7 +212,7 @@ describe('encode uri with customized values', () => {
   it('[3] encode xchacha with customized values', () => {
     expect(new EncryptedURIParser({
       algorithm: 'xchacha',
-      cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
       params: {
         //  nonce
         no: '871232183987132082713'
@@ -223,7 +223,7 @@ describe('encode uri with customized values', () => {
   it('[4] encode chacha12 with customized values', () => {
     expect(new EncryptedURIParser({
       algorithm: 'chacha12',
-      cypher: 'en1e3kj3e31jn2algoritmgenerateddata',
+      cipher: 'en1e3kj3e31jn2algoritmgenerateddata',
       params: {
         //  nonce
         no: '871232183987132082713'
@@ -299,7 +299,7 @@ describe('EncryptedURI object', () => {
     }
   
     decrypt(): Promise<string> {
-      return Promise.resolve(atob(this.decoded.cypher || ''));
+      return Promise.resolve(atob(this.decoded.cipher || ''));
     }
   }
   
@@ -313,7 +313,7 @@ describe('EncryptedURI object', () => {
     encrypt(): Promise<TEncryptedURI> {
       return Promise.resolve({
         algorithm: 'custom',
-        cypher: btoa(this.params.content)
+        cipher: btoa(this.params.content)
       });
     }
   }

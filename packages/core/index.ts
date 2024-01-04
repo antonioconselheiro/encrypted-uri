@@ -9,7 +9,7 @@ export type TEncryptedURIParams = {
 export type TEncryptedURI<T extends TEncryptedURIParams = TEncryptedURIParams> = {
   algorithm?: string;
   queryString?: string;
-  cypher: string;
+  cipher: string;
   params?: T;
 }
 
@@ -153,13 +153,13 @@ class URIEncryptedDecoder {
   private readonly QUERY_STRING_MATCHER = /^\?[^;]*;/;
 
   decode(content: string): TEncryptedURI {
-    const resultset: TEncryptedURI = { cypher: '' };
+    const resultset: TEncryptedURI = { cipher: '' };
     const iterable = new IterableString(content);
 
     this.checkURI(iterable);
     this.identifyAlgorithm(iterable, resultset);
     this.readQueryString(iterable, resultset);
-    resultset.cypher = iterable.toTheEnd().replace(/^;/, '');
+    resultset.cipher = iterable.toTheEnd().replace(/^;/, '');
 
     return resultset as TEncryptedURI;
   }
@@ -209,9 +209,9 @@ class URIEncryptedEncoder {
     const parameters = this.encodeParameters(content);
 
     if (parameters) {
-      return `encrypted:${algorithm}?${parameters};${content.cypher}`;
+      return `encrypted:${algorithm}?${parameters};${content.cipher}`;
     } else {
-      return `encrypted:${algorithm};${content.cypher}`;
+      return `encrypted:${algorithm};${content.cipher}`;
     }
   }
 
@@ -286,7 +286,7 @@ export type TEncryptedURIDefaultParams = {
 }
 
 export type TEncryptedURIEncryptedDefaultParams = {
-  cypher: string;
+  cipher: string;
 } & TEncryptedURIDefaultParams;
 
 export type TEncryptedURIEncryptableDefaultParams = {
