@@ -2,6 +2,11 @@
 > Apocalypse 2:17
 
 # Encrypted URI - ciphers
+
+[![npm version](https://badge.fury.io/js/@encrypted-uri%2Fciphers.svg)](https://github.com/antonioconselheiro/encrypted-uri)
+[![Npm Total Downloads](https://img.shields.io/npm/dt/@encrypted-uri/ciphers.svg)](https://github.com/antonioconselheiro/encrypted-uri)
+[![Npm Monthly Downloads](https://img.shields.io/npm/dm/@encrypted-uri/ciphers.svg)](https://github.com/antonioconselheiro/encrypted-uri)
+
 Include AES algorithms from @noble/ciphers into Encrypted URI (@encrypted-uri/core). Only ```initialization vector``` and ```number once``` params are included.
 
 Support for Encrypted URI using _@scure_ and _@noble_ packages.
