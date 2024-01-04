@@ -49,10 +49,10 @@ class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
 
   async decrypt(): Promise<string> {
     const key = utf8ToBytes(this.key);
-    const iv = getInitializationVector(this.decoded);
+    const ivb64 = getInitializationVector(this.decoded);
     const cipher = utf8ToBytes(this.decoded.cipher);
-    const result = await cbc(key, Uint8Array.from(base64.decode(iv)))
-    .decrypt(cipher);
+    const result = await cbc(key, Uint8Array.from(base64.decode(ivb64)))
+      .decrypt(cipher);
 
     return bytesToUtf8(result);
   }
@@ -91,9 +91,9 @@ class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
 
   async decrypt(): Promise<string> {
     const key = utf8ToBytes(this.key);
-    const iv = getInitializationVector(this.decoded);
+    const ivb64 = getInitializationVector(this.decoded);
     const cipher = utf8ToBytes(this.decoded.cipher);
-    const result = await ctr(key, Uint8Array.from(base64.decode(iv)))
+    const result = await ctr(key, Uint8Array.from(base64.decode(ivb64)))
       .decrypt(cipher);
 
     return bytesToUtf8(result);
