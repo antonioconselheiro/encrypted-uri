@@ -1,18 +1,19 @@
-import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter } from "@encrypted-uri/core";
-import { gcm, ctr, cbc } from '@noble/ciphers/webcrypto/aes';
+import { EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIEncryptableDefaultParams } from "@encrypted-uri/core";
 import { ecb, siv } from '@noble/ciphers/aes';
 import { bytesToUtf8, utf8ToBytes } from "@noble/ciphers/utils";
+import { cbc, ctr, gcm } from '@noble/ciphers/webcrypto/aes';
 import { randomBytes } from '@noble/ciphers/webcrypto/utils';
+import { base64 } from "@scure/base";
 
 type TEncryptedURIAESWithInitializationVectorParams = TEncryptedURI<{ iv: string }>;
 type TEncryptedURIAESWithNumberOnceParams = TEncryptedURI<{ no: string }>;
 
 function getInitializationVector(args: TEncryptedURIAESWithInitializationVectorParams | undefined): string {
-  return args?.params?.iv || args?.queryString || bytesToUtf8(randomBytes(12));
+  return args?.params?.iv || args?.queryString || base64.encode(randomBytes(12));
 }
 
 function getNumberOnce(args: TEncryptedURIAESWithNumberOnceParams | undefined): string {
-  return args?.params?.no || args?.queryString || bytesToUtf8(randomBytes(16));
+  return args?.params?.no || args?.queryString || base64.encode(randomBytes(16));
 }
 
 class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter {
@@ -23,18 +24,18 @@ class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter {
     super(params);
   }
 
-  encrypt(): TEncryptedURI {
+  async encrypt(): Promise<TEncryptedURI> {
     const key = utf8ToBytes(this.params.key);
-    const iv = getInitializationVector(this.params);
+    const ivb64 = getInitializationVector(this.params);
+    const iv = Uint8Array.from(base64.decode(ivb64));
     const content = utf8ToBytes(this.params.content);
+    const cipher = await cbc(key, iv).encrypt(content);
 
-    return {
+    return Promise.resolve({
       algorithm: 'aes/cbc',
-      cypher: cbc(key, utf8ToBytes(iv))
-        .encrypt(content)
-        .toString(),
-      params: { iv }
-    };
+      cipher: base64.encode(cipher),
+      params: { iv: ivb64 }
+    });
   }
 }
 
@@ -46,14 +47,14 @@ class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
     super(decoded);
   }
 
-  decrypt(): string {
+  async decrypt(): Promise<string> {
     const key = utf8ToBytes(this.key);
-    const iv = utf8ToBytes(getInitializationVector(this.decoded));
-    const cypher = utf8ToBytes(this.decoded.cypher);
+    const iv = getInitializationVector(this.decoded);
+    const cipher = utf8ToBytes(this.decoded.cipher);
+    const result = await cbc(key, Uint8Array.from(base64.decode(iv)))
+    .decrypt(cipher);
 
-    return cbc(key, iv)
-      .decrypt(cypher)
-      .toString();
+    return bytesToUtf8(result);
   }
 }
 
@@ -65,18 +66,18 @@ class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter {
     super(params);
   }
 
-  encrypt(): TEncryptedURI {
+  async encrypt(): Promise<TEncryptedURI> {
     const key = utf8ToBytes(this.params.key);
-    const iv = getInitializationVector(this.params);
+    const ivb64 = getInitializationVector(this.params);
+    const iv = Uint8Array.from(base64.decode(ivb64));
     const content = utf8ToBytes(this.params.content);
+    const cipher = await ctr(key, iv).encrypt(content);
 
-    return {
+    return Promise.resolve({
       algorithm: 'aes/ctr',
-      cypher: ctr(key, utf8ToBytes(iv))
-        .encrypt(content)
-        .toString(),
-      params: { iv }
-    };
+      cipher: base64.encode(cipher),
+      params: { iv: ivb64 }
+    });
   }
 }
 
@@ -88,14 +89,14 @@ class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
     super(decoded);
   }
 
-  decrypt(): string {
+  async decrypt(): Promise<string> {
     const key = utf8ToBytes(this.key);
-    const iv = utf8ToBytes(getInitializationVector(this.decoded));
-    const cypher = utf8ToBytes(this.decoded.cypher || '');
+    const iv = getInitializationVector(this.decoded);
+    const cipher = utf8ToBytes(this.decoded.cipher);
+    const result = await ctr(key, Uint8Array.from(base64.decode(iv)))
+      .decrypt(cipher);
 
-    return ctr(key, iv)
-      .decrypt(cypher)
-      .toString();
+    return bytesToUtf8(result);
   }
 }
 
@@ -107,16 +108,15 @@ class EncryptedURIAESECBEncrypter extends EncryptedURIEncrypter {
     super(params);
   }
 
-  encrypt(): TEncryptedURI {
+  async encrypt(): Promise<TEncryptedURI> {
     const key = utf8ToBytes(this.params.key);
     const content = utf8ToBytes(this.params.content);
+    const cipher = await ecb(key).encrypt(content);
 
-    return {
+    return Promise.resolve({
       algorithm: 'aes/ecb',
-      cypher: ecb(key)
-        .encrypt(content)
-        .toString()
-    };
+      cipher: base64.encode(cipher)
+    });
   }
 }
 
@@ -128,13 +128,12 @@ class EncryptedURIAESECBDecrypter extends EncryptedURIDecrypter<TEncryptedURI> {
     super(decoded);
   }
 
-  decrypt(): string {
+  async decrypt(): Promise<string> {
     const key = utf8ToBytes(this.key);
-    const cypher = utf8ToBytes(this.decoded.cypher || '');
+    const cipher = utf8ToBytes(this.decoded.cipher || '');
+    const result = await ecb(key).decrypt(cipher);
 
-    return ecb(key)
-      .decrypt(cypher)
-      .toString();
+    return bytesToUtf8(result);
   }
 }
 
@@ -146,60 +145,18 @@ class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter {
     super(params);
   }
 
-  encrypt(): TEncryptedURI {
+  async encrypt(): Promise<TEncryptedURI> {
     const key = utf8ToBytes(this.params.key);
-    const nonce = getNumberOnce(this.params);
+    const nonceBase64 = getNumberOnce(this.params);
+    const nonce = Uint8Array.from(base64.decode(nonceBase64));
     const content = utf8ToBytes(this.params.content);
+    const cipher = await gcm(key, nonce).encrypt(content);
 
-    return {
+    return Promise.resolve({
       algorithm: 'aes/gcm',
-      cypher: gcm(key, utf8ToBytes(nonce))
-        .encrypt(content)
-        .toString(),
-      params: { no: nonce }
-    };
-  }
-}
-
-class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithNumberOnceParams> {
-  constructor(
-    decoded: TEncryptedURIAESWithNumberOnceParams,
-    private key: string
-  ) {
-    super(decoded);
-  }
-
-  decrypt(): string {
-    const key = utf8ToBytes(this.key);
-    const nonce = utf8ToBytes(getNumberOnce(this.decoded));
-    const cypher = utf8ToBytes(this.decoded.cypher);
-
-    return siv(key, nonce)
-      .decrypt(cypher)
-      .toString();
-  }
-}
-
-class EncryptedURIAESSIVEncrypter extends EncryptedURIEncrypter {
-
-  constructor(
-    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithNumberOnceParams
-  ) {
-    super(params);
-  }
-
-  encrypt(): TEncryptedURI {
-    const key = utf8ToBytes(this.params.key);
-    const nonce = getNumberOnce(this.params);
-    const content = utf8ToBytes(this.params.content);
-
-    return {
-      algorithm: 'aes/gcm',
-      cypher: siv(key, utf8ToBytes(nonce))
-        .encrypt(content)
-        .toString(),
-      params: { no: nonce }
-    };
+      cipher: base64.encode(cipher),
+      params: { no: nonceBase64 }
+    });
   }
 }
 
@@ -211,14 +168,56 @@ class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
     super(decoded);
   }
 
-  decrypt(): string {
+  async decrypt(): Promise<string> {
     const key = utf8ToBytes(this.key);
-    const nonce = utf8ToBytes(getNumberOnce(this.decoded));
-    const cypher = utf8ToBytes(this.decoded.cypher);
+    const nonce = getNumberOnce(this.decoded);
+    const cipher = utf8ToBytes(this.decoded.cipher);
+    const result = await gcm(key, Uint8Array.from(base64.decode(nonce)))
+      .decrypt(cipher);
 
-    return gcm(key, nonce)
-      .decrypt(cypher)
-      .toString();
+    return bytesToUtf8(result);
+  }
+}
+
+class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithNumberOnceParams> {
+  constructor(
+    decoded: TEncryptedURIAESWithNumberOnceParams,
+    private key: string
+  ) {
+    super(decoded);
+  }
+
+  async decrypt(): Promise<string> {
+    const key = utf8ToBytes(this.key);
+    const nonce = getNumberOnce(this.decoded);
+    const cipher = utf8ToBytes(this.decoded.cipher);
+    const result = await cbc(key, Uint8Array.from(base64.decode(nonce)))
+      .decrypt(cipher);
+
+    return bytesToUtf8(result);
+  }
+}
+
+class EncryptedURIAESSIVEncrypter extends EncryptedURIEncrypter {
+
+  constructor(
+    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithNumberOnceParams
+  ) {
+    super(params);
+  }
+
+  async encrypt(): Promise<TEncryptedURI> {
+    const key = utf8ToBytes(this.params.key);
+    const nonceBase64 = getNumberOnce(this.params);
+    const nonce = Uint8Array.from(base64.decode(nonceBase64));
+    const content = utf8ToBytes(this.params.content);
+    const cipher = await siv(key, nonce).encrypt(content);
+
+    return Promise.resolve({
+      algorithm: 'aes/siv',
+      cipher: base64.encode(cipher),
+      params: { no: nonceBase64 }
+    });
   }
 }
 

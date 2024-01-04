@@ -4,6 +4,8 @@
 # Encrypted URI - ciphers
 Include AES algorithms from @noble/ciphers into Encrypted URI (@encrypted-uri/core). Only ```initialization vector``` and ```number once``` params are included.
 
+Support for Encrypted URI using _@scure_ and _@noble_ packages.
+
 *under beta test*
 
 ## Installation

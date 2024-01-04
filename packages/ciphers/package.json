@@ -1,6 +1,6 @@
 {
   "name": "@encrypted-uri/ciphers",
-  "version": "0.1.3",
+  "version": "1.0.0",
   "description": "encrypt and decrypt from encrypted uri",
   "main": "index.js",
   "repository": {
@@ -38,9 +38,10 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@noble/ciphers": "^0.4.1"
+    "@noble/ciphers": "^0.4.1",
+    "@scure/base": "^1.1.5"
   },
   "peerDependencies": {
-    "@encrypted-uri/core": "^0.1.13"
+    "@encrypted-uri/core": "^1.0.1"
   }
 }
