@@ -9,7 +9,7 @@ export type TEncryptedURIParams = {
 export type TEncryptedURI<T extends TEncryptedURIParams = TEncryptedURIParams> = {
   algorithm?: string;
   queryString?: string;
-  cypher: string;
+  cipher: string;
   params?: T;
 }
 
@@ -141,7 +141,7 @@ export class IterableString {
   }
 }
 
-class URIEncryptedSyntaxMatcher {
+class EncryptedURISyntaxMatcher {
   match(uri: string): boolean {
     return /^encrypted:/.test(uri);
   }
@@ -153,13 +153,13 @@ class URIEncryptedDecoder {
   private readonly QUERY_STRING_MATCHER = /^\?[^;]*;/;
 
   decode(content: string): TEncryptedURI {
-    const resultset: TEncryptedURI = { cypher: '' };
+    const resultset: TEncryptedURI = { cipher: '' };
     const iterable = new IterableString(content);
 
     this.checkURI(iterable);
     this.identifyAlgorithm(iterable, resultset);
     this.readQueryString(iterable, resultset);
-    resultset.cypher = iterable.toTheEnd().replace(/^;/, '');
+    resultset.cipher = iterable.toTheEnd().replace(/^;/, '');
 
     return resultset as TEncryptedURI;
   }
@@ -209,9 +209,9 @@ class URIEncryptedEncoder {
     const parameters = this.encodeParameters(content);
 
     if (parameters) {
-      return `encrypted:${algorithm}?${parameters};${content.cypher}`;
+      return `encrypted:${algorithm}?${parameters};${content.cipher}`;
     } else {
-      return `encrypted:${algorithm};${content.cypher}`;
+      return `encrypted:${algorithm};${content.cipher}`;
     }
   }
 
@@ -240,10 +240,10 @@ class URIEncryptedEncoder {
   }
 }
 
-export class URIEncryptedParser {
+export class EncryptedURIParser {
 
   static matcher(uri: string): boolean {
-    return new URIEncryptedSyntaxMatcher().match(uri);
+    return new EncryptedURISyntaxMatcher().match(uri);
   }
 
   readonly encoded: string;
@@ -264,20 +264,20 @@ export class URIEncryptedParser {
   }
 }
 
-export abstract class URIEncryptedEncrypter<T extends TEncryptedURIEncryptableDefaultParams = TEncryptedURIEncryptableDefaultParams> {
+export abstract class EncryptedURIEncrypter<T extends TEncryptedURIEncryptableDefaultParams = TEncryptedURIEncryptableDefaultParams> {
 
   constructor(protected params: T) { }
   
-  abstract encrypt(): TEncryptedURI;
+  abstract encrypt(): Promise<TEncryptedURI>;
 }
 
-export abstract class URIEncryptedDecrypter<T extends TEncryptedURI = TEncryptedURI> {
+export abstract class EncryptedURIDecrypter<T extends TEncryptedURI = TEncryptedURI> {
 
   constructor(
     protected decoded: T
   ) { }
 
-  abstract decrypt(): string;
+  abstract decrypt(): Promise<string>;
 }
 
 export type TEncryptedURIDefaultParams = {
@@ -286,7 +286,7 @@ export type TEncryptedURIDefaultParams = {
 }
 
 export type TEncryptedURIEncryptedDefaultParams = {
-  cypher: string;
+  cipher: string;
 } & TEncryptedURIDefaultParams;
 
 export type TEncryptedURIEncryptableDefaultParams = {
@@ -294,50 +294,51 @@ export type TEncryptedURIEncryptableDefaultParams = {
   key: string;
 } & TEncryptedURIDefaultParams;
 
-export class URIEncrypted {
+export class EncryptedURI {
 
   static readonly DEFAULT_ALGORITHM = 'aes';
 
   static readonly supportedAlgorithm: {
     [algorithm: string]: [
-      { new (...args: any[]): URIEncryptedEncrypter<any> },
-      { new (...args: any[]): URIEncryptedDecrypter<any> }
+      { new (...args: any[]): EncryptedURIEncrypter<any> },
+      { new (...args: any[]): EncryptedURIDecrypter<any> }
     ]
   } = { }
 
   static matcher(uri: string): boolean {
-    return new URIEncryptedSyntaxMatcher().match(uri);
+    return new EncryptedURISyntaxMatcher().match(uri);
   }
 
   static encode(params: TEncryptedURI): string {
-    return new URIEncryptedParser(params).encoded;
+    return new EncryptedURIParser(params).encoded;
   }
 
-  static encrypt(params: TEncryptedURIEncryptableDefaultParams, ...args: any[]): string {
+  static async encrypt(params: TEncryptedURIEncryptableDefaultParams, ...args: any[]): Promise<string> {
     const [ encryptor ] = this.getAlgorithm(params.algorithm);
-    return this.encode(new encryptor(params, ...args).encrypt());
+    const ciphred = await new encryptor(params, ...args).encrypt();
+    return Promise.resolve(this.encode(ciphred));
   }
 
-  static decrypt(uri: string, key: string): string;
-  static decrypt(uri: string, ...args: any[]): string {
-    const uriDecoded = new URIEncryptedParser(uri).decoded;
+  static decrypt(uri: string, key: string): Promise<string>;
+  static decrypt(uri: string, ...args: any[]): Promise<string> {
+    const uriDecoded = new EncryptedURIParser(uri).decoded;
     const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);
     return new decryptor(uriDecoded, ...args).decrypt();
   }
 
   static setAlgorithm<T extends TEncryptedURI>(
     algorithm: string,
-    encrypter: { new (...args: any[]): URIEncryptedEncrypter },
-    decrypter: { new (decoded: T, ...args: any[]): URIEncryptedDecrypter<T> }
+    encrypter: { new (...args: any[]): EncryptedURIEncrypter },
+    decrypter: { new (decoded: T, ...args: any[]): EncryptedURIDecrypter<T> }
   ): void {
     this.supportedAlgorithm[algorithm] = [encrypter, decrypter];
   }
 
   private static getAlgorithm(algorithm?: string): [
-    { new (...args: any[]): URIEncryptedEncrypter },
-    { new (decoded: TEncryptedURI, ...args: any[]): URIEncryptedDecrypter }
+    { new (...args: any[]): EncryptedURIEncrypter },
+    { new (decoded: TEncryptedURI, ...args: any[]): EncryptedURIDecrypter }
   ] {
-    algorithm = algorithm || URIEncrypted.DEFAULT_ALGORITHM;
+    algorithm = algorithm || EncryptedURI.DEFAULT_ALGORITHM;
     const [ encryptor, decryptor ] = this.supportedAlgorithm[algorithm] || [ null, null];
     if (!encryptor && !decryptor) {
       throw new Error(`Algorithm '${algorithm}' not supported`);
@@ -346,16 +347,3 @@ export class URIEncrypted {
     return [ encryptor, decryptor ];
   }
 }
-
-//  TODO: decorator
-// export function URIEncryptedAlgorithm(args: {
-//   algorithm: string,
-//   decrypter: typeof URIEncryptedDecrypter
-// }) {
-//   return function (
-//     target: typeof URIEncryptedEncrypter,
-//     key: string,
-//     decryptor: PropertyDescriptor
-//   ) {
-//   };
-// }

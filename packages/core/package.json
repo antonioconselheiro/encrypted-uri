@@ -1,6 +1,6 @@
 {
   "name": "@encrypted-uri/core",
-  "version": "0.1.11",
+  "version": "1.0.1",
   "description": "decrypt and encrypt encrypted uri",
   "main": "index.js",
   "repository": {
@@ -8,7 +8,7 @@
     "url": "git+https://github.com/antonioconselheiro/encrypted-uri.git"
   },
   "scripts": {
-    "build": "rm -rf ../../dist && tsc --project . && cp ../../README.md package.json package-lock.json ../../dist/core/",
+    "build": "rm -rf ../../dist/core && tsc --project . && cp ../../README.md package.json package-lock.json ../../dist/core/",
     "lint": "eslint .",
     "test": "jest"
   },
@@ -36,5 +36,8 @@
     "jest-html-reporters": "^3.1.7",
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "tslib": "^2.6.2"
   }
 }

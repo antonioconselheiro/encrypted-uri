@@ -18,13 +18,13 @@ jobs:
         node-version: 20.10.0
 
     - name: Install dependencies
-      run: npm -C src/core ci
+      run: npm -C packages/core ci
 
     - name: Lint
-      run: npm -C src/core run lint
+      run: npm -C packages/core run lint
 
     - name: Test
-      run: npm -C src/core run test
+      run: npm -C packages/core run test
 
     - name: Build
-      run: npm -C src/core run build
+      run: npm -C packages/core run build

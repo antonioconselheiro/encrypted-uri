@@ -1,0 +1,60 @@
+<h1>Working Example</h1>
+
+<div>
+  <form (submit)="onEncryptSubmit()" [formGroup]="encryptForm" novalidate autocomplete="off">
+    <fieldset>
+      <legend>Encrypt</legend>
+  
+      <div>
+        <label for="algorithm">Select an algorithm</label>
+        <select id="algorithm" formControlName="algorithm" name="algorithm">
+          <option value="aes/cbc">aes/cbc</option>
+          <option value="aes/ecb">aes/ecb</option>
+          <option value="aes/ctr">aes/ctr</option>
+          <option value="aes/gcm">aes/gcm</option>
+          <option value="aes/siv">aes/siv</option>
+        </select>
+      </div>
+  
+      <div>
+        <label for="content">Content to encrypt:</label>
+        <textarea name="content" formControlName="content" id="content"></textarea>
+        <span *ngIf="getEncryptErrors('content', 'required')" class="error">* required</span>
+      </div>
+  
+      <div>
+        <label for="key">Encryptation key:</label>
+        <input formControlName="key" id="key" type="password" name="key" />
+        <span *ngIf="getEncryptErrors('key', 'required')" class="error">* required</span>
+      </div>
+    </fieldset>
+  
+    <button type="submit">encrypt</button>
+  </form>
+
+  <div *ngIf="generatedEncryptedURI">Generated URI: {{generatedEncryptedURI}}</div>
+</div>
+
+<div>
+  <form (submit)="onDecryptSubmit()" [formGroup]="decryptForm" novalidate autocomplete="off">
+    <fieldset>
+      <legend>Decrypt</legend>
+  
+      <div>
+        <label for="uri">Encrypted URI:</label>
+        <input type="text" placeholder="encrypted:aes/cbc;1234..." formControlName="uri" id="uri" name="uri" />
+        <span *ngIf="getEncryptErrors('uri', 'required')" class="error">* required</span>
+      </div>
+  
+      <div>
+        <label for="key">Key:</label>
+        <input formControlName="key" id="key" type="password" name="key" />
+        <span *ngIf="getEncryptErrors('key', 'required')" class="error">* required</span>
+      </div>
+    </fieldset>
+  
+    <button type="submit">decrypt</button>
+  </form>
+
+  <div *ngIf="generatedEncryptedURI">Generated URI: {{generatedEncryptedURI}}</div>
+</div>

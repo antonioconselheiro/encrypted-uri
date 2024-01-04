@@ -1,6 +1,6 @@
 {
   "name": "@encrypted-uri/ciphers",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "encrypt and decrypt from encrypted uri",
   "main": "index.js",
   "repository": {
@@ -8,7 +8,7 @@
     "url": "git+https://github.com/antonioconselheiro/encrypted-uri.git"
   },
   "scripts": {
-    "build": "tsc --project .",
+    "build": "rm -rf ../../dist/ciphers && tsc --project . && cp README.md package.json package-lock.json ../../dist/ciphers/",
     "lint": "eslint .",
     "test": "jest"
   },
@@ -38,7 +38,10 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@encrypted-uri/core": "^0.1.11",
-    "@noble/ciphers": "^0.4.1"
+    "@noble/ciphers": "^0.4.1",
+    "@scure/base": "^1.1.5"
+  },
+  "peerDependencies": {
+    "@encrypted-uri/core": "^1.0.1"
   }
 }
