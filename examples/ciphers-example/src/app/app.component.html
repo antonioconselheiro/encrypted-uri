@@ -23,8 +23,8 @@
       </div>
   
       <div>
-        <label for="key">Encryptation key:</label>
-        <input formControlName="key" id="key" type="password" name="key" />
+        <label for="encryptKey">Encryptation key:</label>
+        <input formControlName="key" id="encryptKey" type="password" name="key" />
         <span *ngIf="getEncryptErrors('key', 'required')" class="error">* required</span>
       </div>
 
@@ -50,8 +50,8 @@
       </div>
   
       <div>
-        <label for="key">Key:</label>
-        <input formControlName="key" id="key" type="password" name="key" />
+        <label for="decryptKey">Key:</label>
+        <input formControlName="key" id="decryptKey" type="password" name="key" />
         <span *ngIf="getEncryptErrors('key', 'required')" class="error">* required</span>
       </div>
 

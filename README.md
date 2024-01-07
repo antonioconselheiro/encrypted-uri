@@ -136,29 +136,6 @@ class CustomEncrypter extends EncryptedEncrypterURI {
 EncryptedURI.setAlgorithm('custom', CustomEncrypter, CustomDecrypter);
 ```
 
-As you can see in the library code, is not preserved the instance of the object that has a key associated with it in protected:
-
-```typescript
-export class EncryptedURI {
-
-  [...]
-
-  static encrypt(params: TEncryptedURIEncryptableDefaultParams) {
-    const [ encryptor ] = this.getAlgorithm(params.algorithm);
-    return this.encode(new encryptor(params).encrypt());
-  }
-
-  static decrypt(uri: string, key: string): string;
-  static decrypt(uri: string, ...args: any[]): string {
-    const uriDecoded = new EncryptedParserURI(uri).decoded;
-    const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);
-    return new decryptor(uriDecoded, ...args).decrypt();
-  }
-
-  [...]
-}
-```
-
 ## Example of practical application
  - [Private QRcode](https://antonioconselheiro.github.io/private-qrcode/#/home), allow you to create private qrcode using encrypted URI with AES algorithm fixed in it. It allow you to save your seeds, nsec and keys physically printed.
 

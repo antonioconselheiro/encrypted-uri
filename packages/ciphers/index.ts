@@ -16,29 +16,6 @@ function getNumberOnce(args: TEncryptedURIAESWithNumberOnceParams | undefined): 
   return args?.params?.no || args?.queryString || bytesToHex(randomBytes(12));
 }
 
-class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter {
-
-  constructor(
-    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithInitializationVectorParams
-  ) {
-    super(params);
-  }
-
-  async encrypt(): Promise<TEncryptedURI> {
-    const key = utf8ToBytes(this.params.key);
-    const ivhex = getInitializationVector(this.params);
-    const iv = hexToBytes(ivhex);
-    const content = utf8ToBytes(this.params.content);
-    const cipher = await cbc(key, iv).encrypt(content);
-
-    return Promise.resolve({
-      algorithm: 'aes/cbc',
-      cipher: base64.encode(cipher),
-      params: { iv: ivhex }
-    });
-  }
-}
-
 class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithInitializationVectorParams> {
   constructor(
     decoded: TEncryptedURIAESWithInitializationVectorParams,
@@ -58,7 +35,11 @@ class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
   }
 }
 
-class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter {
+@EncryptedURIAlgorithm({
+  algorithm: 'aes/cbc',
+  decrypter: EncryptedURIAESCBCDecrypter
+})
+class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter {
 
   constructor(
     protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithInitializationVectorParams
@@ -71,10 +52,9 @@ class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter {
     const ivhex = getInitializationVector(this.params);
     const iv = hexToBytes(ivhex);
     const content = utf8ToBytes(this.params.content);
-    const cipher = await ctr(key, iv).encrypt(content);
+    const cipher = await cbc(key, iv).encrypt(content);
 
     return Promise.resolve({
-      algorithm: 'aes/ctr',
       cipher: base64.encode(cipher),
       params: { iv: ivhex }
     });
@@ -100,22 +80,28 @@ class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
   }
 }
 
-class EncryptedURIAESECBEncrypter extends EncryptedURIEncrypter {
+@EncryptedURIAlgorithm({
+  algorithm: 'aes/ctr',
+  decrypter: EncryptedURIAESCTRDecrypter
+})
+class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter {
 
   constructor(
-    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURI
+    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithInitializationVectorParams
   ) {
     super(params);
   }
 
   async encrypt(): Promise<TEncryptedURI> {
     const key = utf8ToBytes(this.params.key);
+    const ivhex = getInitializationVector(this.params);
+    const iv = hexToBytes(ivhex);
     const content = utf8ToBytes(this.params.content);
-    const cipher = await ecb(key).encrypt(content);
+    const cipher = await ctr(key, iv).encrypt(content);
 
     return Promise.resolve({
-      algorithm: 'aes/ecb',
-      cipher: base64.encode(cipher)
+      cipher: base64.encode(cipher),
+      params: { iv: ivhex }
     });
   }
 }
@@ -137,26 +123,25 @@ class EncryptedURIAESECBDecrypter extends EncryptedURIDecrypter<TEncryptedURI> {
   }
 }
 
-class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter {
+@EncryptedURIAlgorithm({
+  algorithm: 'aes/ecb',
+  decrypter: EncryptedURIAESECBDecrypter
+})
+class EncryptedURIAESECBEncrypter extends EncryptedURIEncrypter {
 
   constructor(
-    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithNumberOnceParams
+    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURI
   ) {
     super(params);
   }
 
   async encrypt(): Promise<TEncryptedURI> {
     const key = utf8ToBytes(this.params.key);
-    const numberOnceHex = getNumberOnce(this.params);
-    const nonce = hexToBytes(numberOnceHex);
     const content = utf8ToBytes(this.params.content);
-    const cipher = await gcm(key, nonce).encrypt(content);
+    const rawCipher = await ecb(key).encrypt(content);
+    const cipher = base64.encode(rawCipher);
 
-    return Promise.resolve({
-      algorithm: 'aes/gcm',
-      cipher: base64.encode(cipher),
-      params: { no: numberOnceHex }
-    });
+    return Promise.resolve({ cipher });
   }
 }
 
@@ -179,6 +164,32 @@ class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
   }
 }
 
+@EncryptedURIAlgorithm({
+  algorithm: 'aes/gcm',
+  decrypter: EncryptedURIAESGCMDecrypter
+})
+class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter {
+
+  constructor(
+    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithNumberOnceParams
+  ) {
+    super(params);
+  }
+
+  async encrypt(): Promise<TEncryptedURI> {
+    const key = utf8ToBytes(this.params.key);
+    const numberOnceHex = getNumberOnce(this.params);
+    const nonce = hexToBytes(numberOnceHex);
+    const content = utf8ToBytes(this.params.content);
+    const cipher = await gcm(key, nonce).encrypt(content);
+
+    return Promise.resolve({
+      cipher: base64.encode(cipher),
+      params: { no: numberOnceHex }
+    });
+  }
+}
+
 class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithNumberOnceParams> {
   constructor(
     decoded: TEncryptedURIAESWithNumberOnceParams,
@@ -198,6 +209,10 @@ class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
   }
 }
 
+@EncryptedURIAlgorithm({
+  algorithm: 'aes/siv',
+  decrypter: EncryptedURIAESSIVDecrypter
+})
 class EncryptedURIAESSIVEncrypter extends EncryptedURIEncrypter {
 
   constructor(
@@ -214,7 +229,6 @@ class EncryptedURIAESSIVEncrypter extends EncryptedURIEncrypter {
     const cipher = await siv(key, nonce).encrypt(content);
 
     return Promise.resolve({
-      algorithm: 'aes/siv',
       cipher: base64.encode(cipher),
       params: { no: numberOnceHex }
     });
@@ -224,22 +238,4 @@ class EncryptedURIAESSIVEncrypter extends EncryptedURIEncrypter {
 export function supportAES(): void {
   EncryptedURI.setAlgorithm('', EncryptedURIAESCBCEncrypter, EncryptedURIAESCBCDecrypter);
   EncryptedURI.setAlgorithm('aes', EncryptedURIAESCBCEncrypter, EncryptedURIAESCBCDecrypter);
-  EncryptedURI.setAlgorithm('aes/cbc', EncryptedURIAESCBCEncrypter, EncryptedURIAESCBCDecrypter);
-  EncryptedURI.setAlgorithm('aes/ebc', EncryptedURIAESECBEncrypter, EncryptedURIAESECBDecrypter);
-  EncryptedURI.setAlgorithm('aes/ctr', EncryptedURIAESCTREncrypter, EncryptedURIAESCTRDecrypter);
-  EncryptedURI.setAlgorithm('aes/gcm', EncryptedURIAESGCMEncrypter, EncryptedURIAESGCMDecrypter);
-  EncryptedURI.setAlgorithm('aes/siv', EncryptedURIAESSIVEncrypter, EncryptedURIAESSIVDecrypter);
 }
-
-
-//export function URIEncryptedAlgorithm(args: {
-//  algorithm: string,
-//  decrypter: typeof EncryptedURIDecrypter
-//}) {
-//  return function (
-//    target: typeof URIEncryptedEncrypter,
-//    key: string,
-//    decryptor: PropertyDescriptor
-//  ) {
-//  };
-//}
