@@ -66,14 +66,19 @@ Basic use, how to decode and encrypt and how to decode and decrypt:
 
 ```typescript
 import { EncryptedURI } from '@encrypted-uri/core';
+import { pbkdf2 } from '@noble/hashes/pbkdf2';
+import { sha256 } from '@noble/hashes/sha256';
 
-//  generates encrypted:aes?iv=1234567812345678;<cypher>
+pbkdf2(sha256, password, salt, { c: 100, dkLen: 8 });
+
+//  generates encrypted:aes?iv=1234567812345678;<cypher in base64>
 const encoded = EncryptedURI.encrypt({
   algorithm: 'aes',
   content: 'mensagem secreta',
   key: 'secretkey',
   params: {
-    iv: '1234567812345678'
+    iv: '1234567812345678',
+    salt
   }
 });
 
@@ -83,14 +88,14 @@ if (EncryptedURI.matcher(encoded)) {
   EncryptedURI.decrypt(encoded, 'secretkey');
 }
 
-//  generates encrypted:?1234567812345678;<cypher>
+//  generates encrypted:?1234567812345678;<cypher in base64>
 EncryptedURI.encrypt({
   content: 'mensagem secreta',
   key: 'secretkey',
   queryString: '1234567812345678'
 });
 
-//  generates encrypted:aes/cbc?1234567812345678;<cypher>
+//  generates encrypted:aes/cbc?1234567812345678;<cypher in base64>
 EncryptedURI.encrypt({
   algorithm: 'aes',
   mode: 'cbc',
@@ -104,7 +109,9 @@ Advanced use, how to add encrypters and decrypters:
 ```typescript
 import { algorithm } from 'algorithms';
 
-class CustomDecrypter extends EncryptedDecrypterURI {
+class CustomDecrypter extends EncryptedURIDecrypter<TEncryptedURI<{
+  iv: string
+}>> {
 
   constructor(
     decoded: TEncryptedURI,
@@ -113,22 +120,30 @@ class CustomDecrypter extends EncryptedDecrypterURI {
     super(decoded);
   }
 
-  decrypt(): string {
-    return algorithm.decrypt(this.decoded.cypher, this.key);
+  async decrypt(): Promise<string> {
+    const iv = decoded.params.iv || decoded.params.queryParam;
+    return new algorithm(iv, this.key).decrypt(this.decoded.cypher);
   }
 }
 
-class CustomEncrypter extends EncryptedEncrypterURI {
+@EncryptedURIAlgorithm({
+  algorithm: 'custom',
+  decrypter: CustomDecrypter
+})
+class CustomEncrypter extends EncryptedURIEncrypter {
   constructor(
     params: TEncryptedURIEncryptableDefaultParams
   ) {
     super(params);
   }
 
-  encrypt(): TEncryptedURI {
+  async encrypt(): Promise<TEncryptedURI> {
+    const cypher = await algorithm.encrypt(this.decoded.cypher, this.key)
     return {
+      //  this property will be override by the content in decorator,
+      //  so you don't need to include it
       algorithm: 'custom',
-      cypher: algorithm.encrypt(this.decoded.cypher, this.key)
+      cypher
     };
   }
 }
