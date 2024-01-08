@@ -239,3 +239,75 @@ export function supportAES(): void {
   EncryptedURI.setAlgorithm('', EncryptedURIAESCBCEncrypter, EncryptedURIAESCBCDecrypter);
   EncryptedURI.setAlgorithm('aes', EncryptedURIAESCBCEncrypter, EncryptedURIAESCBCDecrypter);
 }
+
+/**
+ * This class was orignally write in javascript for crypt-js, I'm uncluding this to my lib
+ * https://github.com/brix/crypto-js/blob/develop/src/cipher-core.js#L566
+ * OpenSSL formatting strategy.
+ */
+export class OpenSSL {
+  /**
+   * Converts a cipher params object to an OpenSSL-compatible string.
+   *
+   * @param {CipherParams} cipherParams The cipher params object.
+   *
+   * @return {string} The OpenSSL-compatible string.
+   *
+   * @static
+   *
+   * @example
+   *
+   *     var openSSLString = CryptoJS.format.OpenSSL.stringify(cipherParams);
+   */
+  static stringify(cipherParams): string {
+      var wordArray;
+
+      // Shortcuts
+      var ciphertext = cipherParams.ciphertext;
+      var salt = cipherParams.salt;
+
+      // Format
+      if (salt) {
+          wordArray = WordArray.create([0x53616c74, 0x65645f5f]).concat(salt).concat(ciphertext);
+      } else {
+          wordArray = ciphertext;
+      }
+
+      return wordArray.toString(Base64);
+  }
+
+  /**
+   * Converts an OpenSSL-compatible string to a cipher params object.
+   *
+   * @param {string} openSSLStr The OpenSSL-compatible string.
+   *
+   * @return {CipherParams} The cipher params object.
+   *
+   * @static
+   *
+   * @example
+   *
+   *     var cipherParams = CryptoJS.format.OpenSSL.parse(openSSLString);
+   */
+  static parse(openSSLStr) {
+      var salt;
+
+      // Parse base64
+      var ciphertext = Base64.parse(openSSLStr);
+
+      // Shortcut
+      var ciphertextWords = ciphertext.words;
+
+      // Test for salt
+      if (ciphertextWords[0] == 0x53616c74 && ciphertextWords[1] == 0x65645f5f) {
+          // Extract salt
+          salt = WordArray.create(ciphertextWords.slice(2, 4));
+
+          // Remove salt from ciphertext
+          ciphertextWords.splice(0, 4);
+          ciphertext.sigBytes -= 16;
+      }
+
+      return CipherParams.create({ ciphertext: ciphertext, salt: salt });
+  }
+};
