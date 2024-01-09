@@ -297,9 +297,9 @@ export type TEncryptedURIEncryptableDefaultParams = {
 export type EncrypterClass = { new (...args: any[]): EncryptedURIEncrypter<any> } & { algorithm?: string };
 export type DecrypterClass<T extends TEncryptedURI = TEncryptedURI> = { new (decoded: T, ...args: any[]): EncryptedURIDecrypter<T> };
 
-export function EncryptedURIAlgorithm(args: {
+export function EncryptedURIAlgorithm<T extends TEncryptedURI>(args: {
   algorithm: string,
-  decrypter: DecrypterClass
+  decrypter: DecrypterClass<T>
 }) {
   return function (
     target: EncrypterClass & { algorithm?: string }
@@ -335,7 +335,7 @@ export class EncryptedURI {
     return Promise.resolve(this.encode(ciphred));
   }
 
-  static decrypt(uri: string, key: string): Promise<string>;
+  static decrypt(uri: string, key: Uint8Array): Promise<string>;
   static decrypt(uri: string, ...args: any[]): Promise<string> {
     const uriDecoded = new EncryptedURIParser(uri).decoded;
     const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);

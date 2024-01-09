@@ -1,4 +1,4 @@
-import { EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIEncryptableDefaultParams } from '@encrypted-uri/core';
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIEncryptableDefaultParams } from '@encrypted-uri/core';
 import { ecb } from '@noble/ciphers/aes';
 import { bytesToUtf8, utf8ToBytes } from '@noble/ciphers/utils';
 import { base64 } from '@scure/base';
@@ -33,9 +33,8 @@ class EncryptedURIAESECBEncrypter extends EncryptedURIEncrypter {
   }
 
   async encrypt(): Promise<TEncryptedURI> {
-    const key = utf8ToBytes(this.params.key);
     const content = utf8ToBytes(this.params.content);
-    const rawCipher = await ecb(key).encrypt(content);
+    const rawCipher = await ecb(this.params.key).encrypt(content);
     const cipher = base64.encode(rawCipher);
 
     return Promise.resolve({ cipher });

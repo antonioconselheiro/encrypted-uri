@@ -1,4 +1,5 @@
 import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter, EncryptedURIParser } from ".";
+import { randomBytes } from '@noble/hashes/utils'
 
 describe('decode uri with default values', () => {
   it('[1] decode uri with default values not include', () => {
@@ -327,7 +328,7 @@ describe('EncryptedURI object', () => {
 
   it('[2] EncryptedURI must run decrypt for custom algorithm', () => {
     EncryptedURI.setAlgorithm('custom', CustomEncrypter, CustomDecrypter);
-    EncryptedURI.decrypt(encoded, 'key here').then(content => {
+    EncryptedURI.decrypt(encoded, randomBytes(16)).then(content => {
       expect(content).toEqual('base64 não é criptografia');
     });
   });
@@ -337,7 +338,7 @@ describe('EncryptedURI object', () => {
     EncryptedURI.encrypt({
       algorithm: 'custom',
       content: 'base64 não é criptografia',
-      key: 'key here'
+      key: randomBytes(16)
     }).then(result => {
       expect(result).toEqual(encoded);
     })
