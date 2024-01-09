@@ -27,6 +27,7 @@
   },
   "homepage": "https://github.com/antonioconselheiro/encrypted-uri#readme",
   "devDependencies": {
+    "@noble/hashes": "^1.3.3",
     "@types/jest": "^29.5.11",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "eslint": "^8.56.0",

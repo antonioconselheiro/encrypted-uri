@@ -147,7 +147,7 @@ class EncryptedURISyntaxMatcher {
   }
 }
 
-class URIEncryptedDecoder {
+class EncryptedURIDecoder {
 
   private readonly ENCRYPTED_URI_MATCHER = /^encrypted:/;
   private readonly QUERY_STRING_MATCHER = /^\?[^;]*;/;
@@ -202,7 +202,7 @@ class URIEncryptedDecoder {
   }
 }
 
-class URIEncryptedEncoder {
+class EncryptedURIEncoder {
 
   encode(content: TEncryptedURI): string {
     const algorithm = this.encodeAlgorithm(content);
@@ -253,11 +253,11 @@ export class EncryptedURIParser {
   constructor(content: string);
   constructor(content: string | TEncryptedURI) {
     if (typeof content === 'string') {
-      const decoder = new URIEncryptedDecoder();
+      const decoder = new EncryptedURIDecoder();
       this.decoded = decoder.decode(this.encoded = content);
       this.encoded = content;
     } else {
-      const encoder = new URIEncryptedEncoder();
+      const encoder = new EncryptedURIEncoder();
       this.decoded = content;
       this.encoded = encoder.encode(content);
     }
@@ -291,8 +291,23 @@ export type TEncryptedURIEncryptedDefaultParams = {
 
 export type TEncryptedURIEncryptableDefaultParams = {
   content: string;
-  key: string;
+  key: Uint8Array;
 } & TEncryptedURIDefaultParams;
+
+export type EncrypterClass = { new (...args: any[]): EncryptedURIEncrypter<any> } & { algorithm?: string };
+export type DecrypterClass<T extends TEncryptedURI = TEncryptedURI> = { new (decoded: T, ...args: any[]): EncryptedURIDecrypter<T> };
+
+export function EncryptedURIAlgorithm<T extends TEncryptedURI>(args: {
+  algorithm: string,
+  decrypter: DecrypterClass<T>
+}) {
+  return function (
+    target: EncrypterClass & { algorithm?: string }
+  ) {
+    target.algorithm = args.algorithm;
+    EncryptedURI.setAlgorithm(args.algorithm, target, args.decrypter);
+  };
+}
 
 export class EncryptedURI {
 
@@ -300,10 +315,10 @@ export class EncryptedURI {
 
   static readonly supportedAlgorithm: {
     [algorithm: string]: [
-      { new (...args: any[]): EncryptedURIEncrypter<any> },
-      { new (...args: any[]): EncryptedURIDecrypter<any> }
+      EncrypterClass,
+      DecrypterClass<any>
     ]
-  } = { }
+  } = { };
 
   static matcher(uri: string): boolean {
     return new EncryptedURISyntaxMatcher().match(uri);
@@ -314,12 +329,13 @@ export class EncryptedURI {
   }
 
   static async encrypt(params: TEncryptedURIEncryptableDefaultParams, ...args: any[]): Promise<string> {
-    const [ encryptor ] = this.getAlgorithm(params.algorithm);
-    const ciphred = await new encryptor(params, ...args).encrypt();
+    const [ encrypter ] = this.getAlgorithm(params.algorithm);
+    const ciphred = await new encrypter(params, ...args).encrypt();
+    ciphred.algorithm = encrypter.algorithm || params.algorithm;
     return Promise.resolve(this.encode(ciphred));
   }
 
-  static decrypt(uri: string, key: string): Promise<string>;
+  static decrypt(uri: string, key: Uint8Array): Promise<string>;
   static decrypt(uri: string, ...args: any[]): Promise<string> {
     const uriDecoded = new EncryptedURIParser(uri).decoded;
     const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);
@@ -328,15 +344,17 @@ export class EncryptedURI {
 
   static setAlgorithm<T extends TEncryptedURI>(
     algorithm: string,
-    encrypter: { new (...args: any[]): EncryptedURIEncrypter },
-    decrypter: { new (decoded: T, ...args: any[]): EncryptedURIDecrypter<T> }
+    encrypter: EncrypterClass,
+    decrypter: DecrypterClass<T>
   ): void {
-    this.supportedAlgorithm[algorithm] = [encrypter, decrypter];
+    if (!this.supportedAlgorithm[algorithm]) {
+      this.supportedAlgorithm[algorithm] = [encrypter, decrypter];
+    }
   }
 
   private static getAlgorithm(algorithm?: string): [
-    { new (...args: any[]): EncryptedURIEncrypter },
-    { new (decoded: TEncryptedURI, ...args: any[]): EncryptedURIDecrypter }
+    EncrypterClass,
+    DecrypterClass<any>
   ] {
     algorithm = algorithm || EncryptedURI.DEFAULT_ALGORITHM;
     const [ encryptor, decryptor ] = this.supportedAlgorithm[algorithm] || [ null, null];
