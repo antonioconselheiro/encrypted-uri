@@ -10,7 +10,7 @@
 
 *under beta test*
 
-Encode to standardize different types of encrypted content into a URI that allows the user to customize his cyphers with his preferred encryption algorithm.
+Encode to standardize different types of encrypted content into a URI that allows the user to customize his ciphers with his preferred encryption algorithm.
 
 ## Run example
 [Open example app](https://antonioconselheiro.github.io/encrypted-uri/ciphers-example/browser/)
@@ -38,7 +38,7 @@ The encode helps to receive updates to new algorithms, maintaining compatibility
 ## Syntax
 Encrypted URI are composed of five parts:
 
-```encrypted:[algorithm][?[args]];[cypher]```
+```encrypted:[algorithm][?[args]];[cipher]```
 
 The ```encrypted``` keyword identifies the string as encrypted uri.
 
@@ -46,11 +46,11 @@ The ```algorithm``` is the algorithm name, if not set, ```aes/cbc``` MUST be  as
 
 The ```args``` are query string format arguments with values encoded into percent-encoded. If the algorithm requires one single mandatory argument, when this argument is send alone in ```args``` it's not needed to include the attribute name.
 
-The ```cypher``` is the cypher itself.
+The ```cipher``` is the cipher or cipher params in a [OpenSSL compatible string](https://www.openssl.org/docs/man1.0.2/man1/openssl-enc.html), the salt param are sent in the header Salted_ in the bytes.
 
 ## Example
 The default, with default values ignored:
-```encrypted:?249c3d09119;U2FsdGVkX1mxOv5WpmRGHXZouip```
+```encrypted:?249c3d09119;U2FsdGVkX1mxOv5WpmRGHXZouip==```
 
 With all parameters include:
 ```encrypted:aes/cbc?iv=249c3d09119&pad=pkcs%237;U2FsdGVkX1mxOv5WpmRGHXZouip```
@@ -71,7 +71,7 @@ import { sha256 } from '@noble/hashes/sha256';
 
 pbkdf2(sha256, password, salt, { c: 100, dkLen: 8 });
 
-//  generates encrypted:aes?iv=1234567812345678;<cypher in base64>
+//  generates encrypted:aes?iv=1234567812345678;<cipher in base64>
 const encoded = EncryptedURI.encrypt({
   algorithm: 'aes',
   content: 'mensagem secreta',
@@ -88,14 +88,14 @@ if (EncryptedURI.matcher(encoded)) {
   EncryptedURI.decrypt(encoded, 'secretkey');
 }
 
-//  generates encrypted:?1234567812345678;<cypher in base64>
+//  generates encrypted:?1234567812345678;<cipher in base64>
 EncryptedURI.encrypt({
   content: 'mensagem secreta',
   key: 'secretkey',
   queryString: '1234567812345678'
 });
 
-//  generates encrypted:aes/cbc?1234567812345678;<cypher in base64>
+//  generates encrypted:aes/cbc?1234567812345678;<cipher in base64>
 EncryptedURI.encrypt({
   algorithm: 'aes',
   mode: 'cbc',
@@ -122,7 +122,7 @@ class CustomDecrypter extends EncryptedURIDecrypter<TEncryptedURI<{
 
   async decrypt(): Promise<string> {
     const iv = decoded.params.iv || decoded.params.queryParam;
-    return new algorithm(iv, this.key).decrypt(this.decoded.cypher);
+    return new algorithm(iv, this.key).decrypt(this.decoded.cipher);
   }
 }
 
@@ -138,12 +138,12 @@ class CustomEncrypter extends EncryptedURIEncrypter {
   }
 
   async encrypt(): Promise<TEncryptedURI> {
-    const cypher = await algorithm.encrypt(this.decoded.cypher, this.key)
+    const cipher = await algorithm.encrypt(this.decoded.cipher, this.key)
     return {
       //  this property will be override by the content in decorator,
       //  so you don't need to include it
       algorithm: 'custom',
-      cypher
+      cipher
     };
   }
 }
