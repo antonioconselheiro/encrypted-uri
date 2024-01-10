@@ -30,7 +30,10 @@ export class AppComponent {
     content: ['', [
       Validators.required.bind(this)
     ]],
-    key: ['', [
+    kdf: ['', [
+      Validators.required.bind(this)
+    ]],
+    password: ['', [
       Validators.required.bind(this)
     ]]
   });
@@ -39,7 +42,10 @@ export class AppComponent {
     uri: ['', [
       Validators.required.bind(this)
     ]],
-    key: ['', [
+    kdf: ['', [
+      Validators.required.bind(this)
+    ]],
+    password: ['', [
       Validators.required.bind(this)
     ]]
   });

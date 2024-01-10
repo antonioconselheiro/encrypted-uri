@@ -1,31 +1,52 @@
 <h1>Working Example</h1>
 
 <section>
-  <form (submit)="onEncryptSubmit()" [formGroup]="encryptForm" novalidate autocomplete="off">
+  <form (submit)="onEncryptSubmit()" [formGroup]="encryptForm" novalidate autocomplete="off"> 
+    <div>
+      <label for="algorithm">Select an algorithm</label>
+      <select id="algorithm" formControlName="algorithm" name="algorithm">
+        <option value="aes/cbc">aes/cbc</option>
+        <option value="aes/ecb">aes/ecb</option>
+        <option value="aes/ctr">aes/ctr</option>
+        <option value="aes/gcm">aes/gcm</option>
+        <option value="aes/siv">aes/siv</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="content">Content to encrypt:</label>
+      <textarea name="content" formControlName="content" id="content"></textarea>
+      <span *ngIf="getEncryptErrors('content', 'required')" class="error">* required</span>
+    </div>
+
     <fieldset>
-      <legend>Encrypt</legend>
-  
+      <legend>Key config</legend>
+
+      <div></div>
+
       <div>
-        <label for="algorithm">Select an algorithm</label>
-        <select id="algorithm" formControlName="algorithm" name="algorithm">
-          <option value="aes/cbc">aes/cbc</option>
-          <option value="aes/ecb">aes/ecb</option>
-          <option value="aes/ctr">aes/ctr</option>
-          <option value="aes/gcm">aes/gcm</option>
-          <option value="aes/siv">aes/siv</option>
+        <label for="salting">How you wanna your salt?</label>
+        <select id="salting" formControlName="salting" name="salting">
+          <option value="aside">Salt aside</option>
+          <option value="salted">Salted</option>
         </select>
       </div>
-  
+
       <div>
-        <label for="content">Content to encrypt:</label>
-        <textarea name="content" formControlName="content" id="content"></textarea>
-        <span *ngIf="getEncryptErrors('content', 'required')" class="error">* required</span>
+        <h3>Salt aside</h3>
+        The salt is send as HEX in URI parameter
+      </div>
+
+      <div>
+        <h3>Salted</h3>
+        The salt parameter will be set as a header of the cipher
+        (CryptoJS OpenSSL-compatible string)
       </div>
   
       <div>
-        <label for="encryptKey">Encryptation key:</label>
-        <input formControlName="key" id="encryptKey" type="password" name="key" />
-        <span *ngIf="getEncryptErrors('key', 'required')" class="error">* required</span>
+        <label for="encryptPassword">Encryptation password:</label>
+        <input formControlName="password" id="encryptPassword" type="password" name="password" />
+        <span *ngIf="getEncryptErrors('password', 'required')" class="error">* required</span>
       </div>
 
       <button type="submit">encrypt</button>
@@ -50,9 +71,9 @@
       </div>
   
       <div>
-        <label for="decryptKey">Key:</label>
-        <input formControlName="key" id="decryptKey" type="password" name="key" />
-        <span *ngIf="getEncryptErrors('key', 'required')" class="error">* required</span>
+        <label for="decryptPassword">Password:</label>
+        <input formControlName="password" id="decryptPassword" type="password" name="password" />
+        <span *ngIf="getEncryptErrors('password', 'required')" class="error">* required</span>
       </div>
 
       <button type="submit">decrypt</button>
