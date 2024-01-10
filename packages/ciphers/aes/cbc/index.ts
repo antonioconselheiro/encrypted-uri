@@ -2,7 +2,7 @@ import { EncryptedURI, EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedUR
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { base64 } from '@scure/base';
 import { cbc } from '@noble/ciphers/webcrypto/aes';
-import { TEncryptedURIAESWithInitializationVectorParams, getInitializationVector } from 'aes/initialization-vector';
+import { TEncryptedURIAESWithInitializationVectorParams, getInitializationVector } from '../initialization-vector';
 
 class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithInitializationVectorParams> {
   constructor(

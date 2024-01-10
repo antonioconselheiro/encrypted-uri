@@ -1,8 +1,8 @@
 import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIEncryptableDefaultParams } from "@encrypted-uri/core";
-import { bytesToUtf8, hexToBytes, utf8ToBytes } from "@noble/ciphers/utils";
-import { TEncryptedURIAESWithNumberOnceParams, getNumberOnce } from "aes/number-once";
+import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
+import { TEncryptedURIAESWithNumberOnceParams, getNumberOnce } from '../number-once';
 import { siv } from '@noble/ciphers/aes';
-import { base64 } from "@scure/base";
+import { base64 } from '@scure/base';
 
 class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithNumberOnceParams> {
   constructor(

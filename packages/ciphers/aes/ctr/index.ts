@@ -1,6 +1,6 @@
 import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIEncryptableDefaultParams } from "@encrypted-uri/core";
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from "@noble/ciphers/utils";
-import { TEncryptedURIAESWithInitializationVectorParams, getInitializationVector } from "aes/initialization-vector";
+import { TEncryptedURIAESWithInitializationVectorParams, getInitializationVector } from "../initialization-vector";
 import { ctr } from '@noble/ciphers/webcrypto/aes';
 import { base64 } from "@scure/base";
 

@@ -2,7 +2,7 @@ import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TE
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { gcm } from '@noble/ciphers/webcrypto/aes';
 import { base64 } from '@scure/base';
-import { TEncryptedURIAESWithNumberOnceParams, getNumberOnce } from 'aes/number-once';
+import { TEncryptedURIAESWithNumberOnceParams, getNumberOnce } from '../number-once';
 
 class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithNumberOnceParams> {
   constructor(
