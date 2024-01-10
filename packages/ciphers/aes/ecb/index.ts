@@ -6,15 +6,14 @@ import { base64 } from '@scure/base';
 class EncryptedURIAESECBDecrypter extends EncryptedURIDecrypter<TEncryptedURI> {
   constructor(
     decoded: TEncryptedURI,
-    private key: string
+    private key: Uint8Array
   ) {
     super(decoded);
   }
 
   async decrypt(): Promise<string> {
-    const key = utf8ToBytes(this.key);
     const cipher = utf8ToBytes(this.decoded.cipher || '');
-    const result = await ecb(key).decrypt(cipher);
+    const result = await ecb(this.key).decrypt(cipher);
 
     return bytesToUtf8(result);
   }

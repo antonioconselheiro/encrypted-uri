@@ -7,16 +7,15 @@ import { base64 } from "@scure/base";
 class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithInitializationVectorParams> {
   constructor(
     decoded: TEncryptedURIAESWithInitializationVectorParams,
-    private key: string
+    private key: Uint8Array
   ) {
     super(decoded);
   }
 
   async decrypt(): Promise<string> {
-    const key = utf8ToBytes(this.key);
     const ivhex = getInitializationVector(this.decoded);
     const cipher = utf8ToBytes(this.decoded.cipher);
-    const result = await ctr(key, hexToBytes(ivhex))
+    const result = await ctr(this.key, hexToBytes(ivhex))
       .decrypt(cipher);
 
     return bytesToUtf8(result);

@@ -2,7 +2,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",
-    "outDir": "../../dist/ciphers",
+    "outDir": "../../examples/ciphers-example/node_modules/@encrypted-uri/ciphers",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,

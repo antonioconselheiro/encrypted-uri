@@ -7,16 +7,15 @@ import { TEncryptedURIAESWithNumberOnceParams, getNumberOnce } from '../number-o
 class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithNumberOnceParams> {
   constructor(
     decoded: TEncryptedURIAESWithNumberOnceParams,
-    private key: string
+    private key: Uint8Array
   ) {
     super(decoded);
   }
 
   async decrypt(): Promise<string> {
-    const key = utf8ToBytes(this.key);
     const nonce = getNumberOnce(this.decoded);
     const cipher = utf8ToBytes(this.decoded.cipher);
-    const result = await gcm(key, Uint8Array.from(base64.decode(nonce)))
+    const result = await gcm(this.key, Uint8Array.from(base64.decode(nonce)))
       .decrypt(cipher);
 
     return bytesToUtf8(result);
