@@ -74,14 +74,13 @@ export class AppComponent {
           content: raw.content,
           password: raw.password,
           kdf: {
+            kdf: 'pbkdf2',
             includeURIParams: true,
             hasher: 'sha256',
             rounds: 1,
             derivateKeyLength: 32
           }
-        }).then(uri => {
-          this.generatedEncryptedURI = uri;
-        });
+        }).then(uri => this.generatedEncryptedURI = uri);
       }
     }
   }

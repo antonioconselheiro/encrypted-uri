@@ -30,6 +30,7 @@ export type TEncryptedURIParams = {
    */
   h?: string;
 } & {
+
   /**
    * s, salt parameter expected in hex string format
    *
@@ -51,8 +52,61 @@ export type TEncryptedURIParams = {
 export type TEncryptedURI<T extends TEncryptedURIParams = TEncryptedURIParams> = {
   algorithm?: string;
   queryString?: string;
+
+  /**
+   * bytes of cipher into base64, it could include the 'Salted__' header.
+   */
   cipher: string;
   params?: T;
+
+  /**
+   * Customize the key derivation function params to open and to encrypt,
+   * you can configure in this object to include the kdf as URI params 
+   */
+  kdf?: {
+
+    /**
+     * Only pbkdf2 supported, just if someone see purpose in alternative KDF,
+     * if you need this come to me, open an issue
+     */
+    kdf?: 'pbkdf2',
+
+    /**
+     * If you want your custom parameters for key derivation function
+     * and want it included in the generated URI.
+     *
+     * @default true
+     */
+    includeURIParams?: boolean;
+
+    /**
+     * Enableable just if `includeURIParams` is set as `true`.
+     *
+     * If set as `true` ignore the param if the value is the default
+     * value, include only non default params.
+     *
+     * If set as `false` all included param in kdf object will be
+     * include in URI with his reserved name.
+     * 
+     * @default true
+     */
+    ignoreDefaults?: boolean;
+
+    /**
+     * Hashing algorithm supported by pbkdf2
+     * 
+     * @default sha256
+     */
+    hasher?: string;
+
+    /**
+     * Iterations of hashing for pbkdf2
+     * 
+     * @default 1
+     */
+    rounds?: number;
+    derivateKeyLength?: number;
+  }
 }
 
 export class IterableString {
