@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EncryptedURI } from '@encrypted-uri/core';
-import { pbkdf2 } from '@noble/hashes/pbkdf2';
-import { sha256 } from '@noble/hashes/sha256';
 import { randomBytes } from '@noble/hashes/utils';
 
 @Component({
@@ -67,13 +65,8 @@ export class AppComponent {
     return this.submittedDecrypt && controls[property].errors[errorName] || false;
   }
 
-  private getKeyFromPasswordBasedKDF2(password: string, salt: Uint8Array): Uint8Array {
-    return pbkdf2(sha256, password, salt, { c: 1, dkLen: 32 });
-  }
-
   onEncryptSubmit(): void {
     if (this.encryptForm.valid) {
-      const salt = randomBytes(32);
       const raw = this.encryptForm.getRawValue();
       if (raw.algorithm && raw.content && raw.password) {
         EncryptedURI.encrypt({
@@ -81,6 +74,7 @@ export class AppComponent {
           content: raw.content,
           password: raw.password,
           kdf: {
+            includeURIParams: true,
             hasher: 'sha256',
             rounds: 1,
             derivateKeyLength: 32
@@ -99,7 +93,7 @@ export class AppComponent {
         EncryptedURI
           .decrypt(raw.uri, raw.password, {
             kdf: {
-              hasher: sha256,
+              hasher: 'sha256',
               rounds: 1,
               derivateKeyLength: 32
             }

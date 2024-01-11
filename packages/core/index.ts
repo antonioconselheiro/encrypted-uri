@@ -1,4 +1,46 @@
 export type TEncryptedURIParams = {
+
+  /**
+   * key derivation function
+   * @default 'pbkdf2'
+   */
+  kdf?: string;
+
+  /**
+   * derivated key length serialized as string
+   * this is a pbkdf2 kdf param
+   *
+   * @default '32'
+   */
+  dklen?: string;
+
+  /**
+   * number of counts, rounds serialized as string
+   * this is a pbkdf2 kdf param
+   * 
+   * @default '1'
+   */
+  c?: string;
+
+  /**
+   * h, algorithm for hasher
+   * this is a pbkdf2 kdf param
+   * 
+   * @default 'sha256'
+   */
+  h?: string;
+} & {
+  /**
+   * s, salt parameter expected in hex string format
+   *
+   * mandatory, as default it is a random number and is not send
+   * as URI param, but as 'Salted__' header in the cipher, if 's'
+   * is set, the 'Salted__' header will be removed
+   *  
+   * this is a pbkdf2 kdf param 
+   */
+  s?: string;
+} & {
   [attr: string]: string;
 }
 
