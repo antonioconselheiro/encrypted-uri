@@ -1,4 +1,7 @@
 <h1>Working Example</h1>
+<span>
+  This page generated a cipher params encoded into a <a href="https://www.openssl.org/docs/man1.0.2/man1/openssl-enc.html">OpenSSL-compatible string</a>, these params include salt and the cipher itself.
+</span>
 
 <section>
   <form (submit)="onEncryptSubmit()" [formGroup]="encryptForm" novalidate autocomplete="off"> 
@@ -21,27 +24,6 @@
 
     <fieldset>
       <legend>Key config</legend>
-
-      <div></div>
-
-      <div>
-        <label for="salting">How you wanna your salt?</label>
-        <select id="salting" formControlName="salting" name="salting">
-          <option value="aside">Salt aside</option>
-          <option value="salted">Salted</option>
-        </select>
-      </div>
-
-      <div>
-        <h3>Salt aside</h3>
-        The salt is send as HEX in URI parameter
-      </div>
-
-      <div>
-        <h3>Salted</h3>
-        The salt parameter will be set as a header of the cipher
-        (CryptoJS <a href="https://www.openssl.org/docs/man1.0.2/man1/openssl-enc.html">OpenSSL-compatible string</a>)
-      </div>
   
       <div>
         <label for="encryptPassword">Encryptation password:</label>
