@@ -3,6 +3,8 @@ import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { TEncryptedURIAESWithNumberOnceParams, getNumberOnce } from '../number-once';
 import { siv } from '@noble/ciphers/aes';
 import { base64 } from '@scure/base';
+import { kdf } from "aes/kdf";
+import { randomBytes } from "@noble/hashes/utils";
 
 class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithNumberOnceParams> {
   constructor(
@@ -38,10 +40,11 @@ class EncryptedURIAESSIVEncrypter extends EncryptedURIEncrypter {
     const numberOnceHex = getNumberOnce(this.params);
     const nonce = hexToBytes(numberOnceHex);
     const content = utf8ToBytes(this.params.content);
-    const cipher = await siv(this.params.key, nonce).encrypt(content);
+    const salt = randomBytes(32);
+    const cipher = await siv(kdf(this.params.password, salt), nonce).encrypt(content);
 
     return Promise.resolve({
-      cipher: base64.encode(cipher),
+      cipher: base64.encode(OpenSSL.encode(cipher, salt)),
       params: { no: numberOnceHex }
     });
   }

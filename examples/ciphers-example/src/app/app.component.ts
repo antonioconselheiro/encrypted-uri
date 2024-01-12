@@ -31,10 +31,16 @@ export class AppComponent {
     content: ['', [
       Validators.required.bind(this)
     ]],
-    kdf: ['', [
+    password: ['', [
       Validators.required.bind(this)
     ]],
-    password: ['', [
+    kdfHasher: ['sha3_256', [
+      Validators.required.bind(this)
+    ]],
+    kdfRounds: ['32', [
+      Validators.required.bind(this)
+    ]],
+    kdfDerivateKeyLength: ['32', [
       Validators.required.bind(this)
     ]]
   });
@@ -43,10 +49,16 @@ export class AppComponent {
     uri: ['', [
       Validators.required.bind(this)
     ]],
-    kdf: ['', [
+    password: ['', [
       Validators.required.bind(this)
     ]],
-    password: ['', [
+    kdfHasher: ['sha3_256', [
+      Validators.required.bind(this)
+    ]],
+    kdfRounds: ['32', [
+      Validators.required.bind(this)
+    ]],
+    kdfDerivateKeyLength: ['32', [
       Validators.required.bind(this)
     ]]
   });
@@ -76,8 +88,9 @@ export class AppComponent {
           kdf: {
             kdf: 'pbkdf2',
             includeURIParams: true,
-            hasher: 'sha256',
-            rounds: 1,
+            ignoreDefaults: true,
+            hasher: 'sha3_256',
+            rounds: 32,
             derivateKeyLength: 32
           }
         }).then(uri => this.generatedEncryptedURI = uri);

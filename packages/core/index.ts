@@ -39,7 +39,7 @@ export type TEncryptedURIKDFConfig = {
   /**
    * Iterations of hashing for pbkdf2
    * 
-   * @default 1
+   * @default 32
    */
   rounds?: number;
 
@@ -397,7 +397,7 @@ export type TEncryptedURIEncryptedDefaultParams = {
 
 export type TEncryptedURIEncryptableDefaultParams = {
   content: string;
-  key: Uint8Array;
+  key: string;
 } & TEncryptedURIDefaultParams;
 
 export type EncrypterClass = { new (...args: any[]): EncryptedURIEncrypter<any> } & { algorithm?: string };
