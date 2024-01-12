@@ -1,112 +1,54 @@
-export type TEncryptedURIParams = {
+export type TEncryptedURIKDFConfig = {
 
   /**
-   * key derivation function
-   * @default 'pbkdf2'
-   */
-  kdf?: string;
-
-  /**
-   * derivated key length serialized as string
-   * this is a pbkdf2 kdf param
-   *
-   * @default '32'
-   */
-  dklen?: string;
-
-  /**
-   * number of counts, rounds serialized as string
-   * this is a pbkdf2 kdf param
+   * Only pbkdf2 supported, just if someone see purpose in alternative KDF,
+   * if you need this come to me, open an issue
    * 
-   * @default '1'
+   * @default pbkdf2
    */
-  c?: string;
+  kdf?: 'pbkdf2',
 
   /**
-   * h, algorithm for hasher
-   * this is a pbkdf2 kdf param
-   * 
-   * @default 'sha256'
-   */
-  h?: string;
-} & {
-
-  /**
-   * s, salt parameter expected in hex string format
+   * If you want your custom parameters for key derivation function
+   * and want it included in the generated URI.
    *
-   * mandatory, as default it is a random number and is not send
-   * as URI param, but as 'Salted__' header in the cipher, if 's'
-   * is set, the 'Salted__' header will be removed
-   *  
-   * this is a pbkdf2 kdf param 
+   * @default true
    */
-  s?: string;
-} & {
-  [attr: string]: string;
-}
-
-/**
- * When the uri is still being interpreted
- * and has not yet gone through validation
- */
-export type TEncryptedURI<T extends TEncryptedURIParams = TEncryptedURIParams> = {
-  algorithm?: string;
-  queryString?: string;
+  includeURIParams?: boolean;
 
   /**
-   * bytes of cipher into base64, it could include the 'Salted__' header.
+   * Enableable just if `includeURIParams` is set as `true`.
+   *
+   * If set as `true` ignore the param if the value is the default
+   * value, include only non default params.
+   *
+   * If set as `false` all included param in kdf object will be
+   * include in URI with his reserved name.
+   * 
+   * @default true
    */
-  cipher: string;
-  params?: T;
+  ignoreDefaults?: boolean;
 
   /**
-   * Customize the key derivation function params to open and to encrypt,
-   * you can configure in this object to include the kdf as URI params 
+   * Hashing algorithm supported by pbkdf2
+   * 
+   * @default sha256
    */
-  kdf?: {
+  hasher?: string;
 
-    /**
-     * Only pbkdf2 supported, just if someone see purpose in alternative KDF,
-     * if you need this come to me, open an issue
-     */
-    kdf?: 'pbkdf2',
+  /**
+   * Iterations of hashing for pbkdf2
+   * 
+   * @default 1
+   */
+  rounds?: number;
 
-    /**
-     * If you want your custom parameters for key derivation function
-     * and want it included in the generated URI.
-     *
-     * @default true
-     */
-    includeURIParams?: boolean;
-
-    /**
-     * Enableable just if `includeURIParams` is set as `true`.
-     *
-     * If set as `true` ignore the param if the value is the default
-     * value, include only non default params.
-     *
-     * If set as `false` all included param in kdf object will be
-     * include in URI with his reserved name.
-     * 
-     * @default true
-     */
-    ignoreDefaults?: boolean;
-
-    /**
-     * Hashing algorithm supported by pbkdf2
-     * 
-     * @default sha256
-     */
-    hasher?: string;
-
-    /**
-     * Iterations of hashing for pbkdf2
-     * 
-     * @default 1
-     */
-    rounds?: number;
-    derivateKeyLength?: number;
-  }
+  /**
+   * Derivate key length for pbkdf2
+   * 
+   * @default 32
+   */
+  derivateKeyLength?: number;
 }
 
 export class IterableString {
@@ -243,6 +185,21 @@ class EncryptedURISyntaxMatcher {
   }
 }
 
+/**
+ * When the uri is still being interpreted
+ * and has not yet gone through validation
+ */
+export type TEncryptedURI<T extends TEncryptedURIParams = TEncryptedURIParams> = {
+  algorithm?: string;
+  queryString?: string;
+
+  /**
+   * bytes of cipher into base64, it could include the 'Salted__' header.
+   */
+  cipher: string;
+  params?: T;
+}
+
 class EncryptedURIDecoder {
 
   private readonly ENCRYPTED_URI_MATCHER = /^encrypted:/;
@@ -376,9 +333,62 @@ export abstract class EncryptedURIDecrypter<T extends TEncryptedURI = TEncrypted
   abstract decrypt(): Promise<string>;
 }
 
+export type TEncryptedURIParams = {
+  [attr: string]: string;
+} & {
+
+  /**
+   * key derivation function
+   * @default 'pbkdf2'
+   */
+  kdf?: string;
+
+  /**
+   * derivated key length serialized as string
+   * this is a pbkdf2 kdf param
+   *
+   * @default '32'
+   */
+  dklen?: string;
+
+  /**
+   * number of counts, rounds serialized as string
+   * this is a pbkdf2 kdf param
+   * 
+   * @default '1'
+   */
+  c?: string;
+
+  /**
+   * h, algorithm for hasher
+   * this is a pbkdf2 kdf param
+   * 
+   * @default 'sha256'
+   */
+  h?: string;
+} & {
+
+  /**
+   * s, salt parameter expected in hex string format
+   *
+   * mandatory, as default it is a random number and is not send
+   * as URI param, but as 'Salted__' header in the cipher, if 's'
+   * is set, the 'Salted__' header will be removed
+   *  
+   * this is a pbkdf2 kdf param 
+   */
+  s?: string;
+};
+
 export type TEncryptedURIDefaultParams = {
-  algorithm?: string;
   [param: string]: any;
+
+  algorithm?: string;
+  /**
+   * Customize the key derivation function params to open and to encrypt,
+   * you can configure in this object to include the kdf as URI params 
+   */
+  kdf?: TEncryptedURIKDFConfig;
 }
 
 export type TEncryptedURIEncryptedDefaultParams = {
