@@ -1,9 +1,8 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterOutlet } from '@angular/router';
 import { EncryptedURI } from '@encrypted-uri/core';
-import { randomBytes } from '@noble/hashes/utils';
 
 @Component({
   selector: 'app-root',
@@ -34,7 +33,7 @@ export class AppComponent {
     password: ['', [
       Validators.required.bind(this)
     ]],
-    kdfHasher: ['sha3_256', [
+    kdfHasher: ['sha256', [
       Validators.required.bind(this)
     ]],
     kdfRounds: ['32', [
@@ -52,7 +51,7 @@ export class AppComponent {
     password: ['', [
       Validators.required.bind(this)
     ]],
-    kdfHasher: ['sha3_256', [
+    kdfHasher: ['sha256', [
       Validators.required.bind(this)
     ]],
     kdfRounds: ['32', [
