@@ -189,7 +189,7 @@ class EncryptedURISyntaxMatcher {
  * When the uri is still being interpreted
  * and has not yet gone through validation
  */
-export type TEncryptedURI<T extends TEncryptedURIParams = TEncryptedURIParams> = {
+export type TEncryptedURI<T = {}> = {
   algorithm?: string;
   queryString?: string;
 
@@ -197,7 +197,7 @@ export type TEncryptedURI<T extends TEncryptedURIParams = TEncryptedURIParams> =
    * bytes of cipher into base64, it could include the 'Salted__' header.
    */
   cipher: string;
-  params?: T;
+  params?: TEncryptedURIParams<T>;
 }
 
 class EncryptedURIDecoder {
@@ -324,16 +324,16 @@ export abstract class EncryptedURIEncrypter<T extends TEncryptedURIEncryptableDe
   abstract encrypt(): Promise<TEncryptedURI>;
 }
 
-export abstract class EncryptedURIDecrypter<T extends TEncryptedURI = TEncryptedURI> {
+export abstract class EncryptedURIDecrypter<T = {}> {
 
   constructor(
-    protected decoded: T
+    protected decoded: TEncryptedURI<T>
   ) { }
 
   abstract decrypt(): Promise<string>;
 }
 
-export type TEncryptedURIParams = {
+export type TEncryptedURIParams<T = {}> = {
   [attr: string]: string;
 } & {
 
@@ -378,7 +378,7 @@ export type TEncryptedURIParams = {
    * this is a pbkdf2 kdf param 
    */
   s?: string;
-};
+} & T;
 
 export type TEncryptedURIDefaultParams = {
   [param: string]: any;
@@ -397,7 +397,7 @@ export type TEncryptedURIEncryptedDefaultParams = {
 
 export type TEncryptedURIEncryptableDefaultParams = {
   content: string;
-  key: string;
+  password: string;
 } & TEncryptedURIDefaultParams;
 
 export type EncrypterClass = { new (...args: any[]): EncryptedURIEncrypter<any> } & { algorithm?: string };

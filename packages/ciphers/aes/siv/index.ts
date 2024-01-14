@@ -5,11 +5,13 @@ import { siv } from '@noble/ciphers/aes';
 import { base64 } from '@scure/base';
 import { kdf } from "aes/kdf";
 import { randomBytes } from "@noble/hashes/utils";
+import { OpenSSLSerializer } from "aes/openssl-serializer";
+import { getSalt } from "aes/salt";
 
 class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithNumberOnceParams> {
   constructor(
     decoded: TEncryptedURIAESWithNumberOnceParams,
-    private key: Uint8Array
+    private password: string
   ) {
     super(decoded);
   }
@@ -17,7 +19,8 @@ class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
   async decrypt(): Promise<string> {
     const nonce = getNumberOnce(this.decoded);
     const cipher = utf8ToBytes(this.decoded.cipher);
-    const result = await siv(this.key, Uint8Array.from(base64.decode(nonce)))
+    const salt = getSalt(OpenSSLSerializer.decode(cipher), this.decoded?.params);
+    const result = await siv(kdf(this.password, salt), Uint8Array.from(base64.decode(nonce)))
       .decrypt(cipher);
 
     return bytesToUtf8(result);
@@ -44,7 +47,7 @@ class EncryptedURIAESSIVEncrypter extends EncryptedURIEncrypter {
     const cipher = await siv(kdf(this.params.password, salt), nonce).encrypt(content);
 
     return Promise.resolve({
-      cipher: base64.encode(OpenSSL.encode(cipher, salt)),
+      cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),
       params: { no: numberOnceHex }
     });
   }
