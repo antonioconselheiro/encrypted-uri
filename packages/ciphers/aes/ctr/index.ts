@@ -1,22 +1,26 @@
 import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIEncryptableDefaultParams } from "@encrypted-uri/core";
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from "@noble/ciphers/utils";
-import { TEncryptedURIAESWithInitializationVectorParams, getInitializationVector } from "aes/initialization-vector";
+import { TEncryptedURIAESWithInitializationVectorParams, getInitializationVector } from "../initialization-vector";
 import { ctr } from '@noble/ciphers/webcrypto/aes';
 import { base64 } from "@scure/base";
+import { OpenSSLSerializer } from "aes/openssl-serializer";
+import { getSalt } from "aes/salt";
+import { kdf } from "aes/kdf";
+import { randomBytes } from "@noble/hashes/utils";
 
 class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithInitializationVectorParams> {
   constructor(
     decoded: TEncryptedURIAESWithInitializationVectorParams,
-    private key: string
+    private password: string
   ) {
     super(decoded);
   }
 
   async decrypt(): Promise<string> {
-    const key = utf8ToBytes(this.key);
     const ivhex = getInitializationVector(this.decoded);
     const cipher = utf8ToBytes(this.decoded.cipher);
-    const result = await ctr(key, hexToBytes(ivhex))
+    const salt = getSalt(OpenSSLSerializer.decode(cipher), this.decoded?.params);
+    const result = await ctr(kdf(this.password, salt), hexToBytes(ivhex))
       .decrypt(cipher);
 
     return bytesToUtf8(result);
@@ -39,7 +43,8 @@ class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter {
     const ivhex = getInitializationVector(this.params);
     const iv = hexToBytes(ivhex);
     const content = utf8ToBytes(this.params.content);
-    const cipher = await ctr(this.params.key, iv).encrypt(content);
+    const salt = randomBytes(32);
+    const cipher = await ctr(kdf(this.params.password, salt), iv).encrypt(content);
 
     return Promise.resolve({
       cipher: base64.encode(cipher),

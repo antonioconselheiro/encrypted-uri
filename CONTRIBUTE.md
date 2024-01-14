@@ -66,9 +66,23 @@ If you contribute code you can suggest including extensions to the development e
 ## Important Docs
 and interesting technologies to master to enhance your ability to contribute:
 
-- https://www.typescriptlang.org/docs/handbook/typescript-from-scratch.html
-- https://www.typescriptlang.org/docs/handbook/intro.html
+Dev environment:
 - https://docs.docker.com/get-started/
 - https://code.visualstudio.com/docs/remote/devcontainer-cli
+
+Dependencies docs:
+- https://www.typescriptlang.org/docs/handbook/intro.html
+- https://www.typescriptlang.org/docs/handbook/typescript-from-scratch.html
 - https://developer.mozilla.org/pt-BR/docs/Web/API/Web_Crypto_API
 - https://github.com/paulmillr/noble-ciphers
+- https://github.com/paulmillr/scure-base
+
+Related tools:
+- https://www.npmjs.com/package/@scure/base
+- https://www.npmjs.com/package/@noble/ciphers
+
+About OpenSSL serialization:
+- https://www.openssl.org/docs/man1.0.2/man1/openssl-enc.html
+- https://cryptojs.gitbook.io/docs/#the-cipher-output
+- https://github.com/brix/crypto-js/blob/develop/src/cipher-core.js
+- http://justsolve.archiveteam.org/wiki/OpenSSL_salted_format

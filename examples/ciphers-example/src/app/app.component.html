@@ -1,35 +1,71 @@
 <h1>Working Example</h1>
+<span>
+  This page generated a cipher params encoded into a <a href="https://www.openssl.org/docs/man1.0.2/man1/openssl-enc.html">OpenSSL-compatible string</a>, these params include salt and the cipher itself.
+</span>
 
 <section>
-  <form (submit)="onEncryptSubmit()" [formGroup]="encryptForm" novalidate autocomplete="off">
+  <form (submit)="onEncryptSubmit()" [formGroup]="encryptForm" novalidate autocomplete="off"> 
+    <div>
+      <label for="algorithm">Select an algorithm</label>
+      <select id="algorithm" formControlName="algorithm" name="algorithm">
+        <option value="aes/cbc">aes/cbc</option>
+        <option value="aes/ecb">aes/ecb</option>
+        <option value="aes/ctr">aes/ctr</option>
+        <option value="aes/gcm">aes/gcm</option>
+        <option value="aes/siv">aes/siv</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="content">Content to encrypt:</label>
+      <textarea name="content" formControlName="content" id="content"></textarea>
+      <span *ngIf="getEncryptErrors('content', 'required')" class="error">* required</span>
+    </div>
+    
     <fieldset>
-      <legend>Encrypt</legend>
-  
+      <legend>Key derivation config</legend>
+
       <div>
-        <label for="algorithm">Select an algorithm</label>
-        <select id="algorithm" formControlName="algorithm" name="algorithm">
-          <option value="aes/cbc">aes/cbc</option>
-          <option value="aes/ecb">aes/ecb</option>
-          <option value="aes/ctr">aes/ctr</option>
-          <option value="aes/gcm">aes/gcm</option>
-          <option value="aes/siv">aes/siv</option>
-        </select>
-      </div>
-  
-      <div>
-        <label for="content">Content to encrypt:</label>
-        <textarea name="content" formControlName="content" id="content"></textarea>
-        <span *ngIf="getEncryptErrors('content', 'required')" class="error">* required</span>
-      </div>
-  
-      <div>
-        <label for="encryptKey">Encryptation key:</label>
-        <input formControlName="key" id="encryptKey" type="password" name="key" />
-        <span *ngIf="getEncryptErrors('key', 'required')" class="error">* required</span>
+        <label for="encryptPassword">Encryptation password:</label>
+        <input formControlName="password" id="encryptPassword" type="password" name="password" />
+        <span *ngIf="getEncryptErrors('password', 'required')" class="error">* required</span>
       </div>
 
-      <button type="submit">encrypt</button>
-    </fieldset>  
+      <div>
+        <label for="encryptKDFHasher">Select a hasher</label>
+        <select id="encryptKDFHasher" formControlName="kdfHasher" name="encryptKDFHasher">
+          <option value="sha256">sha256</option>
+          <option value="sha384">sha384</option>
+          <option value="sha512">sha512</option>
+          <option value="sha512_256">sha512_256</option>
+          <option value="sha3_224">sha3_224</option>
+          <option value="sha3_256">sha3_256</option>
+          <option value="sha3_384">sha3_384</option>
+          <option value="sha3_512">sha3_512</option>
+          <option value="keccak_224">keccak_224</option>
+          <option value="keccak_256">keccak_256</option>
+          <option value="keccak_384">keccak_384</option>
+          <option value="keccak_512">keccak_512</option>
+          <option value="shake128">shake128</option>
+          <option value="shake256">shake256</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="encryptKDFRounds">Rounds:</label>
+        <input type="number" id="encryptKDFRounds" name="encryptKDFRounds" formControlName="kdfRounds" />
+        <span *ngIf="getEncryptErrors('encryptKDFRounds', 'required')" class="error">* required</span>
+      </div>
+
+      <div>
+        <label for="encryptKDFDerivateKeyLength">Derivate Key Length:</label>
+        <input type="number" id="encryptKDFDerivateKeyLength" name="encryptKDFDerivateKeyLength" formControlName="kdfDerivateKeyLength" />
+        <span *ngIf="getEncryptErrors('encryptKDFDerivateKeyLength', 'required')" class="error">* required</span>
+      </div>
+
+    </fieldset>
+
+    <button type="submit">encrypt</button>
   </form>
 
   <div class="show-result" *ngIf="generatedEncryptedURI">
@@ -46,14 +82,53 @@
       <div>
         <label for="uri">Encrypted URI:</label>
         <input type="text" placeholder="encrypted:aes/cbc;1234..." formControlName="uri" id="uri" name="uri" />
-        <span *ngIf="getEncryptErrors('uri', 'required')" class="error">* required</span>
+        <span *ngIf="getDecryptErrors('uri', 'required')" class="error">* required</span>
       </div>
   
       <div>
-        <label for="decryptKey">Key:</label>
-        <input formControlName="key" id="decryptKey" type="password" name="key" />
-        <span *ngIf="getEncryptErrors('key', 'required')" class="error">* required</span>
+        <label for="decryptPassword">Password:</label>
+        <input formControlName="password" id="decryptPassword" type="password" name="password" />
+        <span *ngIf="getDecryptErrors('password', 'required')" class="error">* required</span>
       </div>
+
+      <fieldset>
+        <legend>Key derivation config</legend>
+  
+        <div>
+          <label for="decryptPassword">Decriptation password:</label>
+          <input formControlName="password" id="decryptPassword" type="password" name="password" />
+          <span *ngIf="getDecryptErrors('password', 'required')" class="error">* required</span>
+        </div>
+  
+        <div>
+          <label for="decryptKDFHasher">Select a hasher</label>
+          <select id="decryptKDFHasher" formControlName="kdfHasher" name="decryptKDFHasher">
+            <option value="sha3_224">sha3_224</option>
+            <option value="sha3_256">sha3_256</option>
+            <option value="sha3_384">sha3_384</option>
+            <option value="sha3_512">sha3_512</option>
+            <option value="keccak_224">keccak_224</option>
+            <option value="keccak_256">keccak_256</option>
+            <option value="keccak_384">keccak_384</option>
+            <option value="keccak_512">keccak_512</option>
+            <option value="shake128">shake128</option>
+            <option value="shake256">shake256</option>
+          </select>
+        </div>
+  
+        <div>
+          <label for="decryptKDFRounds">Rounds:</label>
+          <input type="number" id="decryptKDFRounds" name="decryptKDFRounds" formControlName="kdfRounds" />
+          <span *ngIf="getDecryptErrors('decryptKDFRounds', 'required')" class="error">* required</span>
+        </div>
+  
+        <div>
+          <label for="decryptKDFDerivateKeyLength">Derivate Key Length:</label>
+          <input type="number" id="decryptKDFDerivateKeyLength" name="decryptKDFDerivateKeyLength" formControlName="kdfDerivateKeyLength" />
+          <span *ngIf="getDecryptErrors('decryptKDFDerivateKeyLength', 'required')" class="error">* required</span>
+        </div>
+  
+      </fieldset>
 
       <button type="submit">decrypt</button>
     </fieldset>  

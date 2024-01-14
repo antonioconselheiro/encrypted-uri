@@ -1,22 +1,26 @@
 import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIEncryptableDefaultParams } from "@encrypted-uri/core";
-import { bytesToUtf8, hexToBytes, utf8ToBytes } from "@noble/ciphers/utils";
-import { TEncryptedURIAESWithNumberOnceParams, getNumberOnce } from "aes/number-once";
+import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
+import { TEncryptedURIAESWithNumberOnceParams, getNumberOnce } from '../number-once';
 import { siv } from '@noble/ciphers/aes';
-import { base64 } from "@scure/base";
+import { base64 } from '@scure/base';
+import { kdf } from "aes/kdf";
+import { randomBytes } from "@noble/hashes/utils";
+import { OpenSSLSerializer } from "aes/openssl-serializer";
+import { getSalt } from "aes/salt";
 
 class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithNumberOnceParams> {
   constructor(
     decoded: TEncryptedURIAESWithNumberOnceParams,
-    private key: string
+    private password: string
   ) {
     super(decoded);
   }
 
   async decrypt(): Promise<string> {
-    const key = utf8ToBytes(this.key);
     const nonce = getNumberOnce(this.decoded);
     const cipher = utf8ToBytes(this.decoded.cipher);
-    const result = await siv(key, Uint8Array.from(base64.decode(nonce)))
+    const salt = getSalt(OpenSSLSerializer.decode(cipher), this.decoded?.params);
+    const result = await siv(kdf(this.password, salt), Uint8Array.from(base64.decode(nonce)))
       .decrypt(cipher);
 
     return bytesToUtf8(result);
@@ -39,10 +43,11 @@ class EncryptedURIAESSIVEncrypter extends EncryptedURIEncrypter {
     const numberOnceHex = getNumberOnce(this.params);
     const nonce = hexToBytes(numberOnceHex);
     const content = utf8ToBytes(this.params.content);
-    const cipher = await siv(this.params.key, nonce).encrypt(content);
+    const salt = randomBytes(32);
+    const cipher = await siv(kdf(this.params.password, salt), nonce).encrypt(content);
 
     return Promise.resolve({
-      cipher: base64.encode(cipher),
+      cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),
       params: { no: numberOnceHex }
     });
   }

@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import { Component } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterOutlet } from '@angular/router';
 import { EncryptedURI } from '@encrypted-uri/core';
 
 @Component({
@@ -30,7 +30,16 @@ export class AppComponent {
     content: ['', [
       Validators.required.bind(this)
     ]],
-    key: ['', [
+    password: ['', [
+      Validators.required.bind(this)
+    ]],
+    kdfHasher: ['sha256', [
+      Validators.required.bind(this)
+    ]],
+    kdfRounds: ['32', [
+      Validators.required.bind(this)
+    ]],
+    kdfDerivateKeyLength: ['32', [
       Validators.required.bind(this)
     ]]
   });
@@ -39,7 +48,16 @@ export class AppComponent {
     uri: ['', [
       Validators.required.bind(this)
     ]],
-    key: ['', [
+    password: ['', [
+      Validators.required.bind(this)
+    ]],
+    kdfHasher: ['sha256', [
+      Validators.required.bind(this)
+    ]],
+    kdfRounds: ['32', [
+      Validators.required.bind(this)
+    ]],
+    kdfDerivateKeyLength: ['32', [
       Validators.required.bind(this)
     ]]
   });
@@ -61,14 +79,20 @@ export class AppComponent {
   onEncryptSubmit(): void {
     if (this.encryptForm.valid) {
       const raw = this.encryptForm.getRawValue();
-      if (raw.algorithm && raw.content && raw.key) {
+      if (raw.algorithm && raw.content && raw.password) {
         EncryptedURI.encrypt({
           algorithm: raw.algorithm,
           content: raw.content,
-          key: raw.key
-        }).then(uri => {
-          this.generatedEncryptedURI = uri;
-        });
+          password: raw.password,
+          kdf: {
+            kdf: 'pbkdf2',
+            includeURIParams: true,
+            ignoreDefaults: true,
+            hasher: 'sha3_256',
+            rounds: 32,
+            derivateKeyLength: 32
+          }
+        }).then(uri => this.generatedEncryptedURI = uri);
       }
     }
   }
@@ -76,9 +100,15 @@ export class AppComponent {
   onDecryptSubmit(): void {
     if (this.decryptForm.valid) {
       const raw = this.decryptForm.getRawValue();
-      if (raw.uri && raw.key) {
+      if (raw.uri && raw.password) {
         EncryptedURI
-          .decrypt(raw.uri, raw.key)
+          .decrypt(raw.uri, raw.password, {
+            kdf: {
+              hasher: 'sha256',
+              rounds: 1,
+              derivateKeyLength: 32
+            }
+          })
           .then(decrypted => this.decryptedContent = decrypted);
       }
     }
