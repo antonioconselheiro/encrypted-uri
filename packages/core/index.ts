@@ -191,11 +191,13 @@ export class EncryptedURIParser<T extends {}> {
   }
 }
 
-export abstract class EncryptedURIEncrypter<T extends TEncryptedURIEncryptableDefaultParams, U extends {}> {
+export abstract class EncryptedURIEncrypter<
+  T extends { [params: string]: string }
+> {
 
-  constructor(protected params: T) { }
+  constructor(protected params: TEncryptedURIEncryptableDefaultParams & TEncryptedURI<T>) { }
   
-  abstract encrypt(): Promise<TEncryptedURI<U>>;
+  abstract encrypt(): Promise<TEncryptedURI<T>>;
 }
 
 export abstract class EncryptedURIDecrypter<T extends {}> {
@@ -274,7 +276,7 @@ export type TEncryptedURIEncryptableDefaultParams = {
   password: string;
 } & TEncryptedURIDefaultParams;
 
-export type EncrypterClass = { new (...args: any[]): EncryptedURIEncrypter<any, {}> } & { algorithm?: string };
+export type EncrypterClass = { new (...args: any[]): EncryptedURIEncrypter<any> } & { algorithm?: string };
 export type DecrypterClass<T extends {}> = { new (decoded: T, ...args: any[]): EncryptedURIDecrypter<T> };
 
 export function EncryptedURIAlgorithm<T extends { [param: string]: string }>(args: {

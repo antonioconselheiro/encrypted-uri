@@ -31,7 +31,7 @@ class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<InitializationVe
   algorithm: 'aes/cbc',
   decrypter: EncryptedURIAESCBCDecrypter
 })
-class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter {
+class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter<InitializationVectorParams> {
 
   constructor(
     protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithInitializationVectorParams
@@ -39,7 +39,7 @@ class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter {
     super(params);
   }
 
-  async encrypt(): Promise<TEncryptedURI> {
+  async encrypt(): Promise<TEncryptedURI<InitializationVectorParams>> {
     const ivhex = getInitializationVector(this.params);
     const iv = hexToBytes(ivhex);
     const content = utf8ToBytes(this.params.content);
