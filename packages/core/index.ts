@@ -1,3 +1,5 @@
+import { IterableString } from "@belomonte/iterable-string";
+
 export type TEncryptedURIKDFConfig = {
 
   /**
@@ -61,7 +63,7 @@ class EncryptedURISyntaxMatcher {
  * When the uri is still being interpreted
  * and has not yet gone through validation
  */
-export type TEncryptedURI<T = {}> = {
+export type TEncryptedURI<T extends { [param: string]: string }> = {
   algorithm?: string;
   queryString?: string;
 
@@ -72,13 +74,13 @@ export type TEncryptedURI<T = {}> = {
   params?: TEncryptedURIParams<T>;
 }
 
-class EncryptedURIDecoder {
+class EncryptedURIDecoder<T extends { [param: string]: string }> {
 
   private readonly ENCRYPTED_URI_MATCHER = /^encrypted:/;
   private readonly QUERY_STRING_MATCHER = /^\?[^;]*;/;
 
-  decode(content: string): TEncryptedURI {
-    const resultset: TEncryptedURI = { cipher: '' };
+  decode(content: string): TEncryptedURI<T> {
+    const resultset: TEncryptedURI<T> = { cipher: '' };
     const iterable = new IterableString(content);
 
     this.checkURI(iterable);
@@ -86,7 +88,7 @@ class EncryptedURIDecoder {
     this.readQueryString(iterable, resultset);
     resultset.cipher = iterable.toTheEnd().replace(/^;/, '');
 
-    return resultset as TEncryptedURI;
+    return resultset as TEncryptedURI<T>;
   }
 
   private checkURI(iterable: IterableString): void {
@@ -96,7 +98,7 @@ class EncryptedURIDecoder {
     }
   }
 
-  private identifyAlgorithm(iterable: IterableString, resultset: TEncryptedURI): void {
+  private identifyAlgorithm(iterable: IterableString, resultset: TEncryptedURI<T>): void {
     const algorithmMatcher = /^[^?;]*/;
     const algorithmValue = iterable.addCursor(algorithmMatcher);
 
@@ -105,7 +107,7 @@ class EncryptedURIDecoder {
     }
   }
 
-  private readQueryString(iterable: IterableString, resultset: TEncryptedURI): void {
+  private readQueryString(iterable: IterableString, resultset: TEncryptedURI<T>): void {
     const parametersMatcher = /^\?([^=]+=[^=]+)(&([^=]+=[^=]+))*[;]$/;
     const queryString = iterable.addCursor(this.QUERY_STRING_MATCHER);
     const cleanQueryString = queryString.replace(/^\?|;$/g, '');
@@ -121,15 +123,15 @@ class EncryptedURIDecoder {
         resultset.params = paramsList.reduce((result, object) => {
           Object.keys(object).forEach(key => result[key] = object[key]);
           return result;
-        });
+        }) as TEncryptedURIParams<T>;
       }
     }
   }
 }
 
-class EncryptedURIEncoder {
+class EncryptedURIEncoder<T extends { [param: string]: string }> {
 
-  encode(content: TEncryptedURI): string {
+  encode(content: TEncryptedURI<T>): string {
     const algorithm = this.encodeAlgorithm(content);
     const parameters = this.encodeParameters(content);
 
@@ -141,10 +143,10 @@ class EncryptedURIEncoder {
   }
 
   private encodeParameters(
-    content: TEncryptedURI
+    content: TEncryptedURI<T>
   ): string {
     const params: { [attr: string]: string } = {};
-    const contentParams = content.params || {};
+    const contentParams: { [param: string]: string } = content.params || {};
     const paramsKeys = Object.keys(contentParams);
     if (paramsKeys.length) {
       paramsKeys.forEach(key => params[key] = contentParams[key]);
@@ -159,26 +161,26 @@ class EncryptedURIEncoder {
   }
 
   private encodeAlgorithm(
-    content: TEncryptedURI
+    content: TEncryptedURI<T>
   ): string {
     return content.algorithm || '';
   }
 }
 
-export class EncryptedURIParser {
+export class EncryptedURIParser<T extends {}> {
 
   static matcher(uri: string): boolean {
     return new EncryptedURISyntaxMatcher().match(uri);
   }
 
   readonly encoded: string;
-  readonly decoded: TEncryptedURI;
+  readonly decoded: TEncryptedURI<T>;
 
-  constructor(content: TEncryptedURI);
+  constructor(content: TEncryptedURI<T>);
   constructor(content: string);
-  constructor(content: string | TEncryptedURI) {
+  constructor(content: string | TEncryptedURI<T>) {
     if (typeof content === 'string') {
-      const decoder = new EncryptedURIDecoder();
+      const decoder = new EncryptedURIDecoder<T>();
       this.decoded = decoder.decode(this.encoded = content);
       this.encoded = content;
     } else {
@@ -189,14 +191,14 @@ export class EncryptedURIParser {
   }
 }
 
-export abstract class EncryptedURIEncrypter<T extends TEncryptedURIEncryptableDefaultParams = TEncryptedURIEncryptableDefaultParams> {
+export abstract class EncryptedURIEncrypter<T extends TEncryptedURIEncryptableDefaultParams, U extends {}> {
 
   constructor(protected params: T) { }
   
-  abstract encrypt(): Promise<TEncryptedURI>;
+  abstract encrypt(): Promise<TEncryptedURI<U>>;
 }
 
-export abstract class EncryptedURIDecrypter<T = {}> {
+export abstract class EncryptedURIDecrypter<T extends {}> {
 
   constructor(
     protected decoded: TEncryptedURI<T>
@@ -205,7 +207,7 @@ export abstract class EncryptedURIDecrypter<T = {}> {
   abstract decrypt(): Promise<string>;
 }
 
-export type TEncryptedURIParams<T = {}> = {
+export type TEncryptedURIParams<T extends {}> = {
   [attr: string]: string;
 } & {
 
@@ -272,10 +274,10 @@ export type TEncryptedURIEncryptableDefaultParams = {
   password: string;
 } & TEncryptedURIDefaultParams;
 
-export type EncrypterClass = { new (...args: any[]): EncryptedURIEncrypter<any> } & { algorithm?: string };
-export type DecrypterClass<T extends TEncryptedURI = TEncryptedURI> = { new (decoded: T, ...args: any[]): EncryptedURIDecrypter<T> };
+export type EncrypterClass = { new (...args: any[]): EncryptedURIEncrypter<any, {}> } & { algorithm?: string };
+export type DecrypterClass<T extends {}> = { new (decoded: T, ...args: any[]): EncryptedURIDecrypter<T> };
 
-export function EncryptedURIAlgorithm<T extends TEncryptedURI>(args: {
+export function EncryptedURIAlgorithm<T extends { [param: string]: string }>(args: {
   algorithm: string,
   decrypter: DecrypterClass<T>
 }) {
@@ -302,7 +304,7 @@ export class EncryptedURI {
     return new EncryptedURISyntaxMatcher().match(uri);
   }
 
-  static encode(params: TEncryptedURI): string {
+  static encode(params: TEncryptedURI<any>): string {
     return new EncryptedURIParser(params).encoded;
   }
 
@@ -320,7 +322,7 @@ export class EncryptedURI {
     return new decryptor(uriDecoded, ...args).decrypt();
   }
 
-  static setAlgorithm<T extends TEncryptedURI>(
+  static setAlgorithm<T extends {}>(
     algorithm: string,
     encrypter: EncrypterClass,
     decrypter: DecrypterClass<T>

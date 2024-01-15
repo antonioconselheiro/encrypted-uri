@@ -2,13 +2,13 @@ import { EncryptedURI, EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedUR
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { base64 } from '@scure/base';
 import { cbc } from '@noble/ciphers/webcrypto/aes';
-import { TEncryptedURIAESWithInitializationVectorParams, getInitializationVector } from '../initialization-vector';
+import { InitializationVectorParams, TEncryptedURIAESWithInitializationVectorParams, getInitializationVector } from '../initialization-vector';
 import { OpenSSLSerializer } from 'aes/openssl-serializer';
 import { randomBytes } from '@noble/hashes/utils';
 import { kdf } from 'aes/kdf';
 import { getSalt } from 'aes/salt';
 
-class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithInitializationVectorParams> {
+class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<InitializationVectorParams> {
   constructor(
     decoded: TEncryptedURIAESWithInitializationVectorParams,
     private password: string
