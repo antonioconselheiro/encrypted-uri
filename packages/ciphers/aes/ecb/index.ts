@@ -39,7 +39,7 @@ class EncryptedURIAESECBEncrypter<T extends TURIParams = TURIParams> extends Enc
   async encrypt(): Promise<TEncryptedURI<T>> {
     const content = utf8ToBytes(this.params.content);
     const salt = randomBytes(32);
-    const rawCipher = await ecb(kdf(this.params.password, salt)).encrypt(content);
+    const rawCipher = await ecb(kdf(this.params.password, salt, this.params.kdf)).encrypt(content);
     const cipher = base64.encode(rawCipher);
 
     return Promise.resolve({ cipher });

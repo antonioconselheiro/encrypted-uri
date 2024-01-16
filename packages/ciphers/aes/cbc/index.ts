@@ -44,7 +44,7 @@ class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter<TInitializationV
     const iv = hexToBytes(ivhex);
     const content = utf8ToBytes(this.params.content);
     const salt = randomBytes(32);
-    const cipher = await cbc(kdf(this.params.password, salt), iv).encrypt(content);
+    const cipher = await cbc(kdf(this.params.password, salt, this.params.kdf), iv).encrypt(content);
 
     return Promise.resolve({
       cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),

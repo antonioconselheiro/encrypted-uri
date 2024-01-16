@@ -43,7 +43,7 @@ class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter<TNumberOnceParam
     const nonce = hexToBytes(numberOnceHex);
     const content = utf8ToBytes(this.params.content);
     const salt = randomBytes(32);
-    const cipher = await gcm(kdf(this.params.password, salt), nonce).encrypt(content);
+    const cipher = await gcm(kdf(this.params.password, salt, this.params.kdf), nonce).encrypt(content);
 
     return Promise.resolve({
       cipher: base64.encode(cipher),
