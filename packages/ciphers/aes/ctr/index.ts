@@ -1,16 +1,15 @@
-import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIEncryptableDefaultParams } from "@encrypted-uri/core";
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset } from "@encrypted-uri/core";
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from "@noble/ciphers/utils";
-import { InitializationVectorParams, TEncryptedURIAESWithInitializationVectorParams, getInitializationVector } from "../initialization-vector";
 import { ctr } from '@noble/ciphers/webcrypto/aes';
-import { base64 } from "@scure/base";
-import { OpenSSLSerializer } from "aes/openssl-serializer";
-import { getSalt } from "aes/salt";
-import { kdf } from "aes/kdf";
 import { randomBytes } from "@noble/hashes/utils";
+import { base64 } from "@scure/base";
+import { kdf } from "aes/kdf";
+import { getSalt } from "aes/salt";
+import { TInitializationVectorParams, getInitializationVector } from "../initialization-vector";
 
-class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<InitializationVectorParams> {
+class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TInitializationVectorParams> {
   constructor(
-    decoded: TEncryptedURIAESWithInitializationVectorParams,
+    decoded: TEncryptedURI<TInitializationVectorParams>,
     private password: string
   ) {
     super(decoded);
@@ -19,7 +18,7 @@ class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<InitializationVe
   async decrypt(): Promise<string> {
     const ivhex = getInitializationVector(this.decoded);
     const cipher = utf8ToBytes(this.decoded.cipher);
-    const salt = getSalt(OpenSSLSerializer.decode(cipher), this.decoded?.params);
+    const salt = getSalt(cipher, this.decoded?.params);
     const result = await ctr(kdf(this.password, salt), hexToBytes(ivhex))
       .decrypt(cipher);
 
@@ -31,15 +30,15 @@ class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<InitializationVe
   algorithm: 'aes/ctr',
   decrypter: EncryptedURIAESCTRDecrypter
 })
-class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter<InitializationVectorParams> {
+class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter<TInitializationVectorParams> {
 
   constructor(
-    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithInitializationVectorParams
+    protected override params: TEncryptedURIResultset<TInitializationVectorParams>
   ) {
     super(params);
   }
 
-  async encrypt(): Promise<TEncryptedURI<InitializationVectorParams>> {
+  async encrypt(): Promise<TEncryptedURI<TInitializationVectorParams>> {
     const ivhex = getInitializationVector(this.params);
     const iv = hexToBytes(ivhex);
     const content = utf8ToBytes(this.params.content);

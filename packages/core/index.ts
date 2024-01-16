@@ -92,7 +92,7 @@ class EncryptedURIDecoder<T extends TURIParams> {
     this.readQueryString(iterable, resultset);
     resultset.cipher = iterable.toTheEnd().replace(/^;/, '');
 
-    return resultset as TEncryptedURI<T>;
+    return resultset;
   }
 
   private checkURI(iterable: IterableString): void {
@@ -265,7 +265,7 @@ export type TEncryptedURIParams<T extends TURIParams> = {
   s?: string;
 } & T;
 
-export type TEncryptedURIDefaultParams = {
+export type TEncryptedURIDefaultParams<T extends TURIParams> = {
   algorithm?: string;
 
   /**
@@ -274,21 +274,21 @@ export type TEncryptedURIDefaultParams = {
    */
   kdf?: TEncryptedURIKDFConfig;
 
-  params: TURIParams;
+  params: T;
 };
 
-export type TEncryptedURIEncryptedDefaultParams = {
+export type TEncryptedURIEncryptedDefaultParams<T extends TURIParams> = {
   cipher: string;
-} & TEncryptedURIDefaultParams;
+} & TEncryptedURIDefaultParams<T>;
 
-export type TEncryptedURIEncryptableDefaultParams = {
+export type TEncryptedURIEncryptableDefaultParams<T extends TURIParams> = {
   content: string;
   password: string;
-} & TEncryptedURIDefaultParams;
+} & TEncryptedURIDefaultParams<T>;
 
 export type TEncrypterClass<T extends TURIParams> = { new (resultset: TEncryptedURIResultset<T>, ...args: any[]): EncryptedURIEncrypter<any> } & { algorithm?: string };
 export type TDecrypterClass<T extends TURIParams> = { new (decoded: TEncryptedURI<T>, ...args: any[]): EncryptedURIDecrypter<T> };
-export type TEncryptedURIResultset<T extends TURIParams> = TEncryptedURIEncryptableDefaultParams & TEncryptedURI<T>;
+export type TEncryptedURIResultset<T extends TURIParams> = TEncryptedURIEncryptableDefaultParams<T>;
 
 export function EncryptedURIAlgorithm<T extends TURIParams>(args: {
   algorithm: string,
@@ -317,18 +317,19 @@ export class EncryptedURI {
     return new EncryptedURISyntaxMatcher().match(uri);
   }
 
-  static encode(params: TEncryptedURI<any>): string {
+  static encode<T extends TURIParams>(params: TEncryptedURI<T>): string {
     return new EncryptedURIParser(params).encoded;
   }
 
-  static async encrypt(params: TEncryptedURIEncryptableDefaultParams, ...args: any[]): Promise<string> {
+  static async encrypt<T extends TURIParams>(params: TEncryptedURIEncryptableDefaultParams<T>, ...args: any[]): Promise<string> {
     const [ encrypter ] = this.getAlgorithm(params.algorithm);
     const ciphred = await new encrypter(params, ...args).encrypt();
     ciphred.algorithm = encrypter.algorithm || params.algorithm;
+
     return Promise.resolve(this.encode(ciphred));
   }
 
-  static decrypt(uri: string, key: Uint8Array): Promise<string>;
+  static decrypt(uri: string, password: string): Promise<string>;
   static decrypt(uri: string, ...args: any[]): Promise<string> {
     const uriDecoded = new EncryptedURIParser(uri).decoded;
     const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);
