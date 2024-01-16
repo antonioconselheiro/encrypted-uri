@@ -1,4 +1,4 @@
-import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset, URIParams } from '@encrypted-uri/core';
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset, TURIParams } from '@encrypted-uri/core';
 import { ecb } from '@noble/ciphers/aes';
 import { bytesToUtf8, utf8ToBytes } from '@noble/ciphers/utils';
 import { randomBytes } from '@noble/hashes/utils';
@@ -6,7 +6,7 @@ import { base64 } from '@scure/base';
 import { kdf } from 'aes/kdf';
 import { getSalt } from 'aes/salt';
 
-class EncryptedURIAESECBDecrypter<T extends URIParams = URIParams> extends EncryptedURIDecrypter<T> {
+class EncryptedURIAESECBDecrypter<T extends TURIParams = TURIParams> extends EncryptedURIDecrypter<T> {
   constructor(
     decoded: TEncryptedURI<T>,
     private password: string
@@ -28,7 +28,7 @@ class EncryptedURIAESECBDecrypter<T extends URIParams = URIParams> extends Encry
   algorithm: 'aes/ecb',
   decrypter: EncryptedURIAESECBDecrypter
 })
-class EncryptedURIAESECBEncrypter<T extends URIParams = URIParams> extends EncryptedURIEncrypter<URIParams> {
+class EncryptedURIAESECBEncrypter<T extends TURIParams = TURIParams> extends EncryptedURIEncrypter<TURIParams> {
 
   constructor(
     protected override params: TEncryptedURIResultset<T>
