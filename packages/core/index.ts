@@ -1,4 +1,8 @@
-import { IterableString } from "@belomonte/iterable-string";
+import { IterableString } from '@belomonte/iterable-string';
+
+export type TURIParams = {
+  [param: string]: string
+};
 
 export type TEncryptedURIKDFConfig = {
 
@@ -51,7 +55,7 @@ export type TEncryptedURIKDFConfig = {
    * @default 32
    */
   derivateKeyLength?: number;
-}
+};
 
 class EncryptedURISyntaxMatcher {
   match(uri: string): boolean {
@@ -63,7 +67,7 @@ class EncryptedURISyntaxMatcher {
  * When the uri is still being interpreted
  * and has not yet gone through validation
  */
-export type TEncryptedURI<T extends { [param: string]: string }> = {
+export type TEncryptedURI<T extends TURIParams> = {
   algorithm?: string;
   queryString?: string;
 
@@ -72,9 +76,9 @@ export type TEncryptedURI<T extends { [param: string]: string }> = {
    */
   cipher: string;
   params?: TEncryptedURIParams<T>;
-}
+};
 
-class EncryptedURIDecoder<T extends { [param: string]: string }> {
+class EncryptedURIDecoder<T extends TURIParams> {
 
   private readonly ENCRYPTED_URI_MATCHER = /^encrypted:/;
   private readonly QUERY_STRING_MATCHER = /^\?[^;]*;/;
@@ -129,7 +133,7 @@ class EncryptedURIDecoder<T extends { [param: string]: string }> {
   }
 }
 
-class EncryptedURIEncoder<T extends { [param: string]: string }> {
+class EncryptedURIEncoder<T extends TURIParams> {
 
   encode(content: TEncryptedURI<T>): string {
     const algorithm = this.encodeAlgorithm(content);
@@ -145,8 +149,8 @@ class EncryptedURIEncoder<T extends { [param: string]: string }> {
   private encodeParameters(
     content: TEncryptedURI<T>
   ): string {
-    const params: { [attr: string]: string } = {};
-    const contentParams: { [param: string]: string } = content.params || {};
+    const params: TURIParams = {};
+    const contentParams: TURIParams = content.params || {};
     const paramsKeys = Object.keys(contentParams);
     if (paramsKeys.length) {
       paramsKeys.forEach(key => params[key] = contentParams[key]);
@@ -167,7 +171,7 @@ class EncryptedURIEncoder<T extends { [param: string]: string }> {
   }
 }
 
-export class EncryptedURIParser<T extends {}> {
+export class EncryptedURIParser<T extends TURIParams> {
 
   static matcher(uri: string): boolean {
     return new EncryptedURISyntaxMatcher().match(uri);
@@ -192,15 +196,15 @@ export class EncryptedURIParser<T extends {}> {
 }
 
 export abstract class EncryptedURIEncrypter<
-  T extends { [params: string]: string }
+  T extends TURIParams
 > {
 
-  constructor(protected params: TEncryptedURIEncryptableDefaultParams & TEncryptedURI<T>) { }
+  constructor(protected params: TEncryptedURIResultset<T>) { }
   
   abstract encrypt(): Promise<TEncryptedURI<T>>;
 }
 
-export abstract class EncryptedURIDecrypter<T extends {}> {
+export abstract class EncryptedURIDecrypter<T extends TURIParams> {
 
   constructor(
     protected decoded: TEncryptedURI<T>
@@ -209,7 +213,12 @@ export abstract class EncryptedURIDecrypter<T extends {}> {
   abstract decrypt(): Promise<string>;
 }
 
-export type TEncryptedURIParams<T extends {}> = {
+/**
+ * This type represent the reserved URI params into the
+ * string serialized version. This type represents the
+ * params as is after read from query params
+ */
+export type TEncryptedURIParams<T extends TURIParams> = {
   [attr: string]: string;
 } & {
 
@@ -257,15 +266,16 @@ export type TEncryptedURIParams<T extends {}> = {
 } & T;
 
 export type TEncryptedURIDefaultParams = {
-  [param: string]: any;
-
   algorithm?: string;
+
   /**
    * Customize the key derivation function params to open and to encrypt,
    * you can configure in this object to include the kdf as URI params 
    */
   kdf?: TEncryptedURIKDFConfig;
-}
+
+  params: TURIParams;
+};
 
 export type TEncryptedURIEncryptedDefaultParams = {
   cipher: string;
@@ -276,15 +286,16 @@ export type TEncryptedURIEncryptableDefaultParams = {
   password: string;
 } & TEncryptedURIDefaultParams;
 
-export type EncrypterClass = { new (...args: any[]): EncryptedURIEncrypter<any> } & { algorithm?: string };
-export type DecrypterClass<T extends {}> = { new (decoded: T, ...args: any[]): EncryptedURIDecrypter<T> };
+export type TEncrypterClass<T extends TURIParams> = { new (resultset: TEncryptedURIResultset<T>, ...args: any[]): EncryptedURIEncrypter<any> } & { algorithm?: string };
+export type TDecrypterClass<T extends TURIParams> = { new (decoded: TEncryptedURI<T>, ...args: any[]): EncryptedURIDecrypter<T> };
+export type TEncryptedURIResultset<T extends TURIParams> = TEncryptedURIEncryptableDefaultParams & TEncryptedURI<T>;
 
-export function EncryptedURIAlgorithm<T extends { [param: string]: string }>(args: {
+export function EncryptedURIAlgorithm<T extends TURIParams>(args: {
   algorithm: string,
-  decrypter: DecrypterClass<T>
+  decrypter: TDecrypterClass<T>
 }) {
   return function (
-    target: EncrypterClass & { algorithm?: string }
+    target: TEncrypterClass<T> & { algorithm?: string }
   ) {
     target.algorithm = args.algorithm;
     EncryptedURI.setAlgorithm(args.algorithm, target, args.decrypter);
@@ -297,8 +308,8 @@ export class EncryptedURI {
 
   static readonly supportedAlgorithm: {
     [algorithm: string]: [
-      EncrypterClass,
-      DecrypterClass<any>
+      TEncrypterClass<any>,
+      TDecrypterClass<any>
     ]
   } = { };
 
@@ -324,10 +335,10 @@ export class EncryptedURI {
     return new decryptor(uriDecoded, ...args).decrypt();
   }
 
-  static setAlgorithm<T extends {}>(
+  static setAlgorithm<T extends TURIParams>(
     algorithm: string,
-    encrypter: EncrypterClass,
-    decrypter: DecrypterClass<T>
+    encrypter: TEncrypterClass<T>,
+    decrypter: TDecrypterClass<T>
   ): void {
     if (!this.supportedAlgorithm[algorithm]) {
       this.supportedAlgorithm[algorithm] = [encrypter, decrypter];
@@ -335,8 +346,8 @@ export class EncryptedURI {
   }
 
   private static getAlgorithm(algorithm?: string): [
-    EncrypterClass,
-    DecrypterClass<any>
+    TEncrypterClass<any>,
+    TDecrypterClass<any>
   ] {
     algorithm = algorithm || EncryptedURI.DEFAULT_ALGORITHM;
     const [ encryptor, decryptor ] = this.supportedAlgorithm[algorithm] || [ null, null];
