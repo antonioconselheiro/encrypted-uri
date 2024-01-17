@@ -1,16 +1,15 @@
-import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIEncryptableDefaultParams } from '@encrypted-uri/core';
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset } from '@encrypted-uri/core';
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { gcm } from '@noble/ciphers/webcrypto/aes';
-import { base64 } from '@scure/base';
-import { TEncryptedURIAESWithNumberOnceParams, getNumberOnce } from '../number-once';
-import { getSalt } from 'aes/salt';
-import { kdf } from 'aes/kdf';
-import { OpenSSLSerializer } from 'aes/openssl-serializer';
 import { randomBytes } from '@noble/hashes/utils';
+import { base64 } from '@scure/base';
+import { kdf } from 'aes/kdf';
+import { getSalt } from 'aes/salt';
+import { TNumberOnceParams, getNumberOnce } from '../number-once';
 
-class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TEncryptedURIAESWithNumberOnceParams> {
+class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TNumberOnceParams> {
   constructor(
-    decoded: TEncryptedURIAESWithNumberOnceParams,
+    decoded: TEncryptedURI<TNumberOnceParams>,
     private password: string
   ) {
     super(decoded);
@@ -19,8 +18,8 @@ class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
   async decrypt(): Promise<string> {
     const nonce = getNumberOnce(this.decoded);
     const cipher = utf8ToBytes(this.decoded.cipher);
-    const salt = getSalt(OpenSSLSerializer.decode(cipher), this.decoded?.params);
-    const result = await gcm(kdf(this.password, salt), Uint8Array.from(base64.decode(nonce)))
+    const salt = getSalt(cipher, this.decoded?.params);
+    const result = await gcm(kdf(this.password, salt, this.decoded), Uint8Array.from(base64.decode(nonce)))
       .decrypt(cipher);
 
     return bytesToUtf8(result);
@@ -31,20 +30,20 @@ class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TEncryptedURIAES
   algorithm: 'aes/gcm',
   decrypter: EncryptedURIAESGCMDecrypter
 })
-class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter {
+class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter<TNumberOnceParams> {
 
   constructor(
-    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURIAESWithNumberOnceParams
+    protected override params: TEncryptedURIResultset<TNumberOnceParams>
   ) {
     super(params);
   }
 
-  async encrypt(): Promise<TEncryptedURI> {
+  async encrypt(): Promise<TEncryptedURI<TNumberOnceParams>> {
     const numberOnceHex = getNumberOnce(this.params);
     const nonce = hexToBytes(numberOnceHex);
     const content = utf8ToBytes(this.params.content);
     const salt = randomBytes(32);
-    const cipher = await gcm(kdf(this.params.password, salt), nonce).encrypt(content);
+    const cipher = await gcm(kdf(this.params.password, salt, this.params.kdf), nonce).encrypt(content);
 
     return Promise.resolve({
       cipher: base64.encode(cipher),

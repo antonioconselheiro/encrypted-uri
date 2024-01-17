@@ -1,15 +1,14 @@
-import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIEncryptableDefaultParams } from '@encrypted-uri/core';
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset, TURIParams } from '@encrypted-uri/core';
 import { ecb } from '@noble/ciphers/aes';
 import { bytesToUtf8, utf8ToBytes } from '@noble/ciphers/utils';
 import { randomBytes } from '@noble/hashes/utils';
 import { base64 } from '@scure/base';
 import { kdf } from 'aes/kdf';
-import { OpenSSLSerializer } from 'aes/openssl-serializer';
 import { getSalt } from 'aes/salt';
 
-class EncryptedURIAESECBDecrypter extends EncryptedURIDecrypter<TEncryptedURI> {
+class EncryptedURIAESECBDecrypter<T extends TURIParams = TURIParams> extends EncryptedURIDecrypter<T> {
   constructor(
-    decoded: TEncryptedURI,
+    decoded: TEncryptedURI<T>,
     private password: string
   ) {
     super(decoded);
@@ -17,8 +16,8 @@ class EncryptedURIAESECBDecrypter extends EncryptedURIDecrypter<TEncryptedURI> {
 
   async decrypt(): Promise<string> {
     const cipher = utf8ToBytes(this.decoded.cipher || '');
-    const salt = getSalt(OpenSSLSerializer.decode(cipher), this.decoded?.params);
-    const result = await ecb(kdf(this.password, salt))
+    const salt = getSalt(cipher, this.decoded?.params);
+    const result = await ecb(kdf(this.password, salt, this.decoded))
       .decrypt(cipher);
 
     return bytesToUtf8(result);
@@ -29,18 +28,18 @@ class EncryptedURIAESECBDecrypter extends EncryptedURIDecrypter<TEncryptedURI> {
   algorithm: 'aes/ecb',
   decrypter: EncryptedURIAESECBDecrypter
 })
-class EncryptedURIAESECBEncrypter extends EncryptedURIEncrypter {
+class EncryptedURIAESECBEncrypter<T extends TURIParams = TURIParams> extends EncryptedURIEncrypter<TURIParams> {
 
   constructor(
-    protected override params: TEncryptedURIEncryptableDefaultParams & TEncryptedURI
+    protected override params: TEncryptedURIResultset<T>
   ) {
     super(params);
   }
 
-  async encrypt(): Promise<TEncryptedURI> {
+  async encrypt(): Promise<TEncryptedURI<T>> {
     const content = utf8ToBytes(this.params.content);
     const salt = randomBytes(32);
-    const rawCipher = await ecb(kdf(this.params.password, salt)).encrypt(content);
+    const rawCipher = await ecb(kdf(this.params.password, salt, this.params.kdf)).encrypt(content);
     const cipher = base64.encode(rawCipher);
 
     return Promise.resolve({ cipher });

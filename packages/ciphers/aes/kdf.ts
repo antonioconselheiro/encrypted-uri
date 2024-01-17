@@ -1,18 +1,13 @@
-import { TEncryptedURIKDFConfig } from '@encrypted-uri/core';
+import { EncryptedURI, TEncryptedURI, TEncryptedURIKDFConfig, TURIParams } from '@encrypted-uri/core';
 import { pbkdf2 } from '@noble/hashes/pbkdf2';
 import { HashSupport } from 'hashes/hash-support';
 
-const defaultConfigs: Required<TEncryptedURIKDFConfig> = {
-  kdf: 'pbkdf2',
-  hasher: 'sha256',
-  ignoreDefaults: true,
-  includeURIParams: true,
-  derivateKeyLength: 32,
-  rounds: 32
-};
-
-export function kdf(password: string, salt: Uint8Array, config?: TEncryptedURIKDFConfig): Uint8Array {
-  const cfg: Required<TEncryptedURIKDFConfig> = { ...defaultConfigs, ...config };
+export function kdf<T extends TURIParams>(
+  password: string,
+  salt: Uint8Array,
+  config?: TEncryptedURIKDFConfig | TEncryptedURI<T>
+): Uint8Array {
+  const cfg = EncryptedURI.getKDFConfig(config);
 
   if (cfg.kdf === 'pbkdf2') {
     return pbkdf2(HashSupport.get(cfg.hasher), password, salt, {
@@ -23,3 +18,4 @@ export function kdf(password: string, salt: Uint8Array, config?: TEncryptedURIKD
     throw new Error(`kdf "${cfg.kdf}" not supported`);
   }
 }
+

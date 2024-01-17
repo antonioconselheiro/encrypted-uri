@@ -1,3 +1,9 @@
+import { IterableString } from '@belomonte/iterable-string';
+
+export type TURIParams = {
+  [param: string]: string
+};
+
 export type TEncryptedURIKDFConfig = {
 
   /**
@@ -49,135 +55,7 @@ export type TEncryptedURIKDFConfig = {
    * @default 32
    */
   derivateKeyLength?: number;
-}
-
-export class IterableString {
-
-  private cursor = 0;
-  private readonly DEBUG_CHARS_PREVIEW = 100;
-
-  constructor(
-    private str: string
-  ) { }
-
-  get debugInfo(): string {
-    return String(this).substring(0, this.DEBUG_CHARS_PREVIEW);
-  }
-
-  get currenPosition(): number {
-    return this.cursor;
-  }
-
-  /**
-   * Return the string in it current cursor position
-   */
-  toString(): string {
-    return this.str.substring(this.cursor);
-  }
-
-  valueOf(): string {
-    return this.str.substring(this.cursor);
-  }
-
-  /**
-   * Return the original string
-   */
-  getOriginalString(): string {
-    return this.str;
-  }
-
-  /**
-   * Move the cursor and return the result
-   */
-  addCursor(param?: number | string | RegExp, autoTrimResult = true): string {
-    let result = '';
-    if (typeof param === 'number') {
-      result = this.addCursorNumeric(param);
-    } else if (typeof param === 'string') {
-      result = this.addCursorRegExp(new RegExp(param));
-    } else if (param instanceof RegExp) {
-      result = this.addCursorRegExp(param);
-    } else {
-      result = this.addCursorNumeric();
-    }
-
-    if (autoTrimResult) {
-      return result.trim();
-    } else {
-      return result;
-    }
-  }
-
-  /**
-   * Return result without move cursor
-   */
-  spy(param?: number | string | RegExp, autoTrimResult = true): string {
-    let result = '';
-    if (typeof param === 'number') {
-      result = this.spyNumeric(param);
-    } else if (typeof param === 'string') {
-      result = this.spyRegExp(new RegExp(param));
-    } else if (param instanceof RegExp) {
-      result = this.spyRegExp(param);
-    } else {
-      result = this.spyNumeric();
-    }
-
-    if (autoTrimResult) {
-      return result.trim();
-    } else {
-      return result;
-    }
-  }
-
-  private spyNumeric(howMuchMore = 1): string {
-    return this.str.substring(this.cursor, this.cursor + howMuchMore);
-  }
-
-  private spyRegExp(pattern: RegExp): string {
-    const matches = String(this).match(pattern);
-    return matches && matches.length && matches[0] || '';
-  }
-
-  /**
-   * Move the cursor that's iterating the string
-   */
-  private addCursorRegExp(pattern: RegExp): string {
-    if (!String(pattern).match(/^\/\^/)) {
-      throw new Error(
-        `all regexp used to move the cursor in the iterable string must start with ^. Entry regex: "${String(pattern)}"`
-      );
-    }
-
-    const match = this.spyRegExp(pattern);
-
-    return this.addCursorNumeric(match.length || 0);
-  }
-
-  /**
-   * If find an match with the regexp argument, it return the match and move the cursor
-   */
-  private addCursorNumeric(howMuchMore = 1): string {
-    const piece = this.spyNumeric(howMuchMore);
-    this.cursor += howMuchMore;
-
-    return piece;
-  }
-
-  toTheEnd(): string {
-    const content = this.str.substring(this.cursor);
-    this.cursor += content.length;
-    return content;
-  }
-
-  endContent(): boolean {
-    return this.end() || !!this.spy(/^\s*$/, false);
-  }
-
-  end(): boolean {
-    return this.str.length <= this.cursor;
-  }
-}
+};
 
 class EncryptedURISyntaxMatcher {
   match(uri: string): boolean {
@@ -189,7 +67,7 @@ class EncryptedURISyntaxMatcher {
  * When the uri is still being interpreted
  * and has not yet gone through validation
  */
-export type TEncryptedURI<T = {}> = {
+export type TEncryptedURI<T extends TURIParams> = {
   algorithm?: string;
   queryString?: string;
 
@@ -198,15 +76,65 @@ export type TEncryptedURI<T = {}> = {
    */
   cipher: string;
   params?: TEncryptedURIParams<T>;
-}
+};
 
-class EncryptedURIDecoder {
+class EncryptedURIDecoder<T extends TURIParams> {
+
+  static getKDFConfig<T extends TURIParams>(
+    configOverload?: TEncryptedURIKDFConfig | TEncryptedURI<T>
+  ): Required<TEncryptedURIKDFConfig> {
+    let config: TEncryptedURIKDFConfig = EncryptedURI.defaultConfigs;
+    if (configOverload && 'params' in configOverload) {
+      config = this.castParamsToConfig(configOverload.params);
+    }
+    
+    const configWithDefaults: Required<TEncryptedURIKDFConfig> = {
+      ...EncryptedURI.defaultConfigs,
+      ...config
+    };
+  
+    return configWithDefaults;
+  }
+  
+  private static castParamsToConfig<T extends TURIParams>(
+    params?: TEncryptedURIParams<T>
+  ): TEncryptedURIKDFConfig {
+    const config: TEncryptedURIKDFConfig = {};
+  
+    if (!params) {
+      return config;
+    }
+  
+    if (typeof params.kdf === 'string') {
+      config.kdf = params.kdf as 'pbkdf2';
+    }
+  
+    if (typeof params.h === 'string') {
+      config.hasher = params.h;
+    }
+  
+    if (typeof params.dklen === 'string') {
+      const derivateKeyLength = Number(params.dklen);
+      if (Number.isSafeInteger(derivateKeyLength)) {
+        config.derivateKeyLength = derivateKeyLength;
+      }
+    }
+  
+    if (typeof params.c === 'string') {
+      const rounds = Number(params.c);
+      if (Number.isSafeInteger(rounds)) {
+        config.rounds = rounds;
+      }
+    }
+  
+    return config;
+  }
 
   private readonly ENCRYPTED_URI_MATCHER = /^encrypted:/;
   private readonly QUERY_STRING_MATCHER = /^\?[^;]*;/;
 
-  decode(content: string): TEncryptedURI {
-    const resultset: TEncryptedURI = { cipher: '' };
+  decode(content: string): TEncryptedURI<T> {
+    const resultset: TEncryptedURI<T> = { cipher: '' };
     const iterable = new IterableString(content);
 
     this.checkURI(iterable);
@@ -214,7 +142,7 @@ class EncryptedURIDecoder {
     this.readQueryString(iterable, resultset);
     resultset.cipher = iterable.toTheEnd().replace(/^;/, '');
 
-    return resultset as TEncryptedURI;
+    return resultset;
   }
 
   private checkURI(iterable: IterableString): void {
@@ -224,7 +152,7 @@ class EncryptedURIDecoder {
     }
   }
 
-  private identifyAlgorithm(iterable: IterableString, resultset: TEncryptedURI): void {
+  private identifyAlgorithm(iterable: IterableString, resultset: TEncryptedURI<T>): void {
     const algorithmMatcher = /^[^?;]*/;
     const algorithmValue = iterable.addCursor(algorithmMatcher);
 
@@ -233,7 +161,7 @@ class EncryptedURIDecoder {
     }
   }
 
-  private readQueryString(iterable: IterableString, resultset: TEncryptedURI): void {
+  private readQueryString(iterable: IterableString, resultset: TEncryptedURI<T>): void {
     const parametersMatcher = /^\?([^=]+=[^=]+)(&([^=]+=[^=]+))*[;]$/;
     const queryString = iterable.addCursor(this.QUERY_STRING_MATCHER);
     const cleanQueryString = queryString.replace(/^\?|;$/g, '');
@@ -249,15 +177,42 @@ class EncryptedURIDecoder {
         resultset.params = paramsList.reduce((result, object) => {
           Object.keys(object).forEach(key => result[key] = object[key]);
           return result;
-        });
+        }) as TEncryptedURIParams<T>;
       }
     }
   }
 }
 
-class EncryptedURIEncoder {
+class EncryptedURIEncoder<T extends TURIParams> {
 
-  encode(content: TEncryptedURI): string {
+  static castKDFConfigToParams(
+    content: { kdf?: TEncryptedURIKDFConfig }
+  ): TEncryptedURIParams<TURIParams> {
+    const params: TEncryptedURIParams<TURIParams> = {};
+    const defaultConfigs = EncryptedURI.defaultConfigs;
+
+    if (content.kdf && !!content.kdf.includeURIParams) {
+      if (content.kdf.kdf && !(defaultConfigs.kdf === content.kdf.kdf && content.kdf.ignoreDefaults)) {
+        params.kdf = content.kdf.kdf;
+      }
+
+      if (content.kdf.hasher && !(defaultConfigs.hasher === content.kdf.hasher && content.kdf.ignoreDefaults)) {
+        params.h = content.kdf.hasher;
+      }
+
+      if (content.kdf.derivateKeyLength && !(defaultConfigs.derivateKeyLength === content.kdf.derivateKeyLength && content.kdf.ignoreDefaults)) {
+        params.dklen = String(content.kdf.derivateKeyLength);
+      }
+
+      if (content.kdf.rounds && !(defaultConfigs.rounds === content.kdf.rounds && content.kdf.ignoreDefaults)) {
+        params.c = String(content.kdf.rounds);
+      }
+    }
+
+    return params;
+  }
+
+  encode(content: TEncryptedURI<T> & { kdf?: TEncryptedURIKDFConfig }): string {
     const algorithm = this.encodeAlgorithm(content);
     const parameters = this.encodeParameters(content);
 
@@ -269,10 +224,11 @@ class EncryptedURIEncoder {
   }
 
   private encodeParameters(
-    content: TEncryptedURI
+    content: TEncryptedURI<T> & { kdf?: TEncryptedURIKDFConfig }
   ): string {
-    const params: { [attr: string]: string } = {};
-    const contentParams = content.params || {};
+    const params: TURIParams = {};
+    const kdfParams = EncryptedURIEncoder.castKDFConfigToParams(content);
+    const contentParams: TURIParams = { ...content.params, ...kdfParams };
     const paramsKeys = Object.keys(contentParams);
     if (paramsKeys.length) {
       paramsKeys.forEach(key => params[key] = contentParams[key]);
@@ -287,26 +243,26 @@ class EncryptedURIEncoder {
   }
 
   private encodeAlgorithm(
-    content: TEncryptedURI
+    content: TEncryptedURI<T>
   ): string {
     return content.algorithm || '';
   }
 }
 
-export class EncryptedURIParser {
+export class EncryptedURIParser<T extends TURIParams> {
 
   static matcher(uri: string): boolean {
     return new EncryptedURISyntaxMatcher().match(uri);
   }
 
   readonly encoded: string;
-  readonly decoded: TEncryptedURI;
+  readonly decoded: TEncryptedURI<T>;
 
-  constructor(content: TEncryptedURI);
+  constructor(content: TEncryptedURI<T>);
   constructor(content: string);
-  constructor(content: string | TEncryptedURI) {
+  constructor(content: string | TEncryptedURI<T>) {
     if (typeof content === 'string') {
-      const decoder = new EncryptedURIDecoder();
+      const decoder = new EncryptedURIDecoder<T>();
       this.decoded = decoder.decode(this.encoded = content);
       this.encoded = content;
     } else {
@@ -317,14 +273,16 @@ export class EncryptedURIParser {
   }
 }
 
-export abstract class EncryptedURIEncrypter<T extends TEncryptedURIEncryptableDefaultParams = TEncryptedURIEncryptableDefaultParams> {
+export abstract class EncryptedURIEncrypter<
+  T extends TURIParams
+> {
 
-  constructor(protected params: T) { }
+  constructor(protected params: TEncryptedURIResultset<T>) { }
   
-  abstract encrypt(): Promise<TEncryptedURI>;
+  abstract encrypt(): Promise<TEncryptedURI<T>>;
 }
 
-export abstract class EncryptedURIDecrypter<T = {}> {
+export abstract class EncryptedURIDecrypter<T extends TURIParams> {
 
   constructor(
     protected decoded: TEncryptedURI<T>
@@ -333,7 +291,12 @@ export abstract class EncryptedURIDecrypter<T = {}> {
   abstract decrypt(): Promise<string>;
 }
 
-export type TEncryptedURIParams<T = {}> = {
+/**
+ * This type represent the reserved URI params into the
+ * string serialized version. This type represents the
+ * params as is after read from query params
+ */
+export type TEncryptedURIParams<T extends TURIParams> = {
   [attr: string]: string;
 } & {
 
@@ -380,35 +343,33 @@ export type TEncryptedURIParams<T = {}> = {
   s?: string;
 } & T;
 
-export type TEncryptedURIDefaultParams = {
-  [param: string]: any;
-
+export type TEncryptedURIDefaultParams<T extends TURIParams> = {
   algorithm?: string;
+
   /**
    * Customize the key derivation function params to open and to encrypt,
    * you can configure in this object to include the kdf as URI params 
    */
   kdf?: TEncryptedURIKDFConfig;
-}
 
-export type TEncryptedURIEncryptedDefaultParams = {
-  cipher: string;
-} & TEncryptedURIDefaultParams;
+  params: T;
+};
 
-export type TEncryptedURIEncryptableDefaultParams = {
+export type TEncryptedURIEncryptableDefaultParams<T extends TURIParams> = {
   content: string;
   password: string;
-} & TEncryptedURIDefaultParams;
+} & TEncryptedURIDefaultParams<T>;
 
-export type EncrypterClass = { new (...args: any[]): EncryptedURIEncrypter<any> } & { algorithm?: string };
-export type DecrypterClass<T extends TEncryptedURI = TEncryptedURI> = { new (decoded: T, ...args: any[]): EncryptedURIDecrypter<T> };
+export type TEncrypterClass<T extends TURIParams> = { new (resultset: TEncryptedURIResultset<T>, ...args: any[]): EncryptedURIEncrypter<any> } & { algorithm?: string };
+export type TDecrypterClass<T extends TURIParams> = { new (decoded: TEncryptedURI<T>, ...args: any[]): EncryptedURIDecrypter<T> };
+export type TEncryptedURIResultset<T extends TURIParams> = TEncryptedURIEncryptableDefaultParams<T>;
 
-export function EncryptedURIAlgorithm<T extends TEncryptedURI>(args: {
+export function EncryptedURIAlgorithm<T extends TURIParams>(args: {
   algorithm: string,
-  decrypter: DecrypterClass<T>
+  decrypter: TDecrypterClass<T>
 }) {
   return function (
-    target: EncrypterClass & { algorithm?: string }
+    target: TEncrypterClass<T> & { algorithm?: string }
   ) {
     target.algorithm = args.algorithm;
     EncryptedURI.setAlgorithm(args.algorithm, target, args.decrypter);
@@ -417,41 +378,63 @@ export function EncryptedURIAlgorithm<T extends TEncryptedURI>(args: {
 
 export class EncryptedURI {
 
-  static readonly DEFAULT_ALGORITHM = 'aes';
+  static readonly defaultConfigs: Required<TEncryptedURIKDFConfig> = {
+    kdf: 'pbkdf2',
+    hasher: 'sha256',
+    ignoreDefaults: true,
+    includeURIParams: true,
+    derivateKeyLength: 32,
+    rounds: 32
+  };
+
+  static readonly defaultAlgotithm = 'aes';
 
   static readonly supportedAlgorithm: {
     [algorithm: string]: [
-      EncrypterClass,
-      DecrypterClass<any>
+      TEncrypterClass<any>,
+      TDecrypterClass<any>
     ]
   } = { };
+
+  static getKDFConfig<T extends TURIParams>(
+    configOverload?: TEncryptedURIKDFConfig | TEncryptedURI<T>
+  ): Required<TEncryptedURIKDFConfig> {
+    return EncryptedURIDecoder.getKDFConfig<T>(configOverload);
+  }
+
+  static castKDFConfigToParams(
+    content: { kdf?: TEncryptedURIKDFConfig }
+  ): TEncryptedURIParams<TURIParams> {
+    return EncryptedURIEncoder.castKDFConfigToParams(content);    
+  }
 
   static matcher(uri: string): boolean {
     return new EncryptedURISyntaxMatcher().match(uri);
   }
 
-  static encode(params: TEncryptedURI): string {
+  static encode<T extends TURIParams>(params: TEncryptedURI<T>): string {
     return new EncryptedURIParser(params).encoded;
   }
 
-  static async encrypt(params: TEncryptedURIEncryptableDefaultParams, ...args: any[]): Promise<string> {
+  static async encrypt<T extends TURIParams>(params: TEncryptedURIEncryptableDefaultParams<T>, ...args: any[]): Promise<string> {
     const [ encrypter ] = this.getAlgorithm(params.algorithm);
     const ciphred = await new encrypter(params, ...args).encrypt();
     ciphred.algorithm = encrypter.algorithm || params.algorithm;
+
     return Promise.resolve(this.encode(ciphred));
   }
 
-  static decrypt(uri: string, key: Uint8Array): Promise<string>;
+  static decrypt(uri: string, password: string): Promise<string>;
   static decrypt(uri: string, ...args: any[]): Promise<string> {
     const uriDecoded = new EncryptedURIParser(uri).decoded;
     const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);
     return new decryptor(uriDecoded, ...args).decrypt();
   }
 
-  static setAlgorithm<T extends TEncryptedURI>(
+  static setAlgorithm<T extends TURIParams>(
     algorithm: string,
-    encrypter: EncrypterClass,
-    decrypter: DecrypterClass<T>
+    encrypter: TEncrypterClass<T>,
+    decrypter: TDecrypterClass<T>
   ): void {
     if (!this.supportedAlgorithm[algorithm]) {
       this.supportedAlgorithm[algorithm] = [encrypter, decrypter];
@@ -459,10 +442,10 @@ export class EncryptedURI {
   }
 
   private static getAlgorithm(algorithm?: string): [
-    EncrypterClass,
-    DecrypterClass<any>
+    TEncrypterClass<any>,
+    TDecrypterClass<any>
   ] {
-    algorithm = algorithm || EncryptedURI.DEFAULT_ALGORITHM;
+    algorithm = algorithm || EncryptedURI.defaultAlgotithm;
     const [ encryptor, decryptor ] = this.supportedAlgorithm[algorithm] || [ null, null];
     if (!encryptor && !decryptor) {
       throw new Error(`Algorithm '${algorithm}' not supported`);

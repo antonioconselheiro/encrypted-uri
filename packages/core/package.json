@@ -39,6 +39,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@belomonte/iterable-string": "^1.0.1",
     "tslib": "^2.6.2"
   }
 }

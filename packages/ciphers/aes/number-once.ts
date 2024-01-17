@@ -1,9 +1,15 @@
-import { TEncryptedURI } from '@encrypted-uri/core';
+import { TEncryptedURI, TEncryptedURIResultset } from '@encrypted-uri/core';
 import { bytesToHex } from '@noble/ciphers/utils';
 import { randomBytes } from '@noble/ciphers/webcrypto/utils';
 
-export type TEncryptedURIAESWithNumberOnceParams = TEncryptedURI<{ no: string }>;
+export type TNumberOnceParams = { no: string };
 
-export function getNumberOnce(args: TEncryptedURIAESWithNumberOnceParams | undefined): string {
-  return args?.params?.no || args?.queryString || bytesToHex(randomBytes(12));
+export function getNumberOnce(args: TEncryptedURIResultset<TNumberOnceParams> | TEncryptedURI<TNumberOnceParams> | undefined): string {
+  if (args) {
+    const no = args.params?.no || 'queryString' in args && args.queryString;
+    if (no) {
+      return no;
+    }
+  }
+  return bytesToHex(randomBytes(12));
 }
