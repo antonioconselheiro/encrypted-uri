@@ -19,7 +19,7 @@ class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TInitializationV
     const ivhex = getInitializationVector(this.decoded);
     const cipher = utf8ToBytes(this.decoded.cipher);
     const salt = getSalt(cipher, this.decoded?.params);
-    const result = await ctr(kdf(this.password, salt), hexToBytes(ivhex))
+    const result = await ctr(kdf(this.password, salt, this.decoded), hexToBytes(ivhex))
       .decrypt(cipher);
 
     return bytesToUtf8(result);

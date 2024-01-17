@@ -20,7 +20,7 @@ class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TNumberOnceParam
     const nonce = getNumberOnce(this.decoded);
     const cipher = utf8ToBytes(this.decoded.cipher);
     const salt = getSalt(cipher, this.decoded?.params);
-    const result = await siv(kdf(this.password, salt), Uint8Array.from(base64.decode(nonce)))
+    const result = await siv(kdf(this.password, salt, this.decoded), Uint8Array.from(base64.decode(nonce)))
       .decrypt(cipher);
 
     return bytesToUtf8(result);
