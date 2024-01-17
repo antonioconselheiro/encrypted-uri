@@ -1,4 +1,4 @@
-import { TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIParams, TURIParams } from '@encrypted-uri/core';
+import { EncryptedURI, TEncryptedURI, TEncryptedURIKDFConfig, TURIParams } from '@encrypted-uri/core';
 import { pbkdf2 } from '@noble/hashes/pbkdf2';
 import { HashSupport } from 'hashes/hash-support';
 
@@ -7,7 +7,7 @@ export function kdf<T extends TURIParams>(
   salt: Uint8Array,
   config?: TEncryptedURIKDFConfig | TEncryptedURI<T>
 ): Uint8Array {
-  const cfg = getKDFConfig(config);
+  const cfg = EncryptedURI.getKDFConfig(config);
 
   if (cfg.kdf === 'pbkdf2') {
     return pbkdf2(HashSupport.get(cfg.hasher), password, salt, {

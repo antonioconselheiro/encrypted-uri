@@ -80,25 +80,16 @@ export type TEncryptedURI<T extends TURIParams> = {
 
 class EncryptedURIDecoder<T extends TURIParams> {
 
-  static readonly defaultConfigs: Required<TEncryptedURIKDFConfig> = {
-    kdf: 'pbkdf2',
-    hasher: 'sha256',
-    ignoreDefaults: true,
-    includeURIParams: true,
-    derivateKeyLength: 32,
-    rounds: 32
-  };
-
   static getKDFConfig<T extends TURIParams>(
     configOverload?: TEncryptedURIKDFConfig | TEncryptedURI<T>
   ): Required<TEncryptedURIKDFConfig> {
-    let config: TEncryptedURIKDFConfig = this.defaultConfigs;
+    let config: TEncryptedURIKDFConfig = EncryptedURI.defaultConfigs;
     if (configOverload && 'params' in configOverload) {
       config = this.castParamsToConfig(configOverload.params);
     }
-  
+    
     const configWithDefaults: Required<TEncryptedURIKDFConfig> = {
-      ...this.defaultConfigs,
+      ...EncryptedURI.defaultConfigs,
       ...config
     };
   
@@ -194,6 +185,33 @@ class EncryptedURIDecoder<T extends TURIParams> {
 
 class EncryptedURIEncoder<T extends TURIParams> {
 
+  static castKDFConfigToParams(
+    content: { kdf?: TEncryptedURIKDFConfig }
+  ): TEncryptedURIParams<TURIParams> {
+    const params: TEncryptedURIParams<TURIParams> = {};
+    const defaultConfigs = EncryptedURI.defaultConfigs;
+
+    if (content.kdf && !!content.kdf.includeURIParams) {
+      if (content.kdf.kdf && !(defaultConfigs.kdf === content.kdf.kdf && content.kdf.ignoreDefaults)) {
+        params.kdf = content.kdf.kdf;
+      }
+
+      if (content.kdf.hasher && !(defaultConfigs.hasher === content.kdf.hasher && content.kdf.ignoreDefaults)) {
+        params.h = content.kdf.hasher;
+      }
+
+      if (content.kdf.derivateKeyLength && !(defaultConfigs.derivateKeyLength === content.kdf.derivateKeyLength && content.kdf.ignoreDefaults)) {
+        params.dklen = String(content.kdf.derivateKeyLength);
+      }
+
+      if (content.kdf.rounds && !(defaultConfigs.rounds === content.kdf.rounds && content.kdf.ignoreDefaults)) {
+        params.c = String(content.kdf.rounds);
+      }
+    }
+
+    return params;
+  }
+
   encode(content: TEncryptedURI<T> & { kdf?: TEncryptedURIKDFConfig }): string {
     const algorithm = this.encodeAlgorithm(content);
     const parameters = this.encodeParameters(content);
@@ -209,7 +227,7 @@ class EncryptedURIEncoder<T extends TURIParams> {
     content: TEncryptedURI<T> & { kdf?: TEncryptedURIKDFConfig }
   ): string {
     const params: TURIParams = {};
-    const kdfParams = this.castKDFConfigToParams(content);
+    const kdfParams = EncryptedURIEncoder.castKDFConfigToParams(content);
     const contentParams: TURIParams = { ...content.params, ...kdfParams };
     const paramsKeys = Object.keys(contentParams);
     if (paramsKeys.length) {
@@ -222,12 +240,6 @@ class EncryptedURIEncoder<T extends TURIParams> {
     paramsKeys.forEach(key => serializer.append(key, params[key]));
 
     return serializer.toString();
-  }
-
-  private castKDFConfigToParams(
-    content: TEncryptedURI<T> & { kdf?: TEncryptedURIKDFConfig }
-  ): TEncryptedURIParams<TURIParams> {
-    //  TODO: cast kdf config into params
   }
 
   private encodeAlgorithm(
@@ -343,10 +355,6 @@ export type TEncryptedURIDefaultParams<T extends TURIParams> = {
   params: T;
 };
 
-export type TEncryptedURIEncryptedDefaultParams<T extends TURIParams> = {
-  cipher: string;
-} & TEncryptedURIDefaultParams<T>;
-
 export type TEncryptedURIEncryptableDefaultParams<T extends TURIParams> = {
   content: string;
   password: string;
@@ -370,7 +378,16 @@ export function EncryptedURIAlgorithm<T extends TURIParams>(args: {
 
 export class EncryptedURI {
 
-  static readonly DEFAULT_ALGORITHM = 'aes';
+  static readonly defaultConfigs: Required<TEncryptedURIKDFConfig> = {
+    kdf: 'pbkdf2',
+    hasher: 'sha256',
+    ignoreDefaults: true,
+    includeURIParams: true,
+    derivateKeyLength: 32,
+    rounds: 32
+  };
+
+  static readonly defaultAlgotithm = 'aes';
 
   static readonly supportedAlgorithm: {
     [algorithm: string]: [
@@ -378,6 +395,18 @@ export class EncryptedURI {
       TDecrypterClass<any>
     ]
   } = { };
+
+  static getKDFConfig<T extends TURIParams>(
+    configOverload?: TEncryptedURIKDFConfig | TEncryptedURI<T>
+  ): Required<TEncryptedURIKDFConfig> {
+    return EncryptedURIDecoder.getKDFConfig<T>(configOverload);
+  }
+
+  static castKDFConfigToParams(
+    content: { kdf?: TEncryptedURIKDFConfig }
+  ): TEncryptedURIParams<TURIParams> {
+    return EncryptedURIEncoder.castKDFConfigToParams(content);    
+  }
 
   static matcher(uri: string): boolean {
     return new EncryptedURISyntaxMatcher().match(uri);
@@ -416,7 +445,7 @@ export class EncryptedURI {
     TEncrypterClass<any>,
     TDecrypterClass<any>
   ] {
-    algorithm = algorithm || EncryptedURI.DEFAULT_ALGORITHM;
+    algorithm = algorithm || EncryptedURI.defaultAlgotithm;
     const [ encryptor, decryptor ] = this.supportedAlgorithm[algorithm] || [ null, null];
     if (!encryptor && !decryptor) {
       throw new Error(`Algorithm '${algorithm}' not supported`);
