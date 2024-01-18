@@ -88,8 +88,8 @@ export class AppComponent {
             kdf: 'pbkdf2',
             includeURIParams: true,
             ignoreDefaults: true,
-            hasher: 'sha3_256',
-            rounds: 32,
+            hasher: 'sha256',
+            rounds: 100_000,
             derivateKeyLength: 32
           }
         }).then(uri => this.generatedEncryptedURI = uri);
@@ -103,11 +103,9 @@ export class AppComponent {
       if (raw.uri && raw.password) {
         EncryptedURI
           .decrypt(raw.uri, raw.password, {
-            kdf: {
-              hasher: 'sha256',
-              rounds: 1,
-              derivateKeyLength: 32
-            }
+            hasher: 'sha256',
+            rounds: 100_000,
+            derivateKeyLength: 32
           })
           .then(decrypted => this.decryptedContent = decrypted);
       }
