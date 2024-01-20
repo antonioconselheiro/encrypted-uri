@@ -284,11 +284,30 @@ export abstract class EncryptedURIEncrypter<
 
 export abstract class EncryptedURIDecrypter<T extends TURIParams> {
 
+  protected kdf: Required<TEncryptedURIKDFConfig>;
+
   constructor(
-    protected decoded: TEncryptedURI<T>
-  ) { }
+    protected decoded: TEncryptedURI<T>,
+    protected password: string,
+    protected defaultsKDF: Required<TEncryptedURIKDFConfig>
+  ) {
+    this.kdf = this.getKDFConfig(this.decoded, this.defaultsKDF);
+  }
 
   abstract decrypt(): Promise<string>;
+
+  private getKDFConfig(
+    decoded: TEncryptedURI<T>,
+    defaultsKDF: TEncryptedURIKDFConfig
+  ): Required<TEncryptedURIKDFConfig> {
+    const kdf = EncryptedURIDecoder.getKDFConfig(decoded.params);
+    const configWithDefaults: Required<TEncryptedURIKDFConfig> = {
+      ...EncryptedURI.defaultConfigs,
+      ...kdf
+    };
+
+    return configWithDefaults;
+  }
 }
 
 /**
@@ -352,7 +371,7 @@ export type TEncryptedURIDefaultParams<T extends TURIParams> = {
    */
   kdf?: TEncryptedURIKDFConfig;
 
-  params: T;
+  params?: TEncryptedURIParams<T>;
 };
 
 export type TEncryptedURIEncryptableDefaultParams<T extends TURIParams> = {
@@ -361,7 +380,7 @@ export type TEncryptedURIEncryptableDefaultParams<T extends TURIParams> = {
 } & TEncryptedURIDefaultParams<T>;
 
 export type TEncrypterClass<T extends TURIParams> = { new (resultset: TEncryptedURIResultset<T>, ...args: any[]): EncryptedURIEncrypter<any> } & { algorithm?: string };
-export type TDecrypterClass<T extends TURIParams> = { new (decoded: TEncryptedURI<T>, ...args: any[]): EncryptedURIDecrypter<T> };
+export type TDecrypterClass<T extends TURIParams> = { new (decoded: TEncryptedURI<T>, password: string, kdf: Required<TEncryptedURIKDFConfig>, ...args: any[]): EncryptedURIDecrypter<T> };
 export type TEncryptedURIResultset<T extends TURIParams> = TEncryptedURIEncryptableDefaultParams<T>;
 
 export function EncryptedURIAlgorithm<T extends TURIParams>(args: {
@@ -424,11 +443,15 @@ export class EncryptedURI {
     return Promise.resolve(this.encode(ciphred));
   }
 
-  static decrypt(uri: string, password: string): Promise<string>;
-  static decrypt(uri: string, ...args: any[]): Promise<string> {
+  static decrypt(
+    uri: string,
+    password: string,
+    kdf?: Required<TEncryptedURIKDFConfig>,
+    ...args: any[]
+  ): Promise<string> {
     const uriDecoded = new EncryptedURIParser(uri).decoded;
     const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);
-    return new decryptor(uriDecoded, ...args).decrypt();
+    return new decryptor(uriDecoded, password, kdf || EncryptedURI.defaultConfigs, ...args).decrypt();
   }
 
   static setAlgorithm<T extends TURIParams>(
