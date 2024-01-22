@@ -1,4 +1,4 @@
-import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset, TURIParams } from '@encrypted-uri/core';
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset, TURIParams } from '@encrypted-uri/core';
 import { ecb } from '@noble/ciphers/aes';
 import { bytesToUtf8, utf8ToBytes } from '@noble/ciphers/utils';
 import { randomBytes } from '@noble/hashes/utils';
@@ -9,9 +9,10 @@ import { getSalt } from 'aes/salt';
 class EncryptedURIAESECBDecrypter<T extends TURIParams = TURIParams> extends EncryptedURIDecrypter<T> {
   constructor(
     decoded: TEncryptedURI<T>,
-    private password: string
+    password: string,
+    defaultsKDF: Required<TEncryptedURIKDFConfig>
   ) {
-    super(decoded);
+    super(decoded, password, defaultsKDF);
   }
 
   async decrypt(): Promise<string> {

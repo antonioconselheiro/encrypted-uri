@@ -1,4 +1,4 @@
-import { EncryptedURI, EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset } from '@encrypted-uri/core';
+import { EncryptedURI, EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset, TURIParams } from '@encrypted-uri/core';
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { cbc } from '@noble/ciphers/webcrypto/aes';
 import { randomBytes } from '@noble/hashes/utils';
@@ -11,9 +11,10 @@ import { TInitializationVectorParams, getInitializationVector } from '../initial
 class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TInitializationVectorParams> {
   constructor(
     decoded: TEncryptedURI<TInitializationVectorParams>,
-    private password: string
+    password: string,
+    defaultsKDF: Required<TEncryptedURIKDFConfig>
   ) {
-    super(decoded);
+    super(decoded, password, defaultsKDF);
   }
 
   async decrypt(): Promise<string> {

@@ -1,4 +1,4 @@
-import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset } from "@encrypted-uri/core";
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset } from "@encrypted-uri/core";
 import { siv } from '@noble/ciphers/aes';
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { randomBytes } from "@noble/hashes/utils";
@@ -11,9 +11,10 @@ import { TNumberOnceParams, getNumberOnce } from '../number-once';
 class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TNumberOnceParams> {
   constructor(
     decoded: TEncryptedURI<TNumberOnceParams>,
-    private password: string
+    password: string,
+    defaultsKDF: Required<TEncryptedURIKDFConfig>
   ) {
-    super(decoded);
+    super(decoded, password, defaultsKDF);
   }
 
   async decrypt(): Promise<string> {
