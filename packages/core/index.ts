@@ -446,12 +446,15 @@ export class EncryptedURI {
   static decrypt(
     uri: string,
     password: string,
-    kdf?: Required<TEncryptedURIKDFConfig>,
+    kdf?: TEncryptedURIKDFConfig,
     ...args: any[]
   ): Promise<string> {
     const uriDecoded = new EncryptedURIParser(uri).decoded;
     const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);
-    return new decryptor(uriDecoded, password, kdf || EncryptedURI.defaultConfigs, ...args).decrypt();
+    const kdfConfigs: Required<TEncryptedURIKDFConfig> = {
+      ...EncryptedURI.defaultConfigs, ...kdf
+    };
+    return new decryptor(uriDecoded, password, kdfConfigs, ...args).decrypt();
   }
 
   static setAlgorithm<T extends TURIParams>(
