@@ -7,7 +7,7 @@
     "ban"
   ],
   "ignorePatterns": [
-    "**/*.test.ts"
+    "packages/**/*.test.ts"
   ],
   "overrides": [
     {
