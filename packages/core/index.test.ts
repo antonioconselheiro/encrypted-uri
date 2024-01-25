@@ -1,4 +1,4 @@
-import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter, EncryptedURIParser } from ".";
+import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter, EncryptedURIParser, TURIParams, TEncryptedURIKDFConfig } from ".";
 import { randomBytes } from '@noble/hashes/utils'
 
 describe('decode uri with default values', () => {
@@ -291,12 +291,14 @@ describe('uri matcher', () => {
 });
 
 describe('EncryptedURI object', () => {
-  class CustomDecrypter extends EncryptedURIDecrypter {
+  class CustomDecrypter<T extends TURIParams = {}> extends EncryptedURIDecrypter<T> {
 
     constructor(
-      decoded: TEncryptedURI
+      decoded: TEncryptedURI<T>,
+      password: string,
+      defaultsKDF: Required<TEncryptedURIKDFConfig>
     ) {
-      super(decoded);
+      super(decoded, password, defaultsKDF);
     }
   
     decrypt(): Promise<string> {
@@ -304,14 +306,14 @@ describe('EncryptedURI object', () => {
     }
   }
   
-  class CustomEncrypter extends EncryptedURIEncrypter {
+  class CustomEncrypter<T extends TURIParams = {}> extends EncryptedURIEncrypter<T> {
     constructor(
-      params: TEncryptedURIEncryptableDefaultParams
+      params: TEncryptedURIEncryptableDefaultParams<T>
     ) {
       super(params);
     }
   
-    encrypt(): Promise<TEncryptedURI> {
+    encrypt(): Promise<TEncryptedURI<T>> {
       return Promise.resolve({
         algorithm: 'custom',
         cipher: btoa(this.params.content)
@@ -328,7 +330,7 @@ describe('EncryptedURI object', () => {
 
   it('[2] EncryptedURI must run decrypt for custom algorithm', () => {
     EncryptedURI.setAlgorithm('custom', CustomEncrypter, CustomDecrypter);
-    EncryptedURI.decrypt(encoded, randomBytes(16)).then(content => {
+    EncryptedURI.decrypt(encoded, 'senhasecreta').then(content => {
       expect(content).toEqual('base64 não é criptografia');
     });
   });
@@ -338,10 +340,9 @@ describe('EncryptedURI object', () => {
     EncryptedURI.encrypt({
       algorithm: 'custom',
       content: 'base64 não é criptografia',
-      key: randomBytes(16)
+      password: 'senhasecreta'
     }).then(result => {
       expect(result).toEqual(encoded);
     })
   });
-
 });

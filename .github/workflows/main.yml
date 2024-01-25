@@ -17,20 +17,20 @@ jobs:
       with:
         node-version: 20.10.0
 
+    - name: Install dependencies
+      run: npm -C packages/core ci
+
+    - name: Install dependencies
+      run: npm -C packages/ciphers ci
+
     - name: Lint
       run: npm run lint
 
     - name: Test
       run: npm run test
 
-    - name: Install dependencies
-      run: npm -C packages/core ci
-
     - name: Build
       run: npm -C packages/core run build
-
-    - name: Install dependencies
-      run: npm -C packages/ciphers ci
 
     - name: Build
       run: npm -C packages/ciphers run build
