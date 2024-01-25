@@ -92,7 +92,9 @@ export class AppComponent {
             rounds: 100_000,
             derivateKeyLength: 32
           }
-        }).then(uri => this.generatedEncryptedURI = uri);
+        })
+        .then(uri => this.generatedEncryptedURI = uri)
+        .catch(e => console.error(e));
       }
     }
   }
@@ -107,7 +109,8 @@ export class AppComponent {
             rounds: 100_000,
             derivateKeyLength: 32
           })
-          .then(decrypted => this.decryptedContent = decrypted);
+          .then(decrypted => this.decryptedContent = decrypted)
+          .catch(e => console.error(e));
       }
     }
   }

@@ -3,9 +3,10 @@ import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { gcm } from '@noble/ciphers/webcrypto/aes';
 import { randomBytes } from '@noble/hashes/utils';
 import { base64 } from '@scure/base';
-import { kdf } from 'aes/kdf';
-import { getSalt } from 'aes/salt';
+import { kdf } from '../kdf';
+import { getSalt } from '../salt';
 import { TNumberOnceParams, getNumberOnce } from '../number-once';
+import { OpenSSLSerializer } from '../openssl-serializer';
 
 class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TNumberOnceParams> {
   constructor(
@@ -31,6 +32,7 @@ class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TNumberOnceParam
   algorithm: 'aes/gcm',
   decrypter: EncryptedURIAESGCMDecrypter
 })
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter<TNumberOnceParams> {
 
   constructor(
@@ -43,11 +45,12 @@ class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter<TNumberOnceParam
     const numberOnceHex = getNumberOnce(this.params);
     const nonce = hexToBytes(numberOnceHex);
     const content = utf8ToBytes(this.params.content);
-    const salt = randomBytes(32);
+    const saltLength = 32;
+    const salt = randomBytes(saltLength);
     const cipher = await gcm(kdf(this.params.password, salt, this.params.kdf), nonce).encrypt(content);
 
     return Promise.resolve({
-      cipher: base64.encode(cipher),
+      cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),
       params: { no: numberOnceHex }
     });
   }

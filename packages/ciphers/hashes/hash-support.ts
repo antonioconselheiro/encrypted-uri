@@ -5,7 +5,7 @@ export class HashSupport {
     [name: string]: CHash
   } = {};
 
-  static addSupport(name: string, hasher: CHash) {
+  static addSupport(name: string, hasher: CHash): void {
     if (!this.supported[name]) {
       this.supported[name] = hasher;
     } else {

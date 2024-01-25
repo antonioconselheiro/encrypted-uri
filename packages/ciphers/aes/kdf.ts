@@ -1,6 +1,6 @@
 import { EncryptedURI, TEncryptedURI, TEncryptedURIKDFConfig, TURIParams } from '@encrypted-uri/core';
 import { pbkdf2 } from '@noble/hashes/pbkdf2';
-import { HashSupport } from 'hashes/hash-support';
+import { HashSupport } from '../hashes/hash-support';
 
 export function kdf<T extends TURIParams>(
   password: string,

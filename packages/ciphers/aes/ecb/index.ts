@@ -3,8 +3,9 @@ import { ecb } from '@noble/ciphers/aes';
 import { bytesToUtf8, utf8ToBytes } from '@noble/ciphers/utils';
 import { randomBytes } from '@noble/hashes/utils';
 import { base64 } from '@scure/base';
-import { kdf } from 'aes/kdf';
-import { getSalt } from 'aes/salt';
+import { kdf } from '../kdf';
+import { getSalt } from '../salt';
+import { OpenSSLSerializer } from '../openssl-serializer';
 
 class EncryptedURIAESECBDecrypter<T extends TURIParams = TURIParams> extends EncryptedURIDecrypter<T> {
   constructor(
@@ -29,6 +30,7 @@ class EncryptedURIAESECBDecrypter<T extends TURIParams = TURIParams> extends Enc
   algorithm: 'aes/ecb',
   decrypter: EncryptedURIAESECBDecrypter
 })
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class EncryptedURIAESECBEncrypter<T extends TURIParams = TURIParams> extends EncryptedURIEncrypter<TURIParams> {
 
   constructor(
@@ -39,9 +41,10 @@ class EncryptedURIAESECBEncrypter<T extends TURIParams = TURIParams> extends Enc
 
   async encrypt(): Promise<TEncryptedURI<T>> {
     const content = utf8ToBytes(this.params.content);
-    const salt = randomBytes(32);
+    const saltLength = 32;
+    const salt = randomBytes(saltLength);
     const rawCipher = await ecb(kdf(this.params.password, salt, this.params.kdf)).encrypt(content);
-    const cipher = base64.encode(rawCipher);
+    const cipher = base64.encode(OpenSSLSerializer.encode(rawCipher, salt));
 
     return Promise.resolve({ cipher });
   }

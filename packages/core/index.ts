@@ -185,26 +185,41 @@ class EncryptedURIDecoder<T extends TURIParams> {
 
 class EncryptedURIEncoder<T extends TURIParams> {
 
+  private static propertyShouldBeIgnored(
+    configs: TEncryptedURIKDFConfig,
+    configName: keyof TEncryptedURIKDFConfig
+  ): boolean {
+    const defaultConfigs = EncryptedURI.defaultConfigs;
+    if (
+      configs[configName] &&
+      defaultConfigs[configName] === configs[configName] &&
+      configs.ignoreDefaults
+    ) {
+      return true; 
+    }
+
+    return false;
+  }
+
   static castKDFConfigToParams(
     content: { kdf?: TEncryptedURIKDFConfig }
   ): TEncryptedURIParams<TURIParams> {
     const params: TEncryptedURIParams<TURIParams> = {};
-    const defaultConfigs = EncryptedURI.defaultConfigs;
 
     if (content.kdf && !!content.kdf.includeURIParams) {
-      if (content.kdf.kdf && !(defaultConfigs.kdf === content.kdf.kdf && content.kdf.ignoreDefaults)) {
+      if (!this.propertyShouldBeIgnored(content.kdf, 'kdf')) {
         params.kdf = content.kdf.kdf;
       }
 
-      if (content.kdf.hasher && !(defaultConfigs.hasher === content.kdf.hasher && content.kdf.ignoreDefaults)) {
+      if (!this.propertyShouldBeIgnored(content.kdf, 'hasher')) {
         params.h = content.kdf.hasher;
       }
 
-      if (content.kdf.derivateKeyLength && !(defaultConfigs.derivateKeyLength === content.kdf.derivateKeyLength && content.kdf.ignoreDefaults)) {
+      if (!this.propertyShouldBeIgnored(content.kdf, 'derivateKeyLength')) {
         params.dklen = String(content.kdf.derivateKeyLength);
       }
 
-      if (content.kdf.rounds && !(defaultConfigs.rounds === content.kdf.rounds && content.kdf.ignoreDefaults)) {
+      if (!this.propertyShouldBeIgnored(content.kdf, 'rounds')) {
         params.c = String(content.kdf.rounds);
       }
     }
@@ -303,6 +318,7 @@ export abstract class EncryptedURIDecrypter<T extends TURIParams> {
     const kdf = EncryptedURIDecoder.getKDFConfig(decoded.params);
     const configWithDefaults: Required<TEncryptedURIKDFConfig> = {
       ...EncryptedURI.defaultConfigs,
+      ...defaultsKDF,
       ...kdf
     };
 
