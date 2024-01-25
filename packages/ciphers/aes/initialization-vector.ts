@@ -11,5 +11,7 @@ export function getInitializationVector(args: TEncryptedURIResultset<TInitializa
       return iv;
     }
   }
-  return bytesToHex(randomBytes(16));
+
+  const initializationVectorLength = 16;
+  return bytesToHex(randomBytes(initializationVectorLength));
 }

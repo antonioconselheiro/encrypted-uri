@@ -1,5 +1,6 @@
 export class OpenSSLSerializer {
 
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers
   private static readonly saltedHeader = [0x53616c74, 0x65645f5f];
 
   static encode(cipher: Uint8Array, salt: Uint8Array): Uint8Array {
@@ -17,10 +18,11 @@ export class OpenSSLSerializer {
     const cipher = Array.from(openssl);
     if (openssl[0] === this.saltedHeader[0] && openssl[1] === this.saltedHeader[1]) {
       //  remove header
-      cipher.splice(0, 2);
+      const integerBytesLength = 2;
+      cipher.splice(0, integerBytesLength);
 
       //  collect header data
-      const salt = cipher.splice(0, 2);
+      const salt = cipher.splice(0, integerBytesLength);
       return {
         salt: Uint8Array.from(salt),
         cipher: Uint8Array.from(cipher)

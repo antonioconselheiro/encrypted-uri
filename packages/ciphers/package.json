@@ -2,15 +2,12 @@
   "name": "@encrypted-uri/ciphers",
   "version": "1.0.0",
   "description": "encrypt and decrypt from encrypted uri",
-  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/antonioconselheiro/encrypted-uri.git"
   },
   "scripts": {
-    "build": "rm -rf ../../dist/ciphers && tsc --project . && cp README.md package.json package-lock.json ../../dist/ciphers/",
-    "lint": "eslint .",
-    "test": "jest"
+    "build": "rm -rf ../../dist/ciphers && tsc --project . && cp README.md package.json package-lock.json ../../dist/ciphers/"
   },
   "keywords": [
     "uri",
@@ -27,14 +24,6 @@
   },
   "homepage": "https://github.com/antonioconselheiro/encrypted-uri#readme",
   "devDependencies": {
-    "@types/jest": "^29.5.11",
-    "@typescript-eslint/eslint-plugin": "^6.16.0",
-    "eslint": "^8.56.0",
-    "eslint-plugin-ban": "^1.6.0",
-    "husky": "^8.0.3",
-    "jest": "^29.7.0",
-    "jest-html-reporters": "^3.1.7",
-    "ts-jest": "^29.1.1",
     "typescript": "^5.3.3"
   },
   "dependencies": {

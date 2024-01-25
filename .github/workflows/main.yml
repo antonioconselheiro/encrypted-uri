@@ -20,11 +20,17 @@ jobs:
     - name: Install dependencies
       run: npm -C packages/core ci
 
+    - name: Install dependencies
+      run: npm -C packages/ciphers ci
+
     - name: Lint
-      run: npm -C packages/core run lint
+      run: npm run lint
 
     - name: Test
-      run: npm -C packages/core run test
+      run: npm run test
 
     - name: Build
       run: npm -C packages/core run build
+
+    - name: Build
+      run: npm -C packages/ciphers run build

@@ -11,5 +11,7 @@ export function getNumberOnce(args: TEncryptedURIResultset<TNumberOnceParams> | 
       return no;
     }
   }
-  return bytesToHex(randomBytes(12));
+
+  const numberOnceLength = 12;
+  return bytesToHex(randomBytes(numberOnceLength));
 }

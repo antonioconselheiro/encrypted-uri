@@ -1,18 +1,20 @@
-import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset } from "@encrypted-uri/core";
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset } from "@encrypted-uri/core";
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from "@noble/ciphers/utils";
 import { ctr } from '@noble/ciphers/webcrypto/aes';
 import { randomBytes } from "@noble/hashes/utils";
-import { base64 } from "@scure/base";
-import { kdf } from "aes/kdf";
-import { getSalt } from "aes/salt";
+import { base64 } from '@scure/base';
+import { kdf } from '../kdf';
+import { getSalt } from '../salt';
 import { TInitializationVectorParams, getInitializationVector } from "../initialization-vector";
+import { OpenSSLSerializer } from "../openssl-serializer";
 
 class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TInitializationVectorParams> {
   constructor(
     decoded: TEncryptedURI<TInitializationVectorParams>,
-    private password: string
+    password: string,
+    defaultsKDF: Required<TEncryptedURIKDFConfig>
   ) {
-    super(decoded);
+    super(decoded, password, defaultsKDF);
   }
 
   async decrypt(): Promise<string> {
@@ -30,6 +32,7 @@ class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TInitializationV
   algorithm: 'aes/ctr',
   decrypter: EncryptedURIAESCTRDecrypter
 })
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter<TInitializationVectorParams> {
 
   constructor(
@@ -42,11 +45,12 @@ class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter<TInitializationV
     const ivhex = getInitializationVector(this.params);
     const iv = hexToBytes(ivhex);
     const content = utf8ToBytes(this.params.content);
-    const salt = randomBytes(32);
+    const saltLength = 32;
+    const salt = randomBytes(saltLength);
     const cipher = await ctr(kdf(this.params.password, salt, this.params.kdf), iv).encrypt(content);
 
     return Promise.resolve({
-      cipher: base64.encode(cipher),
+      cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),
       params: { iv: ivhex }
     });
   }

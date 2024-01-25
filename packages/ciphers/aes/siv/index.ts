@@ -1,19 +1,20 @@
-import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset } from "@encrypted-uri/core";
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset } from "@encrypted-uri/core";
 import { siv } from '@noble/ciphers/aes';
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { randomBytes } from "@noble/hashes/utils";
 import { base64 } from '@scure/base';
-import { kdf } from "aes/kdf";
-import { OpenSSLSerializer } from "aes/openssl-serializer";
-import { getSalt } from "aes/salt";
+import { kdf } from "../kdf";
+import { OpenSSLSerializer } from "../openssl-serializer";
+import { getSalt } from "../salt";
 import { TNumberOnceParams, getNumberOnce } from '../number-once';
 
 class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TNumberOnceParams> {
   constructor(
     decoded: TEncryptedURI<TNumberOnceParams>,
-    private password: string
+    password: string,
+    defaultsKDF: Required<TEncryptedURIKDFConfig>
   ) {
-    super(decoded);
+    super(decoded, password, defaultsKDF);
   }
 
   async decrypt(): Promise<string> {
@@ -31,6 +32,7 @@ class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TNumberOnceParam
   algorithm: 'aes/siv',
   decrypter: EncryptedURIAESSIVDecrypter
 })
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class EncryptedURIAESSIVEncrypter extends EncryptedURIEncrypter<TNumberOnceParams> {
 
   constructor(
@@ -43,7 +45,8 @@ class EncryptedURIAESSIVEncrypter extends EncryptedURIEncrypter<TNumberOnceParam
     const numberOnceHex = getNumberOnce(this.params);
     const nonce = hexToBytes(numberOnceHex);
     const content = utf8ToBytes(this.params.content);
-    const salt = randomBytes(32);
+    const saltLength = 32;
+    const salt = randomBytes(saltLength);
     const cipher = await siv(kdf(this.params.password, salt, this.params.kdf), nonce).encrypt(content);
 
     return Promise.resolve({

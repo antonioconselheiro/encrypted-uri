@@ -1,19 +1,20 @@
-import { EncryptedURI, EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset } from '@encrypted-uri/core';
+import { EncryptedURI, EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset } from '@encrypted-uri/core';
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { cbc } from '@noble/ciphers/webcrypto/aes';
 import { randomBytes } from '@noble/hashes/utils';
 import { base64 } from '@scure/base';
-import { kdf } from 'aes/kdf';
-import { OpenSSLSerializer } from 'aes/openssl-serializer';
-import { getSalt } from 'aes/salt';
 import { TInitializationVectorParams, getInitializationVector } from '../initialization-vector';
+import { kdf } from '../kdf';
+import { OpenSSLSerializer } from '../openssl-serializer';
+import { getSalt } from '../salt';
 
 class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TInitializationVectorParams> {
   constructor(
     decoded: TEncryptedURI<TInitializationVectorParams>,
-    private password: string
+    password: string,
+    defaultsKDF: Required<TEncryptedURIKDFConfig>
   ) {
-    super(decoded);
+    super(decoded, password, defaultsKDF);
   }
 
   async decrypt(): Promise<string> {
@@ -43,7 +44,8 @@ class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter<TInitializationV
     const ivhex = getInitializationVector(this.params);
     const iv = hexToBytes(ivhex);
     const content = utf8ToBytes(this.params.content);
-    const salt = randomBytes(32);
+    const saltLength = 32;
+    const salt = randomBytes(saltLength);
     const cipher = await cbc(kdf(this.params.password, salt, this.params.kdf), iv).encrypt(content);
 
     return Promise.resolve({
