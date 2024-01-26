@@ -22,7 +22,10 @@
     "lib": [
       "ES2022",
       "DOM"
-    ]
+    ],
+    "paths": {
+      "@encrypted-uri/core": ["packages/core"]
+    }
   },
   "include": [
     "**/*.ts"
