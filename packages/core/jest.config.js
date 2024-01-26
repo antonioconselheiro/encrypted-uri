@@ -5,7 +5,7 @@ module.exports = {
   reporters: [
     'default',
     ['jest-html-reporters', {
-      publicPath: '../docs',
+      publicPath: '../../docs/core',
       filename: 'test-report.html',
       expand: true,
     }]

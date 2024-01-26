@@ -8,9 +8,7 @@
 [![Npm Total Downloads](https://img.shields.io/npm/dt/@encrypted-uri/core.svg)](https://github.com/antonioconselheiro/encrypted-uri)
 [![Npm Monthly Downloads](https://img.shields.io/npm/dm/@encrypted-uri/core.svg)](https://github.com/antonioconselheiro/encrypted-uri)
 
-*under beta test*
-
-Encode to standardize different types of encrypted content into a URI that allows the user to customize his ciphers with his preferred encryption algorithm.
+Encode to identify different types of encrypted content into a URI allowing the user to customize his ciphers with his preferred encryption algorithm.
 
 ## Run example
 [Open example app](https://antonioconselheiro.github.io/encrypted-uri/ciphers-example/browser/)
@@ -25,15 +23,13 @@ The core will provide you with the main tools to interpret an Encrypted URI and 
 
 ## Purpose
 
-The practical purpose for which the encrypted uri is specified and implemented is the storage of encrypted information in qrcode. Through this encode it is possible to represent an encryption cipher with its main parameters in a lean way (to generate less dense qrcodes).
+The purpose of Encrypted URI is to be used to storage ciphered content in a qrcode. Through this encode it is possible to represent an encryption cipher with its main parameters in a lean way (to generate less dense qrcodes).
 
-Encryption keys, private document signing keys and wallet seeds are examples of extremely sensitive information, which leads to a demand not to store them digitally, but only physically and encrypted.
+Encryption keys, private document signing keys and wallet seeds are examples of extremely sensitive information, which leads to a demand not to store them digitally, but physically and encrypted.
 
-Its fundamental proposal proposes the use of the encode for algorithms that have the means of being decrypted with one or more opening keys, but nothing prevents transmitting other types of algorithms if this encode is a solution to this need.
+This tool is mainly proposed for encryption algorithms that can be decrypted with a key, but other types of algorithms can be supported if needed.
 
-The encode allows applications that use it to limit their support to a group or a single algorithm, but it also allows applications to provide the user with the option to customize the algorithm in which it will store the information in its custody.
-
-The encode helps to receive updates to new algorithms, maintaining compatibility with previously used algorithms.
+The encode allows customize your app defaults params for encryptation, you can also allow your user customize the algorithm in which he will store the information in his custody.
 
 ## Syntax
 Encrypted URI are composed of five parts:
@@ -65,90 +61,114 @@ Algorithm with no param:
 Basic use, how to decode and encrypt and how to decode and decrypt: 
 
 ```typescript
-import { EncryptedURI } from '@encrypted-uri/core';
-import { pbkdf2 } from '@noble/hashes/pbkdf2';
-import { sha256 } from '@noble/hashes/sha256';
+import { EncryptedURI, EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset } from '@encrypted-uri/core';
+import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
+import { cbc } from '@noble/ciphers/webcrypto/aes';
+import { randomBytes } from '@noble/hashes/utils';
+import { base64 } from '@scure/base';
 
-pbkdf2(sha256, password, salt, { c: 100, dkLen: 8 });
-
-//  generates encrypted:aes?iv=1234567812345678;<cipher in base64>
-const encoded = EncryptedURI.encrypt({
-  algorithm: 'aes',
-  content: 'mensagem secreta',
-  key: 'secretkey',
-  params: {
-    iv: '1234567812345678',
-    salt
-  }
-});
-
-//  check if it's and encrypted uri
-if (EncryptedURI.matcher(encoded)) {
-  //  decrypt
-  EncryptedURI.decrypt(encoded, 'secretkey');
-}
-
-//  generates encrypted:?1234567812345678;<cipher in base64>
-EncryptedURI.encrypt({
-  content: 'mensagem secreta',
-  key: 'secretkey',
-  queryString: '1234567812345678'
-});
-
-//  generates encrypted:aes/cbc?1234567812345678;<cipher in base64>
-EncryptedURI.encrypt({
-  algorithm: 'aes',
-  mode: 'cbc',
-  content: 'mensagem secreta',
-  key: 'secretkey',
-  queryString: '1234567812345678'
-});
-```
-
-Advanced use, how to add encrypters and decrypters: 
-```typescript
-import { algorithm } from 'algorithms';
-
-class CustomDecrypter extends EncryptedURIDecrypter<TEncryptedURI<{
-  iv: string
-}>> {
-
+class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TInitializationVectorParams> {
   constructor(
-    decoded: TEncryptedURI,
-    private key: string
+    decoded: TEncryptedURI<TInitializationVectorParams>,
+    password: string,
+    defaultsKDF: Required<TEncryptedURIKDFConfig>
   ) {
-    super(decoded);
+    super(decoded, password, defaultsKDF);
   }
 
   async decrypt(): Promise<string> {
-    const iv = decoded.params.iv || decoded.params.queryParam;
-    return new algorithm(iv, this.key).decrypt(this.decoded.cipher);
+    const ivhex = getInitializationVector(this.decoded);
+    const cipher = utf8ToBytes(this.decoded.cipher);
+    const salt = getSalt(cipher, this.decoded?.params);
+    const result = await cbc(kdf(this.password, salt, this.decoded), hexToBytes(ivhex))
+      .decrypt(cipher);
+
+    return bytesToUtf8(result);
   }
 }
 
 @EncryptedURIAlgorithm({
-  algorithm: 'custom',
-  decrypter: CustomDecrypter
+  algorithm: 'aes/cbc',
+  decrypter: EncryptedURIAESCBCDecrypter
 })
-class CustomEncrypter extends EncryptedURIEncrypter {
+class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter<TInitializationVectorParams> {
+
   constructor(
-    params: TEncryptedURIEncryptableDefaultParams
+    protected override params: TEncryptedURIResultset<TInitializationVectorParams>
   ) {
     super(params);
   }
 
-  async encrypt(): Promise<TEncryptedURI> {
-    const cipher = await algorithm.encrypt(this.decoded.cipher, this.key)
-    return {
-      //  this property will be override by the content in decorator,
-      //  so you don't need to include it
-      algorithm: 'custom',
-      cipher
-    };
+  async encrypt(): Promise<TEncryptedURI<TInitializationVectorParams>> {
+    const ivhex = getInitializationVector(this.params);
+    const iv = hexToBytes(ivhex);
+    const content = utf8ToBytes(this.params.content);
+    const saltLength = 32;
+    const salt = randomBytes(saltLength);
+    const cipher = await cbc(kdf(this.params.password, salt, this.params.kdf), iv).encrypt(content);
+
+    return Promise.resolve({
+      cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),
+      params: { iv: ivhex }
+    });
   }
 }
 
-EncryptedURI.setAlgorithm('custom', CustomEncrypter, CustomDecrypter);
+EncryptedURI.setAlgorithm('', EncryptedURIAESCBCEncrypter, EncryptedURIAESCBCDecrypter);
+EncryptedURI.setAlgorithm('aes', EncryptedURIAESCBCEncrypter, EncryptedURIAESCBCDecrypter);
+
+```
+
+Advanced use, how to add encrypters and decrypters: 
+```typescript
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset, TURIParams } from '@encrypted-uri/core';
+import { ecb } from '@noble/ciphers/aes';
+import { bytesToUtf8, utf8ToBytes } from '@noble/ciphers/utils';
+import { randomBytes } from '@noble/hashes/utils';
+import { base64 } from '@scure/base';
+class EncryptedURIAESECBDecrypter<T extends TURIParams = TURIParams> extends EncryptedURIDecrypter<T> {
+  constructor(
+    decoded: TEncryptedURI<T>,
+    password: string,
+    defaultsKDF: Required<TEncryptedURIKDFConfig>
+  ) {
+    super(decoded, password, defaultsKDF);
+  }
+
+  async decrypt(): Promise<string> {
+    const cipher = utf8ToBytes(this.decoded.cipher || '');
+    const salt = getSalt(cipher, this.decoded?.params);
+    const result = await ecb(kdf(this.password, salt, this.decoded))
+      .decrypt(cipher);
+
+    return bytesToUtf8(result);
+  }
+}
+
+@EncryptedURIAlgorithm({
+  algorithm: 'aes/ecb',
+  decrypter: EncryptedURIAESECBDecrypter
+})
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+class EncryptedURIAESECBEncrypter<T extends TURIParams = TURIParams> extends EncryptedURIEncrypter<TURIParams> {
+
+  constructor(
+    protected override params: TEncryptedURIResultset<T>
+  ) {
+    super(params);
+  }
+
+  async encrypt(): Promise<TEncryptedURI<T>> {
+    const content = utf8ToBytes(this.params.content);
+    const saltLength = 32;
+    const salt = randomBytes(saltLength);
+    const rawCipher = await ecb(kdf(this.params.password, salt, this.params.kdf)).encrypt(content);
+    const cipher = base64.encode(OpenSSLSerializer.encode(rawCipher, salt));
+
+    return Promise.resolve({ cipher });
+  }
+}
+
 ```
 
 ## Example of practical application

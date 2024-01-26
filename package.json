@@ -6,6 +6,8 @@
   "scripts": {
     "build:core": "npm -C packages/core run build",
     "build:ciphers": "npm -C packages/ciphers run build",
+    "test:core": "npm -C packages/core run test",
+    "test:ciphers": "npm -C packages/ciphers run test",
     "lint": "eslint .",
     "test": "jest"
   },
@@ -24,14 +26,8 @@
   },
   "homepage": "https://github.com/antonioconselheiro/encrypted-uri#readme",
   "devDependencies": {
-    "@belomonte/iterable-string": "^1.0.1",
-    "@types/jest": "^29.5.11",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "eslint": "^8.56.0",
-    "eslint-plugin-ban": "^1.6.0",
-    "jest": "^29.7.0",
-    "jest-html-reporters": "^3.1.7",
-    "ts-jest": "^29.1.1",
-    "tslib": "^2.6.2"
+    "eslint-plugin-ban": "^1.6.0"
   }
 }

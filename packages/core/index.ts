@@ -169,15 +169,14 @@ class EncryptedURIDecoder<T extends TURIParams> {
 
     if (parametersMatcher.test(queryString)) {
       const decodedQueryParams = new URL(`encrypted://_?${cleanQueryString}`);
-      const paramsList = Array
-        .from(decodedQueryParams.searchParams.entries())
-        .map(([key, value]) => ({ [key]: decodeURI(String(value)) }));
+      const params: TURIParams = {};
 
-      if (paramsList.length) {
-        resultset.params = paramsList.reduce((result, object) => {
-          Object.keys(object).forEach(key => result[key] = object[key]);
-          return result;
-        }) as TEncryptedURIParams<T>;
+      decodedQueryParams.searchParams.forEach((value, key) => {
+        params[key] = decodeURI(String(value));
+      });
+
+      if (Object.keys(params).length) {
+        resultset.params = params as TEncryptedURIParams<T>;
       }
     }
   }
