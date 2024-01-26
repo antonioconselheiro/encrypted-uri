@@ -1,4 +1,4 @@
-import { EncryptedURI, TEncryptedURIKDFConfig } from '@encrypted-uri/core';
+import { EncryptedURI, TEncryptedURIKDFConfig } from '../core';
 import './aes';
 import './hashes';
 
