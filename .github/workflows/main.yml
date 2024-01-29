@@ -17,6 +17,9 @@ jobs:
       with:
         node-version: 20.10.0
 
+    - name: Install dev dependencies
+      run: npm ci
+
     - name: Install dependencies
       run: npm -C packages/core ci
 

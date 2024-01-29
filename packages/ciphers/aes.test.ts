@@ -1,5 +1,7 @@
-import { EncryptedURI } from '../core';
+
+import { EncryptedURI } from '@encrypted-uri/core';
 import './aes';
+import './hashes';
 
 describe('aes', () => {
   it('cbc', async () => {
