@@ -19,7 +19,7 @@ class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TInitializationV
 
   async decrypt(): Promise<string> {
     const ivhex = getInitializationVector(this.decoded);
-    const cipher = utf8ToBytes(this.decoded.cipher);
+    const cipher = base64.decode(this.decoded.cipher);
     const salt = getSalt(cipher, this.decoded?.params);
     const result = await cbc(kdf(this.password, salt, this.decoded), hexToBytes(ivhex))
       .decrypt(cipher);
