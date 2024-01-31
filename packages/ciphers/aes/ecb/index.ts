@@ -17,10 +17,10 @@ class EncryptedURIAESECBDecrypter<T extends TURIParams = TURIParams> extends Enc
   }
 
   async decrypt(): Promise<string> {
-    const cipher = utf8ToBytes(this.decoded.cipher || '');
-    const salt = getSalt(cipher, this.decoded?.params);
-    const result = await ecb(kdf(this.password, salt, this.decoded))
-      .decrypt(cipher);
+    const cipher = base64.decode(this.decoded.cipher || '');
+    const params = getSalt(cipher, this.decoded?.params);
+    const result = await ecb(kdf(this.password, params.salt, this.decoded))
+      .decrypt(params.cipher);
 
     return bytesToUtf8(result);
   }
@@ -41,7 +41,7 @@ class EncryptedURIAESECBEncrypter<T extends TURIParams = TURIParams> extends Enc
 
   async encrypt(): Promise<TEncryptedURI<T>> {
     const content = utf8ToBytes(this.params.content);
-    const saltLength = 32;
+    const saltLength = 8;
     const salt = randomBytes(saltLength);
     const rawCipher = await ecb(kdf(this.params.password, salt, this.params.kdf)).encrypt(content);
     const cipher = base64.encode(OpenSSLSerializer.encode(rawCipher, salt));

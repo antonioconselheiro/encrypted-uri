@@ -1,7 +1,14 @@
+import { bytesToHex } from "@noble/hashes/utils";
+
 export class OpenSSLSerializer {
 
-  // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-  private static readonly saltedHeader = [0x53616c74, 0x65645f5f];
+  // Salted__
+  private static readonly saltedHeader = Uint8Array.from([
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+    0x53, 0x61, 0x6C, 0x74,
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+    0x65, 0x64, 0x5F, 0x5F
+  ]);
 
   static encode(cipher: Uint8Array, salt: Uint8Array): Uint8Array {
     return Uint8Array.from([
@@ -15,14 +22,17 @@ export class OpenSSLSerializer {
     cipher: Uint8Array,
     salt?: Uint8Array
   } {
+    const longBytesLength = 8;
     const cipher = Array.from(openssl);
-    if (openssl[0] === this.saltedHeader[0] && openssl[1] === this.saltedHeader[1]) {
+
+    if (
+      bytesToHex(openssl.slice(0, longBytesLength)) === bytesToHex(this.saltedHeader)
+    ) {
       //  remove header
-      const integerBytesLength = 2;
-      cipher.splice(0, integerBytesLength);
+      cipher.splice(0, longBytesLength);
 
       //  collect header data
-      const salt = cipher.splice(0, integerBytesLength);
+      const salt = cipher.splice(0, longBytesLength);
       return {
         salt: Uint8Array.from(salt),
         cipher: Uint8Array.from(cipher)
@@ -30,7 +40,7 @@ export class OpenSSLSerializer {
     }
 
     return {
-      cipher: Uint8Array.from(cipher)
+      cipher: openssl
     };
   }
 }
