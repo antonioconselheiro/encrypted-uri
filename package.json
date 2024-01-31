@@ -9,7 +9,7 @@
     "test:core": "npm -C packages/core run test",
     "test:ciphers": "npm -C packages/ciphers run test",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "npm run test:core && npm run test:ciphers"
   },
   "keywords": [
     "uri",
