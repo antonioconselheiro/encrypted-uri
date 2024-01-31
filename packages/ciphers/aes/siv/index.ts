@@ -20,9 +20,9 @@ class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TNumberOnceParam
   async decrypt(): Promise<string> {
     const nonce = getNumberOnce(this.decoded);
     const cipher = base64.decode(this.decoded.cipher);
-    const salt = getSalt(cipher, this.decoded?.params);
-    const result = await siv(kdf(this.password, salt, this.decoded), hexToBytes(nonce))
-      .decrypt(cipher);
+    const params = getSalt(cipher, this.decoded?.params);
+    const result = await siv(kdf(this.password, params.salt, this.decoded), hexToBytes(nonce))
+      .decrypt(params.cipher);
 
     return bytesToUtf8(result);
   }

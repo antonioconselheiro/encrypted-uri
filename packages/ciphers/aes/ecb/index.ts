@@ -18,9 +18,9 @@ class EncryptedURIAESECBDecrypter<T extends TURIParams = TURIParams> extends Enc
 
   async decrypt(): Promise<string> {
     const cipher = base64.decode(this.decoded.cipher || '');
-    const salt = getSalt(cipher, this.decoded?.params);
-    const result = await ecb(kdf(this.password, salt, this.decoded))
-      .decrypt(cipher);
+    const params = getSalt(cipher, this.decoded?.params);
+    const result = await ecb(kdf(this.password, params.salt, this.decoded))
+      .decrypt(params.cipher);
 
     return bytesToUtf8(result);
   }

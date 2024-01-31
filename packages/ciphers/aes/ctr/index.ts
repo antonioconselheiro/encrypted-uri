@@ -20,9 +20,9 @@ class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TInitializationV
   async decrypt(): Promise<string> {
     const ivhex = getInitializationVector(this.decoded);
     const cipher = base64.decode(this.decoded.cipher);
-    const salt = getSalt(cipher, this.decoded?.params);
-    const result = await ctr(kdf(this.password, salt, this.decoded), hexToBytes(ivhex))
-      .decrypt(cipher);
+    const params = getSalt(cipher, this.decoded?.params);
+    const result = await ctr(kdf(this.password, params.salt, this.decoded), hexToBytes(ivhex))
+      .decrypt(params.cipher);
 
     return bytesToUtf8(result);
   }

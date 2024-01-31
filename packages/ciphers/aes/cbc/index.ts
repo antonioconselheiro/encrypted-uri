@@ -1,7 +1,7 @@
 import { EncryptedURI, EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset } from '@encrypted-uri/core';
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { cbc } from '@noble/ciphers/webcrypto/aes';
-import { randomBytes } from '@noble/hashes/utils';
+import { bytesToHex, randomBytes } from '@noble/hashes/utils';
 import { base64 } from '@scure/base';
 import { TInitializationVectorParams, getInitializationVector } from '../initialization-vector';
 import { kdf } from '../kdf';
@@ -20,9 +20,10 @@ class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TInitializationV
   async decrypt(): Promise<string> {
     const ivhex = getInitializationVector(this.decoded);
     const cipher = base64.decode(this.decoded.cipher);
-    const salt = getSalt(cipher, this.decoded?.params);
-    const result = await cbc(kdf(this.password, salt, this.decoded), hexToBytes(ivhex))
-      .decrypt(cipher);
+    const params = getSalt(cipher, this.decoded?.params);
+
+    const result = await cbc(kdf(this.password, params.salt, this.decoded), hexToBytes(ivhex))
+      .decrypt(params.cipher);
 
     return bytesToUtf8(result);
   }
