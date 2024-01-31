@@ -1,7 +1,7 @@
 import { EncryptedURI, EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset } from '@encrypted-uri/core';
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { cbc } from '@noble/ciphers/webcrypto/aes';
-import { bytesToHex, randomBytes } from '@noble/hashes/utils';
+import { randomBytes } from '@noble/hashes/utils';
 import { base64 } from '@scure/base';
 import { TInitializationVectorParams, getInitializationVector } from '../initialization-vector';
 import { kdf } from '../kdf';

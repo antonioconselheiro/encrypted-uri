@@ -4,7 +4,9 @@ export class OpenSSLSerializer {
 
   // Salted__
   private static readonly saltedHeader = Uint8Array.from([
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
     0x53, 0x61, 0x6C, 0x74,
+    // eslint-disable-next-line @typescript-eslint/no-magic-numbers
     0x65, 0x64, 0x5F, 0x5F
   ]);
 
