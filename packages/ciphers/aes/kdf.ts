@@ -8,6 +8,10 @@ export function kdf<T extends TURIParams>(
   config?: TEncryptedURIKDFConfig | TEncryptedURI<T>
 ): Uint8Array {
   const cfg = EncryptedURI.getKDFConfig(config);
+  const saltLength = 8;
+  if (salt.length !== saltLength) {
+    throw new Error(`salt length must be 8 bytes, ${salt.length} bytes was given`);
+  }
 
   if (cfg.kdf === 'pbkdf2') {
     return pbkdf2(HashSupport.get(cfg.hasher), password, salt, {

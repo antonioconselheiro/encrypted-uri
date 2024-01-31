@@ -45,7 +45,7 @@ class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter<TInitializationV
     const ivhex = getInitializationVector(this.params);
     const iv = hexToBytes(ivhex);
     const content = utf8ToBytes(this.params.content);
-    const saltLength = 32;
+    const saltLength = 8;
     const salt = randomBytes(saltLength);
     const cipher = await ctr(kdf(this.params.password, salt, this.params.kdf), iv).encrypt(content);
 

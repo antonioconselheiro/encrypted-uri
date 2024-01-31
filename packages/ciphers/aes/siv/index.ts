@@ -45,7 +45,7 @@ class EncryptedURIAESSIVEncrypter extends EncryptedURIEncrypter<TNumberOnceParam
     const numberOnceHex = getNumberOnce(this.params);
     const nonce = hexToBytes(numberOnceHex);
     const content = utf8ToBytes(this.params.content);
-    const saltLength = 32;
+    const saltLength = 8;
     const salt = randomBytes(saltLength);
     const cipher = await siv(kdf(this.params.password, salt, this.params.kdf), nonce).encrypt(content);
 

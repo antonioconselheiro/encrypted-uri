@@ -9,11 +9,11 @@ export class OpenSSLSerializer {
   ]);
 
   static encode(cipher: Uint8Array, salt: Uint8Array): Uint8Array {
-    return Uint8Array.from(
-      Array.from(this.saltedHeader)
-      .concat(Array.from(salt))
-      .concat(Array.from(cipher))
-    );
+    return Uint8Array.from([
+      ...this.saltedHeader,
+      ...salt,
+      ...cipher
+    ]);
   }
 
   static decode(openssl: Uint8Array): {
