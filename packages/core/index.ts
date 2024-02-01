@@ -1,3 +1,10 @@
+/* eslint-disable max-lines */
+/**
+ * FIXME: desmembrar arquivos do projeto em arquivos individuais para
+ * cada simbolo respeitando o princípio de responsabilidade única e
+ * garantindo que somente os simbolos utilizados sejam carregados nos
+ * projetos que incluirem esta dependência
+*/
 import { IterableString } from '@belomonte/iterable-string';
 
 export type TURIParams = {
@@ -81,15 +88,27 @@ export type TEncryptedURI<T extends TURIParams> = {
 class EncryptedURIDecoder<T extends TURIParams> {
 
   static getKDFConfig<T extends TURIParams>(
-    configOverload?: TEncryptedURIKDFConfig | TEncryptedURI<T>
+    /**
+     * if you're decoding pass TEncryptedURI<T>,
+     * if you're encoding pass TEncryptedURIResultset<T>
+     * 
+     * @optional
+     */
+    kdfConfig?: TEncryptedURI<T> | TEncryptedURIResultset<T>,
+
+    /**
+     * If your application customize default values
+     */
+    kdfDefaultConfig?: TEncryptedURIKDFConfig
   ): Required<TEncryptedURIKDFConfig> {
     let config: TEncryptedURIKDFConfig = EncryptedURI.defaultConfigs;
-    if (configOverload && 'params' in configOverload) {
-      config = this.castParamsToConfig(configOverload.params);
+    if (kdfConfig) {
+      config = this.castParamsToConfig(kdfConfig.params);
     }
     
     const configWithDefaults: Required<TEncryptedURIKDFConfig> = {
       ...EncryptedURI.defaultConfigs,
+      ...kdfDefaultConfig,
       ...config
     };
   
@@ -291,7 +310,10 @@ export abstract class EncryptedURIEncrypter<
   T extends TURIParams
 > {
 
-  constructor(protected params: TEncryptedURIResultset<T>) { }
+  constructor(
+    protected params: TEncryptedURIResultset<T>,
+    protected defaultsKDF: Required<TEncryptedURIKDFConfig>
+  ) { }
   
   abstract encrypt(): Promise<TEncryptedURI<T>>;
 }
@@ -314,14 +336,7 @@ export abstract class EncryptedURIDecrypter<T extends TURIParams> {
     decoded: TEncryptedURI<T>,
     defaultsKDF: TEncryptedURIKDFConfig
   ): Required<TEncryptedURIKDFConfig> {
-    const kdf = EncryptedURIDecoder.getKDFConfig(decoded.params);
-    const configWithDefaults: Required<TEncryptedURIKDFConfig> = {
-      ...EncryptedURI.defaultConfigs,
-      ...defaultsKDF,
-      ...kdf
-    };
-
-    return configWithDefaults;
+    return EncryptedURIDecoder.getKDFConfig(decoded, defaultsKDF);
   }
 }
 
@@ -431,9 +446,9 @@ export class EncryptedURI {
   } = { };
 
   static getKDFConfig<T extends TURIParams>(
-    configOverload?: TEncryptedURIKDFConfig | TEncryptedURI<T>
+    decoded?: TEncryptedURI<T>, defaultConfig?: TEncryptedURIKDFConfig
   ): Required<TEncryptedURIKDFConfig> {
-    return EncryptedURIDecoder.getKDFConfig<T>(configOverload);
+    return EncryptedURIDecoder.getKDFConfig<T>(decoded, defaultConfig);
   }
 
   static castKDFConfigToParams(
@@ -461,13 +476,13 @@ export class EncryptedURI {
   static decrypt(
     uri: string,
     password: string,
-    kdf?: TEncryptedURIKDFConfig,
+    defaultKDFConfig?: TEncryptedURIKDFConfig,
     ...args: any[]
   ): Promise<string> {
     const uriDecoded = new EncryptedURIParser(uri).decoded;
     const [ , decryptor ] = this.getAlgorithm(uriDecoded.algorithm);
     const kdfConfigs: Required<TEncryptedURIKDFConfig> = {
-      ...EncryptedURI.defaultConfigs, ...kdf
+      ...EncryptedURI.defaultConfigs, ...defaultKDFConfig
     };
     return new decryptor(uriDecoded, password, kdfConfigs, ...args).decrypt();
   }

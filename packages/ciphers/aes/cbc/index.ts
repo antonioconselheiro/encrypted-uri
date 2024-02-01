@@ -22,7 +22,7 @@ class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TInitializationV
     const cipher = base64.decode(this.decoded.cipher);
     const params = getSalt(cipher, this.decoded?.params);
 
-    const result = await cbc(kdf(this.password, params.salt, this.decoded), hexToBytes(ivhex))
+    const result = await cbc(kdf(this.password, params.salt, this.defaultsKDF, this.decoded), hexToBytes(ivhex))
       .decrypt(params.cipher);
 
     return bytesToUtf8(result);
@@ -36,9 +36,10 @@ class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TInitializationV
 class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter<TInitializationVectorParams> {
 
   constructor(
-    protected override params: TEncryptedURIResultset<TInitializationVectorParams>
+    params: TEncryptedURIResultset<TInitializationVectorParams>,
+    defaultsKDF: Required<TEncryptedURIKDFConfig>
   ) {
-    super(params);
+    super(params, defaultsKDF);
   }
 
   async encrypt(): Promise<TEncryptedURI<TInitializationVectorParams>> {
@@ -47,7 +48,7 @@ class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter<TInitializationV
     const content = utf8ToBytes(this.params.content);
     const saltLength = 8;
     const salt = randomBytes(saltLength);
-    const cipher = await cbc(kdf(this.params.password, salt, this.params.kdf), iv).encrypt(content);
+    const cipher = await cbc(kdf(this.params.password, salt, this.defaultsKDF, this.params), iv).encrypt(content);
 
     return Promise.resolve({
       cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),

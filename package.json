@@ -4,12 +4,13 @@
     "url": "git+https://github.com/antonioconselheiro/encrypted-uri.git"
   },
   "scripts": {
+    "lint": "eslint .",
+    "test": "npm run test:core && npm run test:ciphers",
+    "build": "npm run build:core && npm run build:ciphers",
     "build:core": "npm -C packages/core run build",
     "build:ciphers": "npm -C packages/ciphers run build",
     "test:core": "npm -C packages/core run test",
-    "test:ciphers": "npm -C packages/ciphers run test",
-    "lint": "eslint .",
-    "test": "npm run test:core && npm run test:ciphers"
+    "test:ciphers": "npm -C packages/ciphers run test"
   },
   "keywords": [
     "uri",

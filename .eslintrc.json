@@ -75,8 +75,8 @@
           }
         ],
         "max-lines": [
-          "error",
-          500
+          "warn",
+          300
         ],
         "for-direction": [ "off" ],
         "eqeqeq": "warn",

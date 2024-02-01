@@ -22,6 +22,9 @@ describe('kdf success flow', () => {
       kdf
     });
 
+    console.info('kdf', kdf);
+    console.info('encoded', encoded);
+
     const decoded = await EncryptedURI.decrypt(encoded, password, kdf);
     expect(decoded).toEqual(originalMessage);
   });
@@ -262,22 +265,13 @@ describe('kdf success flow', () => {
 
 describe('kdf failure flow', () => {
   it('[1] overriding kdf config with wrong default values', async () => {
-    const kdf: TEncryptedURIKDFConfig = {
-      kdf: 'pbkdf2',
-      includeURIParams: false,
-      hasher: 'sha256',
-      rounds: 100,
-      derivateKeyLength: 4
-    };
-
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
     const password = 'senha123';
 
     const encoded = await EncryptedURI.encrypt({
       algorithm: 'aes/ctr',
       content: originalMessage,
-      password,
-      kdf
+      password
     });
 
     const decoded = await EncryptedURI.decrypt(encoded, password, {
