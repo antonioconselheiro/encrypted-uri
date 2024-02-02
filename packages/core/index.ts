@@ -98,6 +98,8 @@ class EncryptedURIDecoder<T extends TURIParams> {
 
     /**
      * If your application customize default values
+     * 
+     * @optional
      */
     kdfDefaultConfig?: TEncryptedURIKDFConfig
   ): Required<TEncryptedURIKDFConfig> {
@@ -333,10 +335,10 @@ export abstract class EncryptedURIDecrypter<T extends TURIParams> {
   abstract decrypt(): Promise<string>;
 
   private getKDFConfig(
-    decoded: TEncryptedURI<T>,
-    defaultsKDF: TEncryptedURIKDFConfig
+    kdfConfig: TEncryptedURI<T>,
+    kdfDefaultConfig: TEncryptedURIKDFConfig
   ): Required<TEncryptedURIKDFConfig> {
-    return EncryptedURIDecoder.getKDFConfig(decoded, defaultsKDF);
+    return EncryptedURIDecoder.getKDFConfig(kdfConfig, kdfDefaultConfig);
   }
 }
 
@@ -446,7 +448,8 @@ export class EncryptedURI {
   } = { };
 
   static getKDFConfig<T extends TURIParams>(
-    decoded?: TEncryptedURI<T>, defaultConfig?: TEncryptedURIKDFConfig
+    decoded?: TEncryptedURI<T> | TEncryptedURIResultset<T>,
+    defaultConfig?: TEncryptedURIKDFConfig
   ): Required<TEncryptedURIKDFConfig> {
     return EncryptedURIDecoder.getKDFConfig<T>(decoded, defaultConfig);
   }
