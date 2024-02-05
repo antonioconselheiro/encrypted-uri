@@ -2,14 +2,14 @@ import { EncryptedURI, TEncryptedURIKDFConfig } from '@encrypted-uri/core';
 import './aes';
 import './hashes';
 
-describe('kdf', () => {
-  it('[1] kdf with no kdf params and overriding default values in decrypt', async () => {
+describe('kdf success flow', () => {
+  it('[1] overriding default values in decrypt', async () => {
     const kdf: TEncryptedURIKDFConfig = {
       kdf: 'pbkdf2',
       includeURIParams: false,
       hasher: 'sha256',
-      rounds: 100,
-      derivateKeyLength: 32
+      rounds: 250_000,
+      // derivateKeyLength: 16 FIXME: find all possible options for this arguments in @noble
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -257,5 +257,26 @@ describe('kdf', () => {
 
     const decoded = await EncryptedURI.decrypt(encoded, password);
     expect(decoded).toEqual(originalMessage);
+  });
+});
+
+describe('kdf failure flow', () => {
+  it('[1] overriding kdf config with wrong default values', async () => {
+    const originalMessage = 'mensagem secreta, favor não ler em voz alta';
+    const password = 'senha123';
+
+    const encoded = await EncryptedURI.encrypt({
+      algorithm: 'aes/ctr',
+      content: originalMessage,
+      password
+    });
+
+    const decoded = await EncryptedURI.decrypt(encoded, password, {
+      kdf: 'pbkdf2',
+      hasher: 'sha256',
+      rounds: 32,
+      derivateKeyLength: 32
+    });
+    expect(decoded).not.toEqual(originalMessage);
   });
 });

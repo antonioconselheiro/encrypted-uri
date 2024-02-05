@@ -1,0 +1,3 @@
+[ ] validar valores possíveis em key length
+[ ] garantir compatibilidade com bibliotecas que utilizem os mesmos parâmetros
+[ ] documentar algoritimos suportados para gerar cifra e chave derivada
