@@ -8,8 +8,8 @@ describe('kdf success flow', () => {
       kdf: 'pbkdf2',
       includeURIParams: false,
       hasher: 'sha256',
-      rounds: 250000,
-      derivateKeyLength: 4
+      rounds: 250_000,
+      // derivateKeyLength: 16 FIXME: find all possible options for this arguments in @noble
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -21,9 +21,6 @@ describe('kdf success flow', () => {
       password,
       kdf
     });
-
-    console.info('kdf', kdf);
-    console.info('encoded', encoded);
 
     const decoded = await EncryptedURI.decrypt(encoded, password, kdf);
     expect(decoded).toEqual(originalMessage);
@@ -278,7 +275,7 @@ describe('kdf failure flow', () => {
       kdf: 'pbkdf2',
       hasher: 'sha256',
       rounds: 32,
-      derivateKeyLength: 8
+      derivateKeyLength: 32
     });
     expect(decoded).not.toEqual(originalMessage);
   });
