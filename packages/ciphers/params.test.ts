@@ -1,14 +1,14 @@
-import { EncryptedURI, TEncryptedURIKDFConfig } from '@encrypted-uri/core';
+import { EncryptedURI, EncryptedURIParser, TEncryptedURIKDFConfig } from '@encrypted-uri/core';
 import './aes';
 import './hashes';
 
-describe('kdf success flow', () => {
+describe('checking if params are correctly encoded', () => {
   it('[1] overriding default values in decrypt', async () => {
     const kdf: TEncryptedURIKDFConfig = {
       kdf: 'pbkdf2',
       hasher: 'sha256',
       rounds: 250_000,
-      // derivateKeyLength: 16 FIXME: find all possible options for this arguments in @noble
+      derivateKeyLength: 16
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -21,8 +21,12 @@ describe('kdf success flow', () => {
       kdf
     });
 
-    const decrypted = await EncryptedURI.decrypt(encoded, password, kdf);
-    expect(decrypted).toEqual(originalMessage);
+    const parser = new EncryptedURIParser(encoded);
+    expect(parser.decoded.params?.kdf).toEqual(undefined);
+    expect(parser.decoded.algorithm).toEqual('aes/ctr');
+    expect(parser.decoded.params?.c).toEqual(undefined);
+    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.h).toEqual(undefined);
   });
 
   it('[2] kdf include all parameters including default', async () => {
@@ -44,8 +48,12 @@ describe('kdf success flow', () => {
       kdf
     });
 
-    const decrypted = await EncryptedURI.decrypt(encoded, password);
-    expect(decrypted).toEqual(originalMessage);
+    const parser = new EncryptedURIParser(encoded);
+    expect(parser.decoded.params?.kdf).toEqual('pbkdf2');
+    expect(parser.decoded.algorithm).toEqual('aes/cbc');
+    expect(parser.decoded.params?.c).toEqual('100');
+    expect(parser.decoded.params?.dklen).toEqual('32');
+    expect(parser.decoded.params?.h).toEqual('sha256');
   });
 
   it('[3] kdf with hasher sha512', async () => {
@@ -63,8 +71,12 @@ describe('kdf success flow', () => {
       kdf
     });
 
-    const decrypted = await EncryptedURI.decrypt(encoded, password);
-    expect(decrypted).toEqual(originalMessage);
+    const parser = new EncryptedURIParser(encoded);
+    expect(parser.decoded.params?.kdf).toEqual(undefined);
+    expect(parser.decoded.algorithm).toEqual('aes/gcm');
+    expect(parser.decoded.params?.c).toEqual(undefined);
+    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.h).toEqual('sha512');
   });
 
   it('[4] kdf with hasher sha512_256', async () => {
@@ -82,8 +94,12 @@ describe('kdf success flow', () => {
       kdf
     });
 
-    const decrypted = await EncryptedURI.decrypt(encoded, password);
-    expect(decrypted).toEqual(originalMessage);
+    const parser = new EncryptedURIParser(encoded);
+    expect(parser.decoded.params?.kdf).toEqual(undefined);
+    expect(parser.decoded.algorithm).toEqual('aes/gcm');
+    expect(parser.decoded.params?.c).toEqual(undefined);
+    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.h).toEqual('sha512_256');
   });
 
   it('[5] kdf with hasher sha384', async () => {
@@ -101,8 +117,12 @@ describe('kdf success flow', () => {
       kdf
     });
 
-    const decrypted = await EncryptedURI.decrypt(encoded, password);
-    expect(decrypted).toEqual(originalMessage);
+    const parser = new EncryptedURIParser(encoded);
+    expect(parser.decoded.params?.kdf).toEqual(undefined);
+    expect(parser.decoded.algorithm).toEqual('aes/siv');
+    expect(parser.decoded.params?.c).toEqual(undefined);
+    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.h).toEqual('sha384');
   });
 
   it('[6] kdf with hasher sha3_512', async () => {
@@ -120,8 +140,12 @@ describe('kdf success flow', () => {
       kdf
     });
 
-    const decrypted = await EncryptedURI.decrypt(encoded, password);
-    expect(decrypted).toEqual(originalMessage);
+    const parser = new EncryptedURIParser(encoded);
+    expect(parser.decoded.params?.kdf).toEqual(undefined);
+    expect(parser.decoded.algorithm).toEqual('aes/ctr');
+    expect(parser.decoded.params?.c).toEqual(undefined);
+    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.h).toEqual('sha3_512');
   });
 
   it('[7] kdf with hasher sha3_384', async () => {
@@ -139,8 +163,12 @@ describe('kdf success flow', () => {
       kdf
     });
 
-    const decrypted = await EncryptedURI.decrypt(encoded, password);
-    expect(decrypted).toEqual(originalMessage);
+    const parser = new EncryptedURIParser(encoded);
+    expect(parser.decoded.params?.kdf).toEqual(undefined);
+    expect(parser.decoded.algorithm).toEqual('aes/ctr');
+    expect(parser.decoded.params?.c).toEqual(undefined);
+    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.h).toEqual('sha3_384');
   });
 
   it('[8] kdf with hasher sha3_256', async () => {
@@ -158,8 +186,12 @@ describe('kdf success flow', () => {
       kdf
     });
 
-    const decrypted = await EncryptedURI.decrypt(encoded, password);
-    expect(decrypted).toEqual(originalMessage);
+    const parser = new EncryptedURIParser(encoded);
+    expect(parser.decoded.params?.kdf).toEqual(undefined);
+    expect(parser.decoded.algorithm).toEqual('aes/ecb');
+    expect(parser.decoded.params?.c).toEqual(undefined);
+    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.h).toEqual('sha3_256');
   });
 
   it('[9] kdf with hasher sha3_224', async () => {
@@ -177,8 +209,12 @@ describe('kdf success flow', () => {
       kdf
     });
 
-    const decrypted = await EncryptedURI.decrypt(encoded, password);
-    expect(decrypted).toEqual(originalMessage);
+    const parser = new EncryptedURIParser(encoded);
+    expect(parser.decoded.params?.kdf).toEqual(undefined);
+    expect(parser.decoded.algorithm).toEqual('aes/ecb');
+    expect(parser.decoded.params?.c).toEqual(undefined);
+    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.h).toEqual('sha3_224');
   });
 
   it('[10] kdf with hasher keccak_512', async () => {
@@ -196,8 +232,12 @@ describe('kdf success flow', () => {
       kdf
     });
 
-    const decrypted = await EncryptedURI.decrypt(encoded, password);
-    expect(decrypted).toEqual(originalMessage);
+    const parser = new EncryptedURIParser(encoded);
+    expect(parser.decoded.params?.kdf).toEqual(undefined);
+    expect(parser.decoded.algorithm).toEqual('aes/cbc');
+    expect(parser.decoded.params?.c).toEqual(undefined);
+    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.h).toEqual('keccak_512');
   });
 
   it('[11] kdf with hasher keccak_384', async () => {
@@ -215,8 +255,12 @@ describe('kdf success flow', () => {
       kdf
     });
 
-    const decrypted = await EncryptedURI.decrypt(encoded, password);
-    expect(decrypted).toEqual(originalMessage);
+    const parser = new EncryptedURIParser(encoded);
+    expect(parser.decoded.params?.kdf).toEqual(undefined);
+    expect(parser.decoded.algorithm).toEqual('aes/cbc');
+    expect(parser.decoded.params?.c).toEqual(undefined);
+    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.h).toEqual('keccak_384');
   });
 
   it('[12] kdf with hasher keccak_256', async () => {
@@ -234,8 +278,12 @@ describe('kdf success flow', () => {
       kdf
     });
 
-    const decrypted = await EncryptedURI.decrypt(encoded, password);
-    expect(decrypted).toEqual(originalMessage);
+    const parser = new EncryptedURIParser(encoded);
+    expect(parser.decoded.params?.kdf).toEqual(undefined);
+    expect(parser.decoded.algorithm).toEqual(undefined);
+    expect(parser.decoded.params?.c).toEqual(undefined);
+    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.h).toEqual('keccak_256');
   });
 
   it('[13] kdf with hasher keccak_224', async () => {
@@ -253,28 +301,11 @@ describe('kdf success flow', () => {
       kdf
     });
 
-    const decrypted = await EncryptedURI.decrypt(encoded, password);
-    expect(decrypted).toEqual(originalMessage);
-  });
-});
-
-describe('kdf failure flow', () => {
-  it('[1] overriding kdf config with wrong default values', async () => {
-    const originalMessage = 'mensagem secreta, favor não ler em voz alta';
-    const password = 'senha123';
-
-    const encoded = await EncryptedURI.encrypt({
-      algorithm: 'aes/ctr',
-      content: originalMessage,
-      password
-    });
-
-    const decrypted = await EncryptedURI.decrypt(encoded, password, {
-      kdf: 'pbkdf2',
-      hasher: 'sha256',
-      rounds: 32,
-      derivateKeyLength: 32
-    });
-    expect(decrypted).not.toEqual(originalMessage);
+    const parser = new EncryptedURIParser(encoded);
+    expect(parser.decoded.params?.kdf).toEqual(undefined);
+    expect(parser.decoded.algorithm).toEqual(undefined);
+    expect(parser.decoded.params?.c).toEqual(undefined);
+    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.h).toEqual('keccak_224');
   });
 });

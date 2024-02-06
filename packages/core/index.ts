@@ -22,14 +22,6 @@ export type TEncryptedURIKDFConfig = {
   kdf?: 'pbkdf2',
 
   /**
-   * If you want your custom parameters for key derivation function
-   * and want it included in the generated URI.
-   *
-   * @default true
-   */
-  includeURIParams?: boolean;
-
-  /**
    * Enableable just if `includeURIParams` is set as `true`.
    *
    * If set as `true` ignore the param if the value is the default
@@ -226,7 +218,7 @@ class EncryptedURIEncoder<T extends TURIParams> {
   ): TEncryptedURIParams<TURIParams> {
     const params: TEncryptedURIParams<TURIParams> = {};
 
-    if (content.kdf && !!content.kdf.includeURIParams) {
+    if (content.kdf) {
       if (!this.propertyShouldBeIgnored(content.kdf, 'kdf')) {
         params.kdf = content.kdf.kdf;
       }
@@ -433,7 +425,6 @@ export class EncryptedURI {
     kdf: 'pbkdf2',
     hasher: 'sha256',
     ignoreDefaults: true,
-    includeURIParams: true,
     derivateKeyLength: 32,
     rounds: 32
   };
