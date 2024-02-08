@@ -199,39 +199,43 @@ class EncryptedURIEncoder<T extends TURIParams> {
 
   private static propertyShouldBeIgnored(
     configs: TEncryptedURIKDFConfig,
-    configName: keyof TEncryptedURIKDFConfig
+    configName: keyof TEncryptedURIKDFConfig,
+    overridingDefaultConfig?: TEncryptedURIKDFConfig
   ): boolean {
-    const defaultConfigs = EncryptedURI.defaultConfigs;
+    const defaultConfigs = { ...EncryptedURI.defaultConfigs, ...overridingDefaultConfig };
     if (
       configs[configName] &&
       defaultConfigs[configName] === configs[configName] &&
       configs.ignoreDefaults
     ) {
+      console.info(configName, 'ignored');
       return true; 
     }
 
+    console.info(configName, 'included');
     return false;
   }
 
   static castKDFConfigToParams(
-    content: { kdf?: TEncryptedURIKDFConfig }
+    content: { kdf?: TEncryptedURIKDFConfig },
+    overridingDefaultConfig?: TEncryptedURIKDFConfig
   ): TEncryptedURIParams<TURIParams> {
     const params: TEncryptedURIParams<TURIParams> = {};
 
     if (content.kdf) {
-      if (!this.propertyShouldBeIgnored(content.kdf, 'kdf')) {
+      if (!this.propertyShouldBeIgnored(content.kdf, 'kdf', overridingDefaultConfig)) {
         params.kdf = content.kdf.kdf;
       }
 
-      if (!this.propertyShouldBeIgnored(content.kdf, 'hasher')) {
+      if (!this.propertyShouldBeIgnored(content.kdf, 'hasher', overridingDefaultConfig)) {
         params.h = content.kdf.hasher;
       }
 
-      if (!this.propertyShouldBeIgnored(content.kdf, 'derivateKeyLength')) {
+      if (!this.propertyShouldBeIgnored(content.kdf, 'derivateKeyLength', overridingDefaultConfig)) {
         params.dklen = String(content.kdf.derivateKeyLength);
       }
 
-      if (!this.propertyShouldBeIgnored(content.kdf, 'rounds')) {
+      if (!this.propertyShouldBeIgnored(content.kdf, 'rounds', overridingDefaultConfig)) {
         params.c = String(content.kdf.rounds);
       }
     }

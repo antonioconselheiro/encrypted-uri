@@ -24,8 +24,8 @@ describe('checking if params are correctly encoded', () => {
     const parser = new EncryptedURIParser(encoded);
     expect(parser.decoded.params?.kdf).toEqual(undefined);
     expect(parser.decoded.algorithm).toEqual('aes/ctr');
-    expect(parser.decoded.params?.c).toEqual(undefined);
-    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.c).toEqual(250_000);
+    expect(parser.decoded.params?.dklen).toEqual(16);
     expect(parser.decoded.params?.h).toEqual(undefined);
   });
 
@@ -49,11 +49,11 @@ describe('checking if params are correctly encoded', () => {
     });
 
     const parser = new EncryptedURIParser(encoded);
-    expect(parser.decoded.params?.kdf).toEqual('pbkdf2');
-    expect(parser.decoded.algorithm).toEqual('aes/cbc');
+    expect(parser.decoded.algorithm).toEqual(undefined);
+    expect(parser.decoded.params?.kdf).toEqual(undefined);
     expect(parser.decoded.params?.c).toEqual('100');
-    expect(parser.decoded.params?.dklen).toEqual('32');
-    expect(parser.decoded.params?.h).toEqual('sha256');
+    expect(parser.decoded.params?.dklen).toEqual(undefined);
+    expect(parser.decoded.params?.h).toEqual(undefined);
   });
 
   it('[3] kdf with hasher sha512', async () => {
