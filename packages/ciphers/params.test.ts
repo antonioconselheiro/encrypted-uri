@@ -24,8 +24,8 @@ describe('checking if params are correctly encoded', () => {
     const parser = new EncryptedURIParser(encoded);
     expect(parser.decoded.params?.kdf).toEqual(undefined);
     expect(parser.decoded.algorithm).toEqual('aes/ctr');
-    expect(parser.decoded.params?.c).toEqual(250_000);
-    expect(parser.decoded.params?.dklen).toEqual(16);
+    expect(parser.decoded.params?.c).toEqual('250000');
+    expect(parser.decoded.params?.dklen).toEqual('16');
     expect(parser.decoded.params?.h).toEqual(undefined);
   });
 
