@@ -208,7 +208,7 @@ class EncryptedURIEncoder<T extends TURIParams> {
     };
 
     if (
-      configs[configName] &&
+      !configs[configName] ||
       defaultConfigs[configName] === configs[configName] &&
       configs.ignoreDefaults
     ) {
@@ -308,6 +308,7 @@ export class EncryptedURIParser<T extends TURIParams> {
   }) {
     if (typeof content === 'string') {
       const decoder = new EncryptedURIDecoder<T>();
+      console.info(' :: STRING TO DECODE :: ', content);
       this.decoded = decoder.decode(this.encoded = content);
       this.encoded = content;
     } else {
