@@ -1,5 +1,4 @@
-import { TEncryptedURI, TEncryptedURIEncryptableDefaultParams, EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter, EncryptedURIParser, TURIParams, TEncryptedURIKDFConfig } from ".";
-import { randomBytes } from '@noble/hashes/utils'
+import { EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter, EncryptedURIParser, TEncryptedURI, TEncryptedURIEncryptableDefaultParams, TEncryptedURIKDFConfig, TURIParams } from ".";
 
 describe('decode uri with default values', () => {
   it('[1] decode uri with default values not include', () => {

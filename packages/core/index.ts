@@ -22,14 +22,6 @@ export type TEncryptedURIKDFConfig = {
   kdf?: 'pbkdf2',
 
   /**
-   * If you want your custom parameters for key derivation function
-   * and want it included in the generated URI.
-   *
-   * @default true
-   */
-  includeURIParams?: boolean;
-
-  /**
    * Enableable just if `includeURIParams` is set as `true`.
    *
    * If set as `true` ignore the param if the value is the default
@@ -126,7 +118,7 @@ class EncryptedURIDecoder<T extends TURIParams> {
       return config;
     }
   
-    if (typeof params.kdf === 'string') {
+    if (params.kdf === 'string') {
       config.kdf = params.kdf as 'pbkdf2';
     }
   
@@ -207,11 +199,16 @@ class EncryptedURIEncoder<T extends TURIParams> {
 
   private static propertyShouldBeIgnored(
     configs: TEncryptedURIKDFConfig,
-    configName: keyof TEncryptedURIKDFConfig
+    configName: keyof TEncryptedURIKDFConfig,
+    overridingDefaultConfig?: TEncryptedURIKDFConfig
   ): boolean {
-    const defaultConfigs = EncryptedURI.defaultConfigs;
+    const defaultConfigs = {
+      ...EncryptedURI.defaultConfigs,
+      ...overridingDefaultConfig
+    };
+
     if (
-      configs[configName] &&
+      !configs[configName] ||
       defaultConfigs[configName] === configs[configName] &&
       configs.ignoreDefaults
     ) {
@@ -222,24 +219,33 @@ class EncryptedURIEncoder<T extends TURIParams> {
   }
 
   static castKDFConfigToParams(
-    content: { kdf?: TEncryptedURIKDFConfig }
+    content: { kdf?: TEncryptedURIKDFConfig },
+    overridingDefaultConfig?: TEncryptedURIKDFConfig
   ): TEncryptedURIParams<TURIParams> {
     const params: TEncryptedURIParams<TURIParams> = {};
 
-    if (content.kdf && !!content.kdf.includeURIParams) {
-      if (!this.propertyShouldBeIgnored(content.kdf, 'kdf')) {
+    if (content.kdf) {
+      if (!this.propertyShouldBeIgnored(
+        content.kdf, 'kdf', overridingDefaultConfig
+      )) {
         params.kdf = content.kdf.kdf;
       }
 
-      if (!this.propertyShouldBeIgnored(content.kdf, 'hasher')) {
+      if (!this.propertyShouldBeIgnored(
+        content.kdf, 'hasher', overridingDefaultConfig
+      )) {
         params.h = content.kdf.hasher;
       }
 
-      if (!this.propertyShouldBeIgnored(content.kdf, 'derivateKeyLength')) {
+      if (!this.propertyShouldBeIgnored(
+        content.kdf, 'derivateKeyLength', overridingDefaultConfig
+      )) {
         params.dklen = String(content.kdf.derivateKeyLength);
       }
 
-      if (!this.propertyShouldBeIgnored(content.kdf, 'rounds')) {
+      if (!this.propertyShouldBeIgnored(
+        content.kdf, 'rounds', overridingDefaultConfig
+      )) {
         params.c = String(content.kdf.rounds);
       }
     }
@@ -293,11 +299,16 @@ export class EncryptedURIParser<T extends TURIParams> {
   readonly encoded: string;
   readonly decoded: TEncryptedURI<T>;
 
-  constructor(content: TEncryptedURI<T>);
+  constructor(content: TEncryptedURI<T> & {
+    kdf?: TEncryptedURIKDFConfig | undefined;
+  });
   constructor(content: string);
-  constructor(content: string | TEncryptedURI<T>) {
+  constructor(content: string | TEncryptedURI<T> & {
+    kdf?: TEncryptedURIKDFConfig | undefined;
+  }) {
     if (typeof content === 'string') {
       const decoder = new EncryptedURIDecoder<T>();
+      console.info(' :: STRING TO DECODE :: ', content);
       this.decoded = decoder.decode(this.encoded = content);
       this.encoded = content;
     } else {
@@ -433,7 +444,6 @@ export class EncryptedURI {
     kdf: 'pbkdf2',
     hasher: 'sha256',
     ignoreDefaults: true,
-    includeURIParams: true,
     derivateKeyLength: 32,
     rounds: 32
   };
@@ -464,16 +474,20 @@ export class EncryptedURI {
     return new EncryptedURISyntaxMatcher().match(uri);
   }
 
-  static encode<T extends TURIParams>(params: TEncryptedURI<T>): string {
+  static encode<T extends TURIParams>(params: TEncryptedURI<T> & {
+    kdf?: TEncryptedURIKDFConfig | undefined;
+  }): string {
     return new EncryptedURIParser(params).encoded;
   }
 
-  static async encrypt<T extends TURIParams>(params: TEncryptedURIEncryptableDefaultParams<T>, ...args: any[]): Promise<string> {
+  static async encrypt<T extends TURIParams>(
+    params: TEncryptedURIEncryptableDefaultParams<T>, ...args: any[]
+  ): Promise<string> {
     const [ encrypter ] = this.getAlgorithm(params.algorithm);
     const ciphred = await new encrypter(params, ...args).encrypt();
     ciphred.algorithm = encrypter.algorithm || params.algorithm;
 
-    return Promise.resolve(this.encode(ciphred));
+    return Promise.resolve(this.encode({ ...ciphred, kdf: params.kdf }));
   }
 
   static decrypt(

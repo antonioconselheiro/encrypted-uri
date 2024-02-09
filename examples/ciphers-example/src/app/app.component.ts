@@ -86,7 +86,6 @@ export class AppComponent {
           password: raw.password,
           kdf: {
             kdf: 'pbkdf2',
-            includeURIParams: true,
             ignoreDefaults: true,
             hasher: 'sha256',
             rounds: 100_000,
