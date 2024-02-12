@@ -207,10 +207,20 @@ class EncryptedURIEncoder<T extends TURIParams> {
       ...overridingDefaultConfig
     };
 
+    const configWithDefaults: Required<TEncryptedURIKDFConfig> = {
+      ...configs,
+      ...defaultConfigs
+    };
+
+    console.info(' :: configName:', configName);
+    console.info(' :: !configWithDefaults[configName]:', !configWithDefaults[configName]);
+    console.info(' :: defaultConfigs[configName] === configWithDefaults[configName]:', defaultConfigs[configName] === configs[configName]);
+    console.info(' :: configWithDefaults.ignoreDefaults:', configWithDefaults.ignoreDefaults);
+
     if (
-      !configs[configName] ||
-      defaultConfigs[configName] === configs[configName] &&
-      configs.ignoreDefaults
+      !configWithDefaults[configName] ||
+      defaultConfigs[configName] === configWithDefaults[configName] &&
+      configWithDefaults.ignoreDefaults
     ) {
       return true; 
     }
@@ -308,7 +318,7 @@ export class EncryptedURIParser<T extends TURIParams> {
   }) {
     if (typeof content === 'string') {
       const decoder = new EncryptedURIDecoder<T>();
-      console.info(' :: STRING TO DECODE :: ', content);
+
       this.decoded = decoder.decode(this.encoded = content);
       this.encoded = content;
     } else {

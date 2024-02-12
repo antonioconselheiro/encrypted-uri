@@ -49,11 +49,11 @@ describe('checking if params are correctly encoded', () => {
     });
 
     const parser = new EncryptedURIParser(encoded);
-    expect(parser.decoded.algorithm).toEqual(undefined);
-    expect(parser.decoded.params?.kdf).toEqual(undefined);
+    expect(parser.decoded.algorithm).toEqual('aes/cbc');
+    expect(parser.decoded.params?.kdf).toEqual('pbkdf2');
     expect(parser.decoded.params?.c).toEqual('100');
-    expect(parser.decoded.params?.dklen).toEqual(undefined);
-    expect(parser.decoded.params?.h).toEqual(undefined);
+    expect(parser.decoded.params?.dklen).toEqual('32');
+    expect(parser.decoded.params?.h).toEqual('sha256');
   });
 
   it('[3] kdf with hasher sha512', async () => {
