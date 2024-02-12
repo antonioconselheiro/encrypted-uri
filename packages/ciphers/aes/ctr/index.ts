@@ -1,27 +1,26 @@
-import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset } from "@encrypted-uri/core";
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset } from "@encrypted-uri/core";
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from "@noble/ciphers/utils";
 import { ctr } from '@noble/ciphers/webcrypto/aes';
 import { randomBytes } from "@noble/hashes/utils";
 import { base64 } from '@scure/base';
-import { kdf } from '../kdf';
-import { getSalt } from '../salt';
 import { TInitializationVectorParams, getInitializationVector } from "../initialization-vector";
+import { kdf } from '../kdf';
 import { OpenSSLSerializer } from "../openssl-serializer";
+import { getSalt } from '../salt';
 
 class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TInitializationVectorParams> {
   constructor(
     decoded: TEncryptedURI<TInitializationVectorParams>,
-    password: string,
-    defaultsKDF: Required<TEncryptedURIKDFConfig>
+    password: string
   ) {
-    super(decoded, password, defaultsKDF);
+    super(decoded, password);
   }
 
   async decrypt(): Promise<string> {
     const ivhex = getInitializationVector(this.decoded);
     const cipher = base64.decode(this.decoded.cipher);
     const params = getSalt(cipher, this.decoded?.params);
-    const result = await ctr(kdf(this.password, params.salt, this.defaultsKDF, this.decoded), hexToBytes(ivhex))
+    const result = await ctr(kdf(this.password, params.salt, this.decoded), hexToBytes(ivhex))
       .decrypt(params.cipher);
 
     return bytesToUtf8(result);
@@ -36,10 +35,9 @@ class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TInitializationV
 class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter<TInitializationVectorParams> {
 
   constructor(
-    params: TEncryptedURIResultset<TInitializationVectorParams>,
-    defaultsKDF: Required<TEncryptedURIKDFConfig>
+    params: TEncryptedURIResultset<TInitializationVectorParams>
   ) {
-    super(params, defaultsKDF);
+    super(params);
   }
 
   async encrypt(): Promise<TEncryptedURI<TInitializationVectorParams>> {
@@ -48,7 +46,7 @@ class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter<TInitializationV
     const content = utf8ToBytes(this.params.content);
     const saltLength = 8;
     const salt = randomBytes(saltLength);
-    const cipher = await ctr(kdf(this.params.password, salt, this.defaultsKDF, this.params), iv).encrypt(content);
+    const cipher = await ctr(kdf(this.params.password, salt, this.params), iv).encrypt(content);
 
     return Promise.resolve({
       cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),

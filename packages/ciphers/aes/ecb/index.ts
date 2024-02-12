@@ -1,25 +1,24 @@
-import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset, TURIParams } from '@encrypted-uri/core';
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset, TURIParams } from '@encrypted-uri/core';
 import { ecb } from '@noble/ciphers/aes';
 import { bytesToUtf8, utf8ToBytes } from '@noble/ciphers/utils';
 import { randomBytes } from '@noble/hashes/utils';
 import { base64 } from '@scure/base';
 import { kdf } from '../kdf';
-import { getSalt } from '../salt';
 import { OpenSSLSerializer } from '../openssl-serializer';
+import { getSalt } from '../salt';
 
 class EncryptedURIAESECBDecrypter<T extends TURIParams = TURIParams> extends EncryptedURIDecrypter<T> {
   constructor(
     decoded: TEncryptedURI<T>,
-    password: string,
-    defaultsKDF: Required<TEncryptedURIKDFConfig>
+    password: string
   ) {
-    super(decoded, password, defaultsKDF);
+    super(decoded, password);
   }
 
   async decrypt(): Promise<string> {
     const cipher = base64.decode(this.decoded.cipher || '');
     const params = getSalt(cipher, this.decoded?.params);
-    const result = await ecb(kdf(this.password, params.salt, this.defaultsKDF, this.decoded))
+    const result = await ecb(kdf(this.password, params.salt, this.decoded))
       .decrypt(params.cipher);
 
     return bytesToUtf8(result);
@@ -34,17 +33,16 @@ class EncryptedURIAESECBDecrypter<T extends TURIParams = TURIParams> extends Enc
 class EncryptedURIAESECBEncrypter<T extends TURIParams = TURIParams> extends EncryptedURIEncrypter<TURIParams> {
 
   constructor(
-    params: TEncryptedURIResultset<T>,
-    defaultsKDF: Required<TEncryptedURIKDFConfig>
+    params: TEncryptedURIResultset<T>
   ) {
-    super(params, defaultsKDF);
+    super(params);
   }
 
   async encrypt(): Promise<TEncryptedURI<T>> {
     const content = utf8ToBytes(this.params.content);
     const saltLength = 8;
     const salt = randomBytes(saltLength);
-    const rawCipher = await ecb(kdf(this.params.password, salt, this.defaultsKDF, this.params)).encrypt(content);
+    const rawCipher = await ecb(kdf(this.params.password, salt, this.params)).encrypt(content);
     const cipher = base64.encode(OpenSSLSerializer.encode(rawCipher, salt));
 
     return Promise.resolve({ cipher });

@@ -1,27 +1,26 @@
-import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset } from '@encrypted-uri/core';
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset } from '@encrypted-uri/core';
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { gcm } from '@noble/ciphers/webcrypto/aes';
 import { randomBytes } from '@noble/hashes/utils';
 import { base64 } from '@scure/base';
 import { kdf } from '../kdf';
-import { getSalt } from '../salt';
 import { TNumberOnceParams, getNumberOnce } from '../number-once';
 import { OpenSSLSerializer } from '../openssl-serializer';
+import { getSalt } from '../salt';
 
 class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TNumberOnceParams> {
   constructor(
     decoded: TEncryptedURI<TNumberOnceParams>,
-    password: string,
-    defaultsKDF: Required<TEncryptedURIKDFConfig>
+    password: string
   ) {
-    super(decoded, password, defaultsKDF);
+    super(decoded, password);
   }
 
   async decrypt(): Promise<string> {
     const nonce = getNumberOnce(this.decoded);
     const cipher = base64.decode(this.decoded.cipher);
     const params = getSalt(cipher, this.decoded?.params);
-    const result = await gcm(kdf(this.password, params.salt, this.defaultsKDF, this.decoded), hexToBytes(nonce))
+    const result = await gcm(kdf(this.password, params.salt, this.decoded), hexToBytes(nonce))
       .decrypt(params.cipher);
 
     return bytesToUtf8(result);
@@ -36,10 +35,9 @@ class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TNumberOnceParam
 class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter<TNumberOnceParams> {
 
   constructor(
-    params: TEncryptedURIResultset<TNumberOnceParams>,
-    defaultsKDF: Required<TEncryptedURIKDFConfig>
+    params: TEncryptedURIResultset<TNumberOnceParams>
   ) {
-    super(params, defaultsKDF);
+    super(params);
   }
 
   async encrypt(): Promise<TEncryptedURI<TNumberOnceParams>> {
@@ -48,7 +46,7 @@ class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter<TNumberOnceParam
     const content = utf8ToBytes(this.params.content);
     const saltLength = 8;
     const salt = randomBytes(saltLength);
-    const cipher = await gcm(kdf(this.params.password, salt, this.defaultsKDF, this.params), nonce).encrypt(content);
+    const cipher = await gcm(kdf(this.params.password, salt, this.params), nonce).encrypt(content);
 
     return Promise.resolve({
       cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),
