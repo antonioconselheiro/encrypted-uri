@@ -7,7 +7,9 @@ export function kdf<T extends TURIParams>(
   salt: Uint8Array,
   decoded?: TEncryptedURI<T> | TEncryptedURIResultset<T>
 ): Uint8Array {
+  console.info('decoded content: ', decoded);
   const cfg = EncryptedURI.getKDFConfig(decoded);
+  console.info('kdf config from decoded: ', cfg);
 
   const saltLength = 8;
   if (salt.length !== saltLength) {
@@ -15,6 +17,7 @@ export function kdf<T extends TURIParams>(
   }
 
   if (cfg.kdf === 'pbkdf2') {
+    console.info(':: HASH :: ', cfg.hasher);
     return pbkdf2(HashSupport.get(cfg.hasher), password, salt, {
       c: cfg.rounds,
       dkLen: cfg.derivateKeyLength

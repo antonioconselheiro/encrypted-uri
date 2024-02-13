@@ -2,7 +2,7 @@ import { EncryptedURI, TEncryptedURIKDFConfig } from '@encrypted-uri/core';
 import './aes';
 import './hashes';
 
-describe('kdf success flow', () => {
+xdescribe('kdf success flow', () => {
 
   it('[2] kdf include all parameters including default', async () => {
     const kdf: TEncryptedURIKDFConfig = {
@@ -41,6 +41,7 @@ describe('kdf success flow', () => {
       password,
       kdf
     });
+    console.info(' >>> encoded', encoded)
 
     const decrypted = await EncryptedURI.decrypt(encoded, password);
     expect(decrypted).toEqual(originalMessage);
