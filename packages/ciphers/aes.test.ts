@@ -19,12 +19,13 @@ describe('success flow aes', () => {
   });
 
   it('cbc generated from other implementation with the same algorithm type and params', async () => {
-    const decoded = await EncryptedURI.decrypt('encrypted:aes?iv=1dc8d28370372579a75feac6b5bf5290;U2FsdGVkX18K2mCM3jqJz9SSPC2Rss61NOk4JWeG5IE=', 'teste123', {
-      rounds: 250000,
-      hasher: 'sha256',
-      derivateKeyLength: 32
-    });
+    const decoded = await EncryptedURI.decrypt('encrypted:aes/cbc?iv=1dc8d28370372579a75feac6b5bf5290&c=1000&dklen=8&hasher=md5;U2FsdGVkX18K2mCM3jqJz9SSPC2Rss61NOk4JWeG5IE=', 'teste123');
     expect(decoded).toEqual('teste123');
+  });
+
+  it('cbc generated from other implementation with the same algorithm type and params', async () => {
+    const decoded = await EncryptedURI.decrypt('encrypted:aes/cbc?iv=9d668dee3bccfd9d3d5fb786aab11894&c=1000&dklen=8&hasher=md5;U2FsdGVkX182g9bXg4UB/MsE9Dlz4lJcGC7WW4WGAVc=', 'exemplo');
+    expect(decoded).toEqual('exemplo');
   });
 
   it('ctr', async () => {
