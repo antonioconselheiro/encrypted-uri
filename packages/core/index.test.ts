@@ -294,10 +294,9 @@ describe('EncryptedURI object', () => {
 
     constructor(
       decoded: TEncryptedURI<T>,
-      password: string,
-      defaultsKDF: Required<TEncryptedURIKDFConfig>
+      password: string
     ) {
-      super(decoded, password, defaultsKDF);
+      super(decoded, password);
     }
   
     decrypt(): Promise<string> {
@@ -307,10 +306,9 @@ describe('EncryptedURI object', () => {
   
   class CustomEncrypter<T extends TURIParams = {}> extends EncryptedURIEncrypter<T> {
     constructor(
-      params: TEncryptedURIEncryptableDefaultParams<T>,
-      defaultsKDF: Required<TEncryptedURIKDFConfig>
+      params: TEncryptedURIEncryptableDefaultParams<T>
     ) {
-      super(params, defaultsKDF);
+      super(params);
     }
   
     encrypt(): Promise<TEncryptedURI<T>> {
