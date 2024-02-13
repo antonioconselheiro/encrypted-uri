@@ -37,9 +37,23 @@ export type TEncryptedURIKDFConfig = {
   /**
    * Hashing algorithm supported by pbkdf2
    * 
+   * I have tried to include more hashers, but they
+   * thrown exception and I don't understand why, If
+   * you need other hasher then sha256 to be able to
+   * be configured, you must help me opening a pull
+   * request with the solution and unit tests validating
+   * it, those are the hashers for kdf that I can't solve:
+   * 
+   * sha512, sha512_256, sha384, sha3_512,
+   * sha3_384, sha3_256, sha3_224, keccak_512,
+   * keccak_384, keccak_256, keccak_224
+   * 
+   * Issue:
+   * https://github.com/antonioconselheiro/encrypted-uri/issues/27
+   * 
    * @default sha256
    */
-  hasher?: string;
+  hasher?: 'sha256';
 
   /**
    * Iterations of hashing for pbkdf2
@@ -49,11 +63,13 @@ export type TEncryptedURIKDFConfig = {
   rounds?: number;
 
   /**
-   * Derivate key length for pbkdf2
+   * Derivate key length for pbkdf2, fixed to 32 until I find a
+   * way to customize this
    * 
    * @default 32
    */
-  derivateKeyLength?: number;
+  // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+  derivateKeyLength?: 32;
 };
 
 class EncryptedURISyntaxMatcher {
@@ -114,13 +130,21 @@ class EncryptedURIDecoder<T extends TURIParams> {
       config.kdf = params.kdf as 'pbkdf2';
     }
   
-    if (typeof params.h === 'string') {
+    if (typeof params.h === 'string'
+    //  remove this when this issue is implemented:
+    //  https://github.com/antonioconselheiro/encrypted-uri/issues/27
+      && params.h === 'sha256') {
       config.hasher = params.h;
     }
   
     if (typeof params.dklen === 'string') {
       const derivateKeyLength = Number(params.dklen);
-      if (Number.isSafeInteger(derivateKeyLength)) {
+      const fixedDerivateKeyLengthValue = 32;
+      if (Number.isSafeInteger(derivateKeyLength)
+      //  remove this when implements this issue:
+      //  https://github.com/antonioconselheiro/encrypted-uri/issues/27
+        && derivateKeyLength === fixedDerivateKeyLengthValue
+      ) {
         config.derivateKeyLength = derivateKeyLength;
       }
     }
