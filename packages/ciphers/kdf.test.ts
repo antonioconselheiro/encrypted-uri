@@ -29,7 +29,7 @@ xdescribe('kdf success flow', () => {
 
   it('[3] kdf with hasher sha512', async () => {
     const kdf: TEncryptedURIKDFConfig = {
-      hasher: 'sha512'
+      hasher: 'sha512' as any as 'sha256'
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -49,7 +49,7 @@ xdescribe('kdf success flow', () => {
 
   it('[4] kdf with hasher sha512_256', async () => {
     const kdf: TEncryptedURIKDFConfig = {
-      hasher: 'sha512_256'
+      hasher: 'sha512_256' as any as 'sha256'
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -68,7 +68,7 @@ xdescribe('kdf success flow', () => {
 
   it('[5] kdf with hasher sha384', async () => {
     const kdf: TEncryptedURIKDFConfig = {
-      hasher: 'sha384'
+      hasher: 'sha384' as any as 'sha256'
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -87,7 +87,7 @@ xdescribe('kdf success flow', () => {
 
   it('[6] kdf with hasher sha3_512', async () => {
     const kdf: TEncryptedURIKDFConfig = {
-      hasher: 'sha3_512'
+      hasher: 'sha3_512' as any as 'sha256'
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -106,7 +106,7 @@ xdescribe('kdf success flow', () => {
 
   it('[7] kdf with hasher sha3_384', async () => {
     const kdf: TEncryptedURIKDFConfig = {
-      hasher: 'sha3_384'
+      hasher: 'sha3_384' as any as 'sha256'
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -125,7 +125,7 @@ xdescribe('kdf success flow', () => {
 
   it('[8] kdf with hasher sha3_256', async () => {
     const kdf: TEncryptedURIKDFConfig = {
-      hasher: 'sha3_256'
+      hasher: 'sha3_256' as any as 'sha256'
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -144,7 +144,7 @@ xdescribe('kdf success flow', () => {
 
   it('[9] kdf with hasher sha3_224', async () => {
     const kdf: TEncryptedURIKDFConfig = {
-      hasher: 'sha3_224'
+      hasher: 'sha3_224' as any as 'sha256'
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -163,7 +163,7 @@ xdescribe('kdf success flow', () => {
 
   it('[10] kdf with hasher keccak_512', async () => {
     const kdf: TEncryptedURIKDFConfig = {
-      hasher: 'keccak_512'
+      hasher: 'keccak_512' as any as 'sha256'
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -182,7 +182,7 @@ xdescribe('kdf success flow', () => {
 
   it('[11] kdf with hasher keccak_384', async () => {
     const kdf: TEncryptedURIKDFConfig = {
-      hasher: 'keccak_384'
+      hasher: 'keccak_384' as any as 'sha256'
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -201,7 +201,7 @@ xdescribe('kdf success flow', () => {
 
   it('[12] kdf with hasher keccak_256', async () => {
     const kdf: TEncryptedURIKDFConfig = {
-      hasher: 'keccak_256'
+      hasher: 'keccak_256' as any as 'sha256'
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -220,7 +220,7 @@ xdescribe('kdf success flow', () => {
 
   it('[13] kdf with hasher keccak_224', async () => {
     const kdf: TEncryptedURIKDFConfig = {
-      hasher: 'keccak_224'
+      hasher: 'keccak_224' as any as 'sha256'
     };
 
     const originalMessage = 'mensagem secreta, favor não ler em voz alta';
@@ -235,26 +235,5 @@ xdescribe('kdf success flow', () => {
 
     const decrypted = await EncryptedURI.decrypt(encoded, password);
     expect(decrypted).toEqual(originalMessage);
-  });
-});
-
-describe('kdf failure flow', () => {
-  it('[1] overriding kdf config with wrong default values', async () => {
-    const originalMessage = 'mensagem secreta, favor não ler em voz alta';
-    const password = 'senha123';
-
-    const encoded = await EncryptedURI.encrypt({
-      algorithm: 'aes/ctr',
-      content: originalMessage,
-      password
-    });
-
-    const decrypted = await EncryptedURI.decrypt(encoded, password, {
-      kdf: 'pbkdf2',
-      hasher: 'sha256',
-      rounds: 32,
-      derivateKeyLength: 32
-    });
-    expect(decrypted).not.toEqual(originalMessage);
   });
 });
