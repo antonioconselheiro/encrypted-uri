@@ -21,7 +21,9 @@ class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TInitializationV
     const cipher = base64.decode(this.decoded.cipher);
     const params = getSalt(cipher, this.decoded?.params);
 
-    const result = await cbc(kdf(this.password, params.salt, this.decoded), hexToBytes(ivhex))
+    const derivatedKey = kdf(this.password, params.salt, this.decoded);
+
+    const result = await cbc(derivatedKey, hexToBytes(ivhex))
       .decrypt(params.cipher);
 
     return bytesToUtf8(result);
@@ -46,7 +48,9 @@ class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter<TInitializationV
     const content = utf8ToBytes(this.params.content);
     const saltLength = 8;
     const salt = randomBytes(saltLength);
-    const cipher = await cbc(kdf(this.params.password, salt, this.params), iv).encrypt(content);
+
+    const derivatedKey = kdf(this.params.password, salt, this.params);
+    const cipher = await cbc(derivatedKey, iv).encrypt(content);
 
     return Promise.resolve({
       cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),

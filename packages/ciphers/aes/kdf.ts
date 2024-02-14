@@ -5,13 +5,12 @@ import { HashSupport } from '../hashes/hash-support';
 export function kdf<T extends TURIParams>(
   password: string,
   salt: Uint8Array,
-  decoded?: TEncryptedURI<T> | TEncryptedURIResultset<T>
+  kdfConfig?: TEncryptedURI<T> | TEncryptedURIResultset<T>
 ): Uint8Array {
-  const cfg = EncryptedURI.getKDFConfig(decoded);
-
+  const cfg = EncryptedURI.getKDFConfig(kdfConfig);
   const saltLength = 8;
   if (salt.length !== saltLength) {
-    throw new Error(`salt length must be 8 bytes, ${salt.length} bytes was given`);
+    throw new Error(`salt length must be ${saltLength} bytes, ${salt.length} bytes was given`);
   }
 
   if (cfg.kdf === 'pbkdf2') {

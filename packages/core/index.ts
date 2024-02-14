@@ -37,23 +37,9 @@ export type TEncryptedURIKDFConfig = {
   /**
    * Hashing algorithm supported by pbkdf2
    * 
-   * I have tried to include more hashers, but they
-   * thrown exception and I don't understand why, If
-   * you need other hasher then sha256 to be able to
-   * be configured, you must help me opening a pull
-   * request with the solution and unit tests validating
-   * it, those are the hashers for kdf that I can't solve:
-   * 
-   * sha512, sha512_256, sha384, sha3_512,
-   * sha3_384, sha3_256, sha3_224, keccak_512,
-   * keccak_384, keccak_256, keccak_224
-   * 
-   * Issue:
-   * https://github.com/antonioconselheiro/encrypted-uri/issues/27
-   * 
    * @default sha256
    */
-  hasher?: 'sha256';
+  hasher?: string | 'sha256' | 'sha512'| 'sha512_256'| 'sha384'| 'sha3_512'| 'sha3_384'| 'sha3_256'| 'sha3_224'| 'keccak_512'| 'keccak_384'| 'keccak_256'| 'keccak_224';
 
   /**
    * Iterations of hashing for pbkdf2
@@ -106,7 +92,11 @@ class EncryptedURIDecoder<T extends TURIParams> {
   ): Required<TEncryptedURIKDFConfig> {
     let config: TEncryptedURIKDFConfig = EncryptedURI.defaultConfigs;
     if (kdfConfig) {
-      config = this.castParamsToConfig(kdfConfig.params);
+      if ('kdf' in kdfConfig && kdfConfig.kdf) {
+        config = kdfConfig.kdf;
+      } else if (kdfConfig.params) {
+        config = this.castParamsToConfig(kdfConfig.params);
+      }
     }
     
     const configWithDefaults: Required<TEncryptedURIKDFConfig> = {
@@ -130,22 +120,17 @@ class EncryptedURIDecoder<T extends TURIParams> {
       config.kdf = params.kdf as 'pbkdf2';
     }
   
-    if (typeof params.h === 'string'
-    //  remove this when this issue is implemented:
-    //  https://github.com/antonioconselheiro/encrypted-uri/issues/27
-      && params.h === 'sha256') {
+    if (typeof params.h === 'string') {
       config.hasher = params.h;
     }
   
     if (typeof params.dklen === 'string') {
       const derivateKeyLength = Number(params.dklen);
-      const fixedDerivateKeyLengthValue = 32;
-      if (Number.isSafeInteger(derivateKeyLength)
-      //  remove this when implements this issue:
-      //  https://github.com/antonioconselheiro/encrypted-uri/issues/27
-        && derivateKeyLength === fixedDerivateKeyLengthValue
-      ) {
-        config.derivateKeyLength = derivateKeyLength;
+      if (Number.isSafeInteger(derivateKeyLength)) {
+        //  remove any quando issue for resolvido
+        //  https://github.com/antonioconselheiro/encrypted-uri/issues/31
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        config.derivateKeyLength = derivateKeyLength as any;
       }
     }
   
@@ -215,22 +200,16 @@ class EncryptedURIEncoder<T extends TURIParams> {
 
   private static propertyShouldBeIgnored(
     configs: TEncryptedURIKDFConfig,
-    configName: keyof TEncryptedURIKDFConfig,
-    overridingDefaultConfig?: TEncryptedURIKDFConfig
+    configName: keyof TEncryptedURIKDFConfig
   ): boolean {
-    const defaultConfigs = {
-      ...EncryptedURI.defaultConfigs,
-      ...overridingDefaultConfig
-    };
-
     const configWithDefaults: Required<TEncryptedURIKDFConfig> = {
-      ...defaultConfigs,
+      ...EncryptedURI.defaultConfigs,
       ...configs
     };
 
     if (
       !configWithDefaults[configName] ||
-      defaultConfigs[configName] === configWithDefaults[configName] &&
+      EncryptedURI.defaultConfigs[configName] === configWithDefaults[configName] &&
       configWithDefaults.ignoreDefaults
     ) {
       return true; 
@@ -240,32 +219,31 @@ class EncryptedURIEncoder<T extends TURIParams> {
   }
 
   static castKDFConfigToParams(
-    content: { kdf?: TEncryptedURIKDFConfig },
-    overridingDefaultConfig?: TEncryptedURIKDFConfig
+    content: { kdf?: TEncryptedURIKDFConfig }
   ): TEncryptedURIParams<TURIParams> {
     const params: TEncryptedURIParams<TURIParams> = {};
 
     if (content.kdf) {
       if (!this.propertyShouldBeIgnored(
-        content.kdf, 'kdf', overridingDefaultConfig
+        content.kdf, 'kdf'
       )) {
         params.kdf = content.kdf.kdf;
       }
 
       if (!this.propertyShouldBeIgnored(
-        content.kdf, 'hasher', overridingDefaultConfig
+        content.kdf, 'hasher'
       )) {
         params.h = content.kdf.hasher;
       }
 
       if (!this.propertyShouldBeIgnored(
-        content.kdf, 'derivateKeyLength', overridingDefaultConfig
+        content.kdf, 'derivateKeyLength'
       )) {
         params.dklen = String(content.kdf.derivateKeyLength);
       }
 
       if (!this.propertyShouldBeIgnored(
-        content.kdf, 'rounds', overridingDefaultConfig
+        content.kdf, 'rounds'
       )) {
         params.c = String(content.kdf.rounds);
       }
@@ -398,7 +376,7 @@ export type TEncryptedURIParams<T extends TURIParams> = {
    * number of counts, rounds serialized as string
    * this is a pbkdf2 kdf param
    * 
-   * @default '1'
+   * @default '32'
    */
   c?: string;
 
