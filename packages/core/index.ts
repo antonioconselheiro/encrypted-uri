@@ -11,6 +11,49 @@ export type TURIParams = {
   [param: string]: string
 };
 
+export type TEncryptedDefaultsConfig = {
+  /**
+   * The value set will be replicated in the following configs:
+   *  `ignoreDefaultAlgorithm`, `ignoreMandatoryParamName` and
+   * `ignoreDefaultValues`.
+   *
+   * @default true
+   */
+  ignoreDefaults?: boolean;
+} & {
+
+  /**
+   * If set as `true` and the choosen algorithm is aes/cbc,
+   * the algorithm name will be not included.
+   * 
+   * If set as `false` the algorithm will be always included.
+   * 
+   * @default true
+   */
+  ignoreDefaultAlgorithm: boolean;
+
+  /**
+   * If set as `true` and there is only one mandatory param include
+   * in URI params, the attribute name will be not included, only
+   * the value.
+   *
+   * If set as `false` the mandatory param name will be always included.
+   *
+   * @default true
+   */
+  ignoreMandatoryParamName: boolean;
+
+  /**
+   * If set as `true` will not include params with default value set.
+   *
+   * If set as `false` will aways include all params, even if it is
+   * a default value.
+   *
+   * @default true
+   */
+  ignoreDefaultValues: boolean;
+};
+
 export type TEncryptedURIKDFConfig = {
 
   /**
@@ -20,19 +63,6 @@ export type TEncryptedURIKDFConfig = {
    * @default pbkdf2
    */
   kdf?: 'pbkdf2',
-
-  /**
-   * Enableable just if `includeURIParams` is set as `true`.
-   *
-   * If set as `true` ignore the param if the value is the default
-   * value, include only non default params.
-   *
-   * If set as `false` all included param in kdf object will be
-   * include in URI with his reserved name.
-   * 
-   * @default true
-   */
-  ignoreDefaults?: boolean;
 
   /**
    * Hashing algorithm supported by pbkdf2
