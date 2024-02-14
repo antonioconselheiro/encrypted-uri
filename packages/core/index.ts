@@ -53,7 +53,7 @@ export type TEncryptedURIKDFConfig = {
    * 
    * @default sha256
    */
-  hasher?: 'sha256';
+  hasher?: string | 'sha256' | 'sha512'| 'sha512_256'| 'sha384'| 'sha3_512'| 'sha3_384'| 'sha3_256'| 'sha3_224'| 'keccak_512'| 'keccak_384'| 'keccak_256'| 'keccak_224';
 
   /**
    * Iterations of hashing for pbkdf2
@@ -134,10 +134,7 @@ class EncryptedURIDecoder<T extends TURIParams> {
       config.kdf = params.kdf as 'pbkdf2';
     }
   
-    if (typeof params.h === 'string'
-    //  remove this when this issue is implemented:
-    //  https://github.com/antonioconselheiro/encrypted-uri/issues/27
-      && params.h === 'sha256') {
+    if (typeof params.h === 'string') {
       config.hasher = params.h;
     }
   
@@ -395,7 +392,7 @@ export type TEncryptedURIParams<T extends TURIParams> = {
    * number of counts, rounds serialized as string
    * this is a pbkdf2 kdf param
    * 
-   * @default '1'
+   * @default '32'
    */
   c?: string;
 

@@ -346,7 +346,7 @@ describe('EncryptedURI object', () => {
 });
 
 describe('EncryptedURI getKDFConfig', () => {
-  it('[1] EncryptedURI get KDF config from decoded URI', () => {
+  it('[1] EncryptedURI get KDF config from KDF config', () => {
     const configs = EncryptedURI.getKDFConfig({
       algorithm: 'aes/cbc',
       content: 'mensagem secreta, favor não ler em voz alta',
@@ -369,4 +369,27 @@ describe('EncryptedURI getKDFConfig', () => {
     });
     
   });
+
+
+  it('[2] EncryptedURI get KDF config from decoded URI', () => {
+    const configs = EncryptedURI.getKDFConfig({
+      algorithm: 'aes/cbc',
+      cipher: 'U2FsdGVkX18WeA03azX1tWETWsG/oSiQYzgI0en6RPgQ7Z2i9YbxCL3VcfzL6nsFo5Sdf0xF/UVatnJEehkcHQ==',
+      queryString: 'iv=44b9c510f05a8461c0ad153ba915d9dc&h=keccak_224',
+      params: {
+        iv: '44b9c510f05a8461c0ad153ba915d9dc',
+        h: 'keccak_224'
+      }
+    });
+
+    expect(configs).toEqual({
+      kdf: 'pbkdf2',
+      ignoreDefaults: true,
+      hasher: 'keccak_224',
+      rounds: 32,
+      derivateKeyLength: 32
+    });
+    
+  });
+
 });

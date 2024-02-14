@@ -2,7 +2,7 @@ import { EncryptedURI, EncryptedURIParser, TEncryptedURIKDFConfig } from '@encry
 import './aes';
 import './hashes';
 
-xdescribe('hashing customization', () => {
+describe('hashing customization', () => {
   it('[3] kdf with hasher sha512', async () => {
     const kdf: TEncryptedURIKDFConfig = {
       hasher: 'sha512' as any as 'sha256'

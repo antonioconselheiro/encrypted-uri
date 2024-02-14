@@ -5,9 +5,10 @@ import { HashSupport } from '../hashes/hash-support';
 export function kdf<T extends TURIParams>(
   password: string,
   salt: Uint8Array,
-  decoded?: TEncryptedURI<T> | TEncryptedURIResultset<T>
+  kdfConfig?: TEncryptedURI<T> | TEncryptedURIResultset<T>
 ): Uint8Array {
-  const cfg = EncryptedURI.getKDFConfig(decoded);
+  const cfg = EncryptedURI.getKDFConfig(kdfConfig);
+  console.info(' >>> cfg: ', cfg);
 
   const saltLength = 8;
   if (salt.length !== saltLength) {
