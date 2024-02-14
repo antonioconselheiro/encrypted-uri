@@ -8,8 +8,6 @@ export function kdf<T extends TURIParams>(
   kdfConfig?: TEncryptedURI<T> | TEncryptedURIResultset<T>
 ): Uint8Array {
   const cfg = EncryptedURI.getKDFConfig(kdfConfig);
-  console.info(' >>> cfg: ', cfg);
-
   const saltLength = 8;
   if (salt.length !== saltLength) {
     throw new Error(`salt length must be ${saltLength} bytes, ${salt.length} bytes was given`);

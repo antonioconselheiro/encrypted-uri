@@ -37,20 +37,6 @@ export type TEncryptedURIKDFConfig = {
   /**
    * Hashing algorithm supported by pbkdf2
    * 
-   * I have tried to include more hashers, but they
-   * thrown exception and I don't understand why, If
-   * you need other hasher then sha256 to be able to
-   * be configured, you must help me opening a pull
-   * request with the solution and unit tests validating
-   * it, those are the hashers for kdf that I can't solve:
-   * 
-   * sha512, sha512_256, sha384, sha3_512,
-   * sha3_384, sha3_256, sha3_224, keccak_512,
-   * keccak_384, keccak_256, keccak_224
-   * 
-   * Issue:
-   * https://github.com/antonioconselheiro/encrypted-uri/issues/27
-   * 
    * @default sha256
    */
   hasher?: string | 'sha256' | 'sha512'| 'sha512_256'| 'sha384'| 'sha3_512'| 'sha3_384'| 'sha3_256'| 'sha3_224'| 'keccak_512'| 'keccak_384'| 'keccak_256'| 'keccak_224';
@@ -140,13 +126,11 @@ class EncryptedURIDecoder<T extends TURIParams> {
   
     if (typeof params.dklen === 'string') {
       const derivateKeyLength = Number(params.dklen);
-      const fixedDerivateKeyLengthValue = 32;
-      if (Number.isSafeInteger(derivateKeyLength)
-      //  remove this when implements this issue:
-      //  https://github.com/antonioconselheiro/encrypted-uri/issues/27
-        && derivateKeyLength === fixedDerivateKeyLengthValue
-      ) {
-        config.derivateKeyLength = derivateKeyLength;
+      if (Number.isSafeInteger(derivateKeyLength)) {
+        //  remove any quando issue for resolvido
+        //  https://github.com/antonioconselheiro/encrypted-uri/issues/31
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        config.derivateKeyLength = derivateKeyLength as any;
       }
     }
   
