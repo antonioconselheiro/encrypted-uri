@@ -61,7 +61,7 @@ Algorithm with no param:
 Basic use, how to decode and encrypt and how to decode and decrypt: 
 
 ```typescript
-import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset, TURIParams } from '@encrypted-uri/core';
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset, TURIParams } from '@encrypted-uri/core';
 import { ecb } from '@noble/ciphers/aes';
 import { bytesToUtf8, utf8ToBytes } from '@noble/ciphers/utils';
 import { randomBytes } from '@noble/hashes/utils';
@@ -70,10 +70,9 @@ import { base64 } from '@scure/base';
 class EncryptedURIAESECBDecrypter<T extends TURIParams = TURIParams> extends EncryptedURIDecrypter<T> {
   constructor(
     decoded: TEncryptedURI<T>,
-    password: string,
-    defaultsKDF: Required<TEncryptedURIKDFConfig>
+    password: string
   ) {
-    super(decoded, password, defaultsKDF);
+    super(decoded, password);
   }
 
   async decrypt(): Promise<string> {
@@ -90,10 +89,11 @@ class EncryptedURIAESECBDecrypter<T extends TURIParams = TURIParams> extends Enc
   algorithm: 'aes/ecb',
   decrypter: EncryptedURIAESECBDecrypter
 })
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 class EncryptedURIAESECBEncrypter<T extends TURIParams = TURIParams> extends EncryptedURIEncrypter<TURIParams> {
 
   constructor(
-    protected override params: TEncryptedURIResultset<T>
+    params: TEncryptedURIResultset<T>
   ) {
     super(params);
   }
@@ -102,18 +102,19 @@ class EncryptedURIAESECBEncrypter<T extends TURIParams = TURIParams> extends Enc
     const content = utf8ToBytes(this.params.content);
     const saltLength = 8;
     const salt = randomBytes(saltLength);
-    const rawCipher = await ecb(kdf(this.params.password, salt, this.params.kdf)).encrypt(content);
+    const rawCipher = await ecb(kdf(this.params.password, salt, this.params)).encrypt(content);
     const cipher = base64.encode(OpenSSLSerializer.encode(rawCipher, salt));
 
     return Promise.resolve({ cipher });
   }
 }
 
+
 ```
 
 Advanced use, how to add default encrypter and how to add more alias to an algorithm: 
 ```typescript
-import { EncryptedURI, EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIKDFConfig, TEncryptedURIResultset } from '@encrypted-uri/core';
+import { EncryptedURI, EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset } from '@encrypted-uri/core';
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { cbc } from '@noble/ciphers/webcrypto/aes';
 import { randomBytes } from '@noble/hashes/utils';
@@ -122,10 +123,9 @@ import { base64 } from '@scure/base';
 class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TInitializationVectorParams> {
   constructor(
     decoded: TEncryptedURI<TInitializationVectorParams>,
-    password: string,
-    defaultsKDF: Required<TEncryptedURIKDFConfig>
+    password: string
   ) {
-    super(decoded, password, defaultsKDF);
+    super(decoded, password);
   }
 
   async decrypt(): Promise<string> {
@@ -147,7 +147,7 @@ class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TInitializationV
 class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter<TInitializationVectorParams> {
 
   constructor(
-    protected override params: TEncryptedURIResultset<TInitializationVectorParams>
+    params: TEncryptedURIResultset<TInitializationVectorParams>
   ) {
     super(params);
   }
@@ -158,7 +158,7 @@ class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter<TInitializationV
     const content = utf8ToBytes(this.params.content);
     const saltLength = 8;
     const salt = randomBytes(saltLength);
-    const cipher = await cbc(kdf(this.params.password, salt, this.params.kdf), iv).encrypt(content);
+    const cipher = await cbc(kdf(this.params.password, salt, this.params), iv).encrypt(content);
 
     return Promise.resolve({
       cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),
@@ -169,6 +169,7 @@ class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter<TInitializationV
 
 EncryptedURI.setAlgorithm('', EncryptedURIAESCBCEncrypter, EncryptedURIAESCBCDecrypter);
 EncryptedURI.setAlgorithm('aes', EncryptedURIAESCBCEncrypter, EncryptedURIAESCBCDecrypter);
+
 ```
 
 ## Example of practical application
