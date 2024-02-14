@@ -2,14 +2,14 @@ import { EncryptedURI, TEncryptedURIKDFConfig } from '@encrypted-uri/core';
 import './aes';
 import './hashes';
 
-xdescribe('kdf success flow', () => {
+describe('kdf success flow', () => {
 
   it('[2] kdf include all parameters including default', async () => {
     const kdf: TEncryptedURIKDFConfig = {
       kdf: 'pbkdf2',
       ignoreDefaults: false,
       hasher: 'sha256',
-      rounds: 100,
+      rounds: 10,
       derivateKeyLength: 32
     };
 
@@ -41,7 +41,6 @@ xdescribe('kdf success flow', () => {
       password,
       kdf
     });
-    console.info(' >>> encoded', encoded)
 
     const decrypted = await EncryptedURI.decrypt(encoded, password);
     expect(decrypted).toEqual(originalMessage);
