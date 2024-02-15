@@ -1,10 +1,10 @@
-import { EncryptedURI, EncryptedURIParser, TEncryptedURIKDFConfig } from '@encrypted-uri/core';
+import { EncryptedURI, EncryptedURIParser, TEncryptedURIKDFParams } from '@encrypted-uri/core';
 import './aes';
 import './hashes';
 
 describe('hashing customization', () => {
   it('[3] kdf with hasher sha512', async () => {
-    const kdf: TEncryptedURIKDFConfig = {
+    const kdf: TEncryptedURIKDFParams = {
       hasher: 'sha512'
     };
 
@@ -27,7 +27,7 @@ describe('hashing customization', () => {
   });
 
   it('[4] kdf with hasher sha512_256', async () => {
-    const kdf: TEncryptedURIKDFConfig = {
+    const kdf: TEncryptedURIKDFParams = {
       hasher: 'sha512_256'
     };
 
@@ -50,7 +50,7 @@ describe('hashing customization', () => {
   });
 
   it('[5] kdf with hasher sha384', async () => {
-    const kdf: TEncryptedURIKDFConfig = {
+    const kdf: TEncryptedURIKDFParams = {
       hasher: 'sha384'
     };
 
@@ -73,7 +73,7 @@ describe('hashing customization', () => {
   });
 
   it('[6] kdf with hasher sha3_512', async () => {
-    const kdf: TEncryptedURIKDFConfig = {
+    const kdf: TEncryptedURIKDFParams = {
       hasher: 'sha3_512'
     };
 
@@ -96,7 +96,7 @@ describe('hashing customization', () => {
   });
 
   it('[7] kdf with hasher sha3_384', async () => {
-    const kdf: TEncryptedURIKDFConfig = {
+    const kdf: TEncryptedURIKDFParams = {
       hasher: 'sha3_384'
     };
 
@@ -119,7 +119,7 @@ describe('hashing customization', () => {
   });
 
   it('[8] kdf with hasher sha3_256', async () => {
-    const kdf: TEncryptedURIKDFConfig = {
+    const kdf: TEncryptedURIKDFParams = {
       hasher: 'sha3_256'
     };
 
@@ -142,7 +142,7 @@ describe('hashing customization', () => {
   });
 
   it('[9] kdf with hasher sha3_224', async () => {
-    const kdf: TEncryptedURIKDFConfig = {
+    const kdf: TEncryptedURIKDFParams = {
       hasher: 'sha3_224'
     };
 
@@ -165,7 +165,7 @@ describe('hashing customization', () => {
   });
 
   it('[10] kdf with hasher keccak_512', async () => {
-    const kdf: TEncryptedURIKDFConfig = {
+    const kdf: TEncryptedURIKDFParams = {
       hasher: 'keccak_512'
     };
 
@@ -188,7 +188,7 @@ describe('hashing customization', () => {
   });
 
   it('[11] kdf with hasher keccak_384', async () => {
-    const kdf: TEncryptedURIKDFConfig = {
+    const kdf: TEncryptedURIKDFParams = {
       hasher: 'keccak_384'
     };
 
@@ -211,7 +211,7 @@ describe('hashing customization', () => {
   });
 
   it('[12] kdf with hasher keccak_256', async () => {
-    const kdf: TEncryptedURIKDFConfig = {
+    const kdf: TEncryptedURIKDFParams = {
       hasher: 'keccak_256'
     };
 
@@ -236,7 +236,7 @@ describe('hashing customization', () => {
 
 describe('checking if params are correctly encoded', () => {
   it('[1] overriding default values in decrypt', async () => {
-    const kdf: TEncryptedURIKDFConfig = {
+    const kdf: TEncryptedURIKDFParams = {
       kdf: 'pbkdf2',
       hasher: 'sha256',
       rounds: 250_000,
@@ -262,9 +262,8 @@ describe('checking if params are correctly encoded', () => {
   });
 
   it('[2] kdf include all parameters including default', async () => {
-    const kdf: TEncryptedURIKDFConfig = {
+    const kdf: TEncryptedURIKDFParams = {
       kdf: 'pbkdf2',
-      ignoreDefaults: false,
       hasher: 'sha256',
       rounds: 100,
       derivateKeyLength: 32
@@ -277,6 +276,9 @@ describe('checking if params are correctly encoded', () => {
       algorithm: 'aes/cbc',
       content: originalMessage,
       password,
+      config: {
+        ignoreDefaults: false
+      },
       kdf
     });
 

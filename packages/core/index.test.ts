@@ -351,9 +351,11 @@ describe('EncryptedURI getKDFConfig', () => {
       algorithm: 'aes/cbc',
       content: 'mensagem secreta, favor não ler em voz alta',
       password: 'senha123',
+      config: {
+        ignoreDefaults: false
+      },
       kdf: {
         kdf: 'pbkdf2',
-        ignoreDefaults: false,
         hasher: 'sha256',
         rounds: 10,
         derivateKeyLength: 32
@@ -362,7 +364,6 @@ describe('EncryptedURI getKDFConfig', () => {
 
     expect(configs).toEqual({
       kdf: 'pbkdf2',
-      ignoreDefaults: false,
       hasher: 'sha256',
       rounds: 10,
       derivateKeyLength: 32
@@ -384,7 +385,6 @@ describe('EncryptedURI getKDFConfig', () => {
 
     expect(configs).toEqual({
       kdf: 'pbkdf2',
-      ignoreDefaults: true,
       hasher: 'keccak_224',
       rounds: 32,
       derivateKeyLength: 32
