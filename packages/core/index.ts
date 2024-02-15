@@ -250,7 +250,11 @@ class EncryptedURIEncoder<T extends TURIParams> {
     const config = EncryptedURI.getConfigsOfDefaults(content.config);
     const paramsKeys = Object.keys(contentParams);
 
-    if (config.ignoreMandatoryParamName && paramsKeys.length === 1) {
+    if (
+      config.ignoreMandatoryParamName &&
+      (paramsKeys[0] === 'iv' || paramsKeys[0] === 'no') &&
+      paramsKeys.length === 1
+    ) {
       return contentParams[paramsKeys[0]];
     } else if (paramsKeys.length) {
       paramsKeys.forEach(key => params[key] = contentParams[key]);
