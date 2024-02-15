@@ -369,7 +369,6 @@ describe('EncryptedURI getKDFConfig', () => {
     
   });
 
-
   it('[2] EncryptedURI get KDF config from decoded URI', () => {
     const configs = EncryptedURI.getKDFParams({
       algorithm: 'aes/cbc',
@@ -387,7 +386,123 @@ describe('EncryptedURI getKDFConfig', () => {
       rounds: 32,
       derivateKeyLength: 32
     });
-    
+  });
+});
+
+describe('EncryptedURI configs of defaults', () => {
+  it('[1] EncryptedURI ignoreDefaults as false', () => {
+    expect(new EncryptedURIParser({
+      algorithm: 'aes/cbc',
+      cipher: 'cipherexample',
+      config: {
+        ignoreDefaults: false
+      },
+      params: {
+        iv: '2345678wertyui'
+      }
+    }).encoded).toEqual('encrypted:aes/cbc?iv=2345678wertyui;cipherexample')
   });
 
+  it('[2] EncryptedURI ignoreDefaults as true', () => {
+    expect(new EncryptedURIParser({
+      algorithm: 'aes/cbc',
+      cipher: 'cipherexample',
+      config: {
+        ignoreDefaults: true
+      },
+      params: {
+        iv: '2345678wertyui'
+      }
+    }).encoded).toEqual('encrypted:?2345678wertyui;cipherexample')
+  });
+
+  it('[3] EncryptedURI ignoreDefaultAlgorithm as true', () => {
+    expect(new EncryptedURIParser({
+      algorithm: 'aes/cbc',
+      cipher: 'cipherexample',
+      config: {
+        ignoreDefaultAlgorithm: true,
+        ignoreDefaultValues: false,
+        ignoreMandatoryParamName: false
+      },
+      params: {
+        iv: '2345678wertyui'
+      }
+    }).encoded).toEqual('encrypted:?iv=2345678wertyui;cipherexample')
+  });
+
+  it('[4] EncryptedURI ignoreDefaultValues as true', () => {
+    expect(new EncryptedURIParser({
+      algorithm: 'aes/cbc',
+      cipher: 'cipherexample',
+      config: {
+        ignoreDefaultAlgorithm: false,
+        ignoreDefaultValues: true,
+        ignoreMandatoryParamName: false
+      },
+      params: {
+        iv: '2345678wertyui'
+      }
+    }).encoded).toEqual('encrypted:aes/cbc?iv=2345678wertyui;cipherexample')
+  });
+
+  it('[5] EncryptedURI ignoreMandatoryParamName as true', () => {
+    expect(new EncryptedURIParser({
+      algorithm: 'aes/cbc',
+      cipher: 'cipherexample',
+      config: {
+        ignoreDefaultAlgorithm: false,
+        ignoreDefaultValues: false,
+        ignoreMandatoryParamName: true
+      },
+      params: {
+        iv: '2345678wertyui'
+      }
+    }).encoded).toEqual('encrypted:aes/cbc?2345678wertyui;cipherexample')
+  });
+
+  it('[6] EncryptedURI ignoreDefaultAlgorithm and ignoreDefaultValues as true', () => {
+    expect(new EncryptedURIParser({
+      algorithm: 'aes/cbc',
+      cipher: 'cipherexample',
+      config: {
+        ignoreDefaultAlgorithm: true,
+        ignoreDefaultValues: true,
+        ignoreMandatoryParamName: false
+      },
+      params: {
+        iv: '2345678wertyui'
+      }
+    }).encoded).toEqual('encrypted:?iv=2345678wertyui;cipherexample')
+  });
+
+  it('[7] EncryptedURI ignoreDefaultAlgorithm and ignoreMandatoryParamName as true', () => {
+    expect(new EncryptedURIParser({
+      algorithm: 'aes/cbc',
+      cipher: 'cipherexample',
+      config: {
+        ignoreDefaultAlgorithm: true,
+        ignoreDefaultValues: false,
+        ignoreMandatoryParamName: true
+      },
+      params: {
+        iv: '2345678wertyui'
+      }
+    }).encoded).toEqual('encrypted:?2345678wertyui;cipherexample')
+  });
+
+  it('[8] EncryptedURI ignoreDefaultValues and ignoreMandatoryParamName as true', () => {
+    expect(new EncryptedURIParser({
+      algorithm: 'aes/cbc',
+      cipher: 'cipherexample',
+      config: {
+        ignoreDefaultAlgorithm: false,
+        ignoreDefaultValues: true,
+        ignoreMandatoryParamName: true
+      },
+      params: {
+        iv: '2345678wertyui'
+      }
+    }).encoded).toEqual('encrypted:aes/cbc?2345678wertyui;cipherexample')
+  });
 });

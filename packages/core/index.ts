@@ -53,7 +53,7 @@ export type TEncryptedDefaultsConfig = {
    * @default true
    */
   ignoreDefaults: boolean;
-} & TEncryptedFullDefaultsConfig;
+} | TEncryptedFullDefaultsConfig;
 
 export type TEncryptedURIKDFParams = {
 
@@ -466,7 +466,7 @@ export class EncryptedURI {
     } else {
       return {
         ...defaultConfigs,
-        ...(config as TEncryptedFullDefaultsConfig)
+        ...config
       };
     }
   }
