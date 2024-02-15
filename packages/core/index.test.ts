@@ -1,4 +1,4 @@
-import { EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter, EncryptedURIParser, TEncryptedURI, TEncryptedURIEncryptableDefaultParams, TEncryptedURIKDFConfig, TURIParams } from ".";
+import { EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter, EncryptedURIParser, TEncryptedURI, TEncryptedURIEncryptableDefaultParams, TEncryptedURIKDFParams, TURIParams } from ".";
 
 describe('decode uri with default values', () => {
   it('[1] decode uri with default values not include', () => {
@@ -347,7 +347,7 @@ describe('EncryptedURI object', () => {
 
 describe('EncryptedURI getKDFConfig', () => {
   it('[1] EncryptedURI get KDF config from KDF config', () => {
-    const configs = EncryptedURI.getKDFConfig({
+    const configs = EncryptedURI.getKDFParams({
       algorithm: 'aes/cbc',
       content: 'mensagem secreta, favor não ler em voz alta',
       password: 'senha123',
@@ -372,7 +372,7 @@ describe('EncryptedURI getKDFConfig', () => {
 
 
   it('[2] EncryptedURI get KDF config from decoded URI', () => {
-    const configs = EncryptedURI.getKDFConfig({
+    const configs = EncryptedURI.getKDFParams({
       algorithm: 'aes/cbc',
       cipher: 'U2FsdGVkX18WeA03azX1tWETWsG/oSiQYzgI0en6RPgQ7Z2i9YbxCL3VcfzL6nsFo5Sdf0xF/UVatnJEehkcHQ==',
       queryString: 'iv=44b9c510f05a8461c0ad153ba915d9dc&h=keccak_224',
