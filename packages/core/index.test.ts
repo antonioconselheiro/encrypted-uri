@@ -124,7 +124,7 @@ describe('encode uri with configs using default values', () => {
       params: {
         iv: '2345678wertyui'
       }
-    }).encoded).toEqual('encrypted:?iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
+    }).encoded).toEqual('encrypted:?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
   });
 
   it('[3] encode with default config with default values', () => {
@@ -161,7 +161,7 @@ describe('encode uri with configs using default values', () => {
       params: {
         iv: '2345678wertyui'
       }
-    }).encoded).toEqual('encrypted:aes?iv=2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
+    }).encoded).toEqual('encrypted:aes?2345678wertyui;en1e3kj3e31jn2algoritmgenerateddata')
   });
 
   it('[7] encode with default config with default values', () => {
@@ -204,7 +204,7 @@ describe('encode uri with customized values', () => {
         //  nonce
         no: '871232183987132082713'
       }
-    }).encoded).toEqual('encrypted:salsa20?no=871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata')
+    }).encoded).toEqual('encrypted:salsa20?871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata')
   });
 
   it('[3] encode xchacha with customized values', () => {
@@ -215,7 +215,7 @@ describe('encode uri with customized values', () => {
         //  nonce
         no: '871232183987132082713'
       }
-    }).encoded).toEqual('encrypted:xchacha?no=871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata')
+    }).encoded).toEqual('encrypted:xchacha?871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata')
   });
 
   it('[4] encode chacha12 with customized values', () => {
@@ -226,7 +226,7 @@ describe('encode uri with customized values', () => {
         //  nonce
         no: '871232183987132082713'
       }
-    }).encoded).toEqual('encrypted:chacha12?no=871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata')
+    }).encoded).toEqual('encrypted:chacha12?871232183987132082713;en1e3kj3e31jn2algoritmgenerateddata')
   });
 });
 

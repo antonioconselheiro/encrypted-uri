@@ -247,8 +247,12 @@ class EncryptedURIEncoder<T extends TURIParams> {
     const params: TURIParams = {};
     const kdfParams = EncryptedURIEncoder.castKDFConfigToParams(content);
     const contentParams: TURIParams = { ...content.params, ...kdfParams };
+    const config = EncryptedURI.getConfigsOfDefaults(content.config);
     const paramsKeys = Object.keys(contentParams);
-    if (paramsKeys.length) {
+
+    if (config.ignoreMandatoryParamName && paramsKeys.length === 1) {
+      return contentParams[paramsKeys[0]];
+    } else if (paramsKeys.length) {
       paramsKeys.forEach(key => params[key] = contentParams[key]);
     } else {
       return content.queryString || '';
