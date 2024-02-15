@@ -343,7 +343,7 @@ describe('EncryptedURI object', () => {
   });
 });
 
-describe('EncryptedURI getKDFConfig', () => {
+describe('EncryptedURI kdf customization', () => {
   it('[1] EncryptedURI get KDF config from KDF config', () => {
     const configs = EncryptedURI.getKDFParams({
       algorithm: 'aes/cbc',
