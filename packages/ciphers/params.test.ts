@@ -181,7 +181,7 @@ describe('hashing customization', () => {
 
     const parser = new EncryptedURIParser(encoded);
     expect(parser.decoded.params?.kdf).toEqual(undefined);
-    expect(parser.decoded.algorithm).toEqual('aes/cbc');
+    expect(parser.decoded.algorithm).toEqual(undefined);
     expect(parser.decoded.params?.c).toEqual(undefined);
     expect(parser.decoded.params?.dklen).toEqual(undefined);
     expect(parser.decoded.params?.h).toEqual('keccak_512');
@@ -204,7 +204,7 @@ describe('hashing customization', () => {
 
     const parser = new EncryptedURIParser(encoded);
     expect(parser.decoded.params?.kdf).toEqual(undefined);
-    expect(parser.decoded.algorithm).toEqual('aes/cbc');
+    expect(parser.decoded.algorithm).toEqual(undefined);
     expect(parser.decoded.params?.c).toEqual(undefined);
     expect(parser.decoded.params?.dklen).toEqual(undefined);
     expect(parser.decoded.params?.h).toEqual('keccak_384');
@@ -301,7 +301,7 @@ describe('checking if params are correctly encoded', () => {
 
     const parser = new EncryptedURIParser(encoded);
     expect(parser.decoded.params?.kdf).toEqual(undefined);
-    expect(parser.decoded.algorithm).toEqual('aes/cbc');
+    expect(parser.decoded.algorithm).toEqual(undefined);
     expect(parser.decoded.params?.c).toEqual(undefined);
     expect(parser.decoded.params?.dklen).toEqual(undefined);
     expect(parser.decoded.params?.h).toEqual(undefined);

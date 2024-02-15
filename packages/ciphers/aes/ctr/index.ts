@@ -1,5 +1,5 @@
-import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset } from "@encrypted-uri/core";
-import { bytesToUtf8, hexToBytes, utf8ToBytes } from "@noble/ciphers/utils";
+import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset } from '@encrypted-uri/core';
+import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { ctr } from '@noble/ciphers/webcrypto/aes';
 import { randomBytes } from "@noble/hashes/utils";
 import { base64 } from '@scure/base';
@@ -20,7 +20,8 @@ class EncryptedURIAESCTRDecrypter extends EncryptedURIDecrypter<TInitializationV
     const ivhex = getInitializationVector(this.decoded);
     const cipher = base64.decode(this.decoded.cipher);
     const params = getSalt(cipher, this.decoded?.params);
-    const result = await ctr(kdf(this.password, params.salt, this.decoded), hexToBytes(ivhex))
+    const derivatedKey = kdf(this.password, params.salt, this.decoded);
+    const result = await ctr(derivatedKey, hexToBytes(ivhex))
       .decrypt(params.cipher);
 
     return bytesToUtf8(result);
@@ -46,7 +47,8 @@ class EncryptedURIAESCTREncrypter extends EncryptedURIEncrypter<TInitializationV
     const content = utf8ToBytes(this.params.content);
     const saltLength = 8;
     const salt = randomBytes(saltLength);
-    const cipher = await ctr(kdf(this.params.password, salt, this.params), iv).encrypt(content);
+    const derivatedKey = kdf(this.params.password, salt, this.params);
+    const cipher = await ctr(derivatedKey, iv).encrypt(content);
 
     return Promise.resolve({
       cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),

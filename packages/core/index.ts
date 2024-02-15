@@ -111,8 +111,6 @@ export type TEncryptedURI<T extends TURIParams> = {
 };
 
 class EncryptedURIDecoder<T extends TURIParams> {
-  
-
 
   private readonly ENCRYPTED_URI_MATCHER = /^encrypted:/;
   private readonly QUERY_STRING_MATCHER = /^\?[^;]*;/;
@@ -229,7 +227,7 @@ class EncryptedURIEncoder<T extends TURIParams> {
     return params;
   }
 
-  encode(content: TEncryptedURI<T> & { kdf?: TEncryptedURIKDFParams }): string {
+  encode(content: TEncryptedURI<T> & { kdf?: TEncryptedURIKDFParams, config?: TEncryptedDefaultsConfig }): string {
     const algorithm = this.encodeAlgorithm(content);
     const parameters = this.encodeParameters(content);
 
@@ -263,8 +261,19 @@ class EncryptedURIEncoder<T extends TURIParams> {
   }
 
   private encodeAlgorithm(
-    content: TEncryptedURI<T>
+    content: TEncryptedURI<T> & {
+      config?: TEncryptedDefaultsConfig
+    }
   ): string {
+    const config = EncryptedURI.getConfigsOfDefaults(content.config);
+
+    if (
+      config.ignoreDefaultAlgorithm &&
+      content.algorithm === EncryptedURI.defaultAlgotithm
+    ) {
+      return '';
+    }
+
     return content.algorithm || '';
   }
 }
@@ -280,10 +289,12 @@ export class EncryptedURIParser<T extends TURIParams> {
 
   constructor(content: string);
   constructor(content: TEncryptedURI<T> & {
-    kdf?: TEncryptedURIKDFParams | undefined;
+    kdf?: TEncryptedURIKDFParams;
+    config?: TEncryptedDefaultsConfig;
   });
   constructor(content: string | TEncryptedURI<T> & {
-    kdf?: TEncryptedURIKDFParams | undefined;
+    kdf?: TEncryptedURIKDFParams;
+    config?: TEncryptedDefaultsConfig;
   }) {
     if (typeof content === 'string') {
       const decoder = new EncryptedURIDecoder<T>();
@@ -530,7 +541,8 @@ export class EncryptedURI {
   }
 
   static encode<T extends TURIParams>(params: TEncryptedURI<T> & {
-    kdf?: TEncryptedURIKDFParams | undefined;
+    kdf?: TEncryptedURIKDFParams;
+    config?: TEncryptedDefaultsConfig;
   }): string {
     return new EncryptedURIParser(params).encoded;
   }
@@ -542,7 +554,11 @@ export class EncryptedURI {
     const ciphred = await new encrypter(params, ...args).encrypt();
     ciphred.algorithm = encrypter.algorithm || params.algorithm;
 
-    return Promise.resolve(this.encode({ ...ciphred, kdf: params.kdf }));
+    return Promise.resolve(this.encode({
+      ...ciphred,
+      kdf: params.kdf,
+      config: params.config
+    }));
   }
 
   static decrypt(
