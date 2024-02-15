@@ -7,7 +7,7 @@ export function kdf<T extends TURIParams>(
   salt: Uint8Array,
   kdfConfig?: TEncryptedURI<T> | TEncryptedURIResultset<T>
 ): Uint8Array {
-  const cfg = EncryptedURI.getKDFConfig(kdfConfig);
+  const cfg = EncryptedURI.getKDFParams(kdfConfig);
   const saltLength = 8;
   if (salt.length !== saltLength) {
     throw new Error(`salt length must be ${saltLength} bytes, ${salt.length} bytes was given`);

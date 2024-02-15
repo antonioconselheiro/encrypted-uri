@@ -20,9 +20,7 @@ class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TInitializationV
     const ivhex = getInitializationVector(this.decoded);
     const cipher = base64.decode(this.decoded.cipher);
     const params = getSalt(cipher, this.decoded?.params);
-
     const derivatedKey = kdf(this.password, params.salt, this.decoded);
-
     const result = await cbc(derivatedKey, hexToBytes(ivhex))
       .decrypt(params.cipher);
 
@@ -48,7 +46,6 @@ class EncryptedURIAESCBCEncrypter extends EncryptedURIEncrypter<TInitializationV
     const content = utf8ToBytes(this.params.content);
     const saltLength = 8;
     const salt = randomBytes(saltLength);
-
     const derivatedKey = kdf(this.params.password, salt, this.params);
     const cipher = await cbc(derivatedKey, iv).encrypt(content);
 

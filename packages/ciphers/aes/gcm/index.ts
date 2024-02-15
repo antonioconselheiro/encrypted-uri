@@ -20,7 +20,8 @@ class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TNumberOnceParam
     const nonce = getNumberOnce(this.decoded);
     const cipher = base64.decode(this.decoded.cipher);
     const params = getSalt(cipher, this.decoded?.params);
-    const result = await gcm(kdf(this.password, params.salt, this.decoded), hexToBytes(nonce))
+    const derivatedKey = kdf(this.password, params.salt, this.decoded);
+    const result = await gcm(derivatedKey, hexToBytes(nonce))
       .decrypt(params.cipher);
 
     return bytesToUtf8(result);
@@ -46,7 +47,8 @@ class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter<TNumberOnceParam
     const content = utf8ToBytes(this.params.content);
     const saltLength = 8;
     const salt = randomBytes(saltLength);
-    const cipher = await gcm(kdf(this.params.password, salt, this.params), nonce).encrypt(content);
+    const derivatedKey = kdf(this.params.password, salt, this.params);
+    const cipher = await gcm(derivatedKey, nonce).encrypt(content);
 
     return Promise.resolve({
       cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),
