@@ -11,6 +11,9 @@ Include AES algorithms from @noble/ciphers into Encrypted URI (@encrypted-uri/co
 
 Support for Encrypted URI using _@scure_ and _@noble_ packages.
 
+## Run example
+[Open example app](https://antonioconselheiro.github.io/encrypted-uri/ciphers-example/browser/)
+
 ## Installation
 
 ```npm install @encrypted-uri/core @encrypted-uri/ciphers --save```
