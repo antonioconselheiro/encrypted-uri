@@ -17,9 +17,8 @@ Support for Encrypted URI using _@scure_ and _@noble_ packages.
 
 ```typescript
 import { EncryptedURI } from '@encrypted-uri/core';
-import { supportAES } from '@encrypted-uri/ciphers';
-
-supportAES();
+import '@encrypted-uri/ciphers/aes';
+import '@encrypted-uri/ciphers/hashes';
 
 EncryptedURI.encrypt({
    algorithm: 'aes/cbc',
@@ -27,7 +26,7 @@ EncryptedURI.encrypt({
    content: 'secret message',
    key: 'secret key'
 });
-// encrypted:aes/cbc?iv=a24567b823f5c7918736194ab5c2e83d;rtyu...<cypher>
+// encrypted:aes/cbc?iv=a24567b823f5c7918736194ab5c2e83d;...<cypher>
 
 EncryptedURI.encrypt({
    algorithm: 'aes/cbc',
@@ -35,7 +34,7 @@ EncryptedURI.encrypt({
    content: 'secret message',
    key: 'secret key'
 });
-// encrypted:aes/cbc?a24567b823f5c7918736194ab5c2e83d;rtyu...<cypher>
+// encrypted:aes/cbc?a24567b823f5c7918736194ab5c2e83d;...<cypher>
 
 
 EncryptedURI.encrypt({

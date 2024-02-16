@@ -4,7 +4,13 @@ h1 {
 
 .show-result {
   max-width: 600px;
-  overflow-wrap: break-word;
+  white-space: nowrap;
+  margin: 1rem 0;
+}
+
+.info {
+  text-align: center;
+  margin: 1rem 0;
 }
 
 label {
@@ -15,4 +21,14 @@ label {
 section {
   width: 700px;
   margin: 0 auto;
+}
+
+input,
+select,
+textarea {
+  width: 400px;
+}
+
+fieldset > div {
+  margin: 1rem 0;
 }

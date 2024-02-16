@@ -3,6 +3,8 @@ import { Component } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
 import { EncryptedURI } from '@encrypted-uri/core';
+import '@encrypted-uri/ciphers/aes';
+import '@encrypted-uri/ciphers/hashes';
 
 @Component({
   selector: 'app-root',
@@ -68,15 +70,20 @@ export class AppComponent {
 
   getEncryptErrors(property: string, errorName: string): boolean {
     const controls: any = this.encryptForm.controls;
-    return this.submittedEncrypt && controls[property].errors[errorName] || false;
+    return this.submittedEncrypt &&
+      controls[property]?.errors &&
+      controls[property].errors[errorName] || false;
   }
 
   getDecryptErrors(property: string, errorName: string): boolean {
     const controls: any = this.decryptForm.controls;
-    return this.submittedDecrypt && controls[property].errors[errorName] || false;
+    return this.submittedDecrypt &&
+      controls[property]?.errors &&
+      controls[property].errors[errorName] || false;
   }
 
   onEncryptSubmit(): void {
+    this.submittedEncrypt = true;
     if (this.encryptForm.valid) {
       const raw = this.encryptForm.getRawValue();
       if (raw.algorithm && raw.content && raw.password) {
@@ -85,10 +92,8 @@ export class AppComponent {
           content: raw.content,
           password: raw.password,
           kdf: {
-            kdf: 'pbkdf2',
-            hasher: 'sha256',
-            rounds: 100_000,
-            derivateKeyLength: 32
+            hasher: raw.kdfHasher || 'sha256',
+            rounds: Number(raw.kdfRounds)
           }
         })
         .then(uri => this.generatedEncryptedURI = uri)
@@ -98,6 +103,7 @@ export class AppComponent {
   }
 
   onDecryptSubmit(): void {
+    this.submittedDecrypt = true;
     if (this.decryptForm.valid) {
       const raw = this.decryptForm.getRawValue();
       if (raw.uri && raw.password) {
