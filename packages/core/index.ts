@@ -559,7 +559,10 @@ export class EncryptedURI {
     params: TEncryptedURIEncryptableDefaultParams<T>, ...args: any[]
   ): Promise<string> {
     const [ encrypter ] = this.getAlgorithm(params.algorithm);
-    const ciphred = await new encrypter(params, ...args).encrypt();
+    const ciphred = await new encrypter({
+      ...params,
+      password: params.password.normalize('NFKC')
+    }, ...args).encrypt();
     ciphred.algorithm = encrypter.algorithm || params.algorithm;
 
     return Promise.resolve(this.encode({
@@ -579,7 +582,7 @@ export class EncryptedURI {
     const kdfConfigs: Required<TEncryptedURIKDFParams> = {
       ...EncryptedURI.defaultParams
     };
-    return new decryptor(uriDecoded, password, kdfConfigs, ...args).decrypt();
+    return new decryptor(uriDecoded, password.normalize('NFKC'), kdfConfigs, ...args).decrypt();
   }
 
   static setAlgorithm<T extends TURIParams>(
