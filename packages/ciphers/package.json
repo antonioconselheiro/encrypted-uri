@@ -1,6 +1,6 @@
 {
   "name": "@encrypted-uri/ciphers",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "encrypt and decrypt from encrypted uri",
   "repository": {
     "type": "git",
