@@ -3,9 +3,9 @@ import { ecb } from '@noble/ciphers/aes';
 import { bytesToUtf8, utf8ToBytes } from '@noble/ciphers/utils';
 import { randomBytes } from '@noble/hashes/utils';
 import { base64 } from '@scure/base';
-import { kdf } from '../kdf';
-import { OpenSSLSerializer } from '../openssl-serializer';
-import { getSalt } from '../salt';
+import { kdf } from '../../kdf';
+import { OpenSSLSerializer } from '../../openssl-serializer';
+import { getSalt } from '../../salt';
 
 class EncryptedURIAESECBDecrypter<T extends TURIParams = TURIParams> extends EncryptedURIDecrypter<T> {
   constructor(

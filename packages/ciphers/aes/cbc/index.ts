@@ -3,10 +3,10 @@ import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { cbc } from '@noble/ciphers/webcrypto/aes';
 import { randomBytes } from '@noble/hashes/utils';
 import { base64 } from '@scure/base';
-import { TInitializationVectorParams, getInitializationVector } from '../initialization-vector';
-import { kdf } from '../kdf';
-import { OpenSSLSerializer } from '../openssl-serializer';
-import { getSalt } from '../salt';
+import { TInitializationVectorParams, getInitializationVector } from '../../initialization-vector';
+import { kdf } from '../../kdf';
+import { OpenSSLSerializer } from '../../openssl-serializer';
+import { getSalt } from '../../salt';
 
 class EncryptedURIAESCBCDecrypter extends EncryptedURIDecrypter<TInitializationVectorParams> {
   constructor(
