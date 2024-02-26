@@ -3,10 +3,10 @@ import { siv } from '@noble/ciphers/aes';
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
 import { randomBytes } from '@noble/hashes/utils';
 import { base64 } from '@scure/base';
-import { kdf } from '../kdf';
-import { TNumberOnceParams, getNumberOnce } from '../number-once';
-import { OpenSSLSerializer } from '../openssl-serializer';
-import { getSalt } from '../salt';
+import { kdf } from '../../kdf';
+import { TNumberOnceParams, getNumberOnce } from '../../number-once';
+import { OpenSSLSerializer } from '../../openssl-serializer';
+import { getSalt } from '../../salt';
 
 class EncryptedURIAESSIVDecrypter extends EncryptedURIDecrypter<TNumberOnceParams> {
   constructor(
