@@ -1,6 +1,6 @@
 import { EncryptedURIAlgorithm, EncryptedURIDecrypter, EncryptedURIEncrypter, TEncryptedURI, TEncryptedURIResultset } from '@encrypted-uri/core';
 import { bytesToUtf8, hexToBytes, utf8ToBytes } from '@noble/ciphers/utils';
-import { gcm } from '@noble/ciphers/webcrypto/aes';
+import { gcm } from '@noble/ciphers/webcrypto';
 import { randomBytes } from '@noble/hashes/utils';
 import { base64 } from '@scure/base';
 import { kdf } from '../kdf';
@@ -48,7 +48,7 @@ class EncryptedURIAESGCMEncrypter extends EncryptedURIEncrypter<TNumberOnceParam
     const saltLength = 8;
     const salt = randomBytes(saltLength);
     const derivatedKey = kdf(this.params.password, salt, this.params);
-    const cipher = await gcm(derivatedKey, nonce).encrypt(content);
+    const cipher = await gcm(derivatedKey, nonce, new Uint8Array(0)).encrypt(content);
 
     return Promise.resolve({
       cipher: base64.encode(OpenSSLSerializer.encode(cipher, salt)),

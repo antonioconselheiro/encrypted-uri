@@ -1,4 +1,4 @@
-import { EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter, EncryptedURIParser, TEncryptedURI, TEncryptedURIEncryptableDefaultParams, TEncryptedURIKDFParams, TURIParams } from ".";
+import { EncryptedURI, EncryptedURIDecrypter, EncryptedURIEncrypter, EncryptedURIParser, TEncryptedURI, TEncryptedURIEncryptableDefaultParams, TURIParams } from ".";
 
 describe('decode uri with default values', () => {
   it('[1] decode uri with default values not include', () => {
@@ -287,7 +287,7 @@ describe('uri matcher', () => {
   });
 });
 
-describe('EncryptedURI object', () => {
+describe('Custom EncryptedURI object', () => {
   class CustomDecrypter<T extends TURIParams = {}> extends EncryptedURIDecrypter<T> {
 
     constructor(
