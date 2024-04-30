@@ -21,7 +21,7 @@ class EncryptedURIAESGCMDecrypter extends EncryptedURIDecrypter<TNumberOnceParam
     const cipher = base64.decode(this.decoded.cipher);
     const params = getSalt(cipher, this.decoded?.params);
     const derivatedKey = kdf(this.password, params.salt, this.decoded);
-    const result = await gcm(derivatedKey, hexToBytes(nonce))
+    const result = await gcm(derivatedKey, hexToBytes(nonce), new Uint8Array(0))
       .decrypt(params.cipher);
 
     return bytesToUtf8(result);
