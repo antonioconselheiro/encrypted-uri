@@ -11,8 +11,6 @@ read githubemail
 echo "With no spaces, write a label to ssh key:"
 read sshnome
 
-mkdir .ssh
-
 ssh-keygen -t ed25519 -C $sshnome -f ".ssh/id_ed25519"
 
 echo "[user]

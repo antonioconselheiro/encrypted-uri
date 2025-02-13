@@ -1,10 +1,11 @@
 {
-  "name": "Existing Docker Compose (Extend)",
-  "dockerComposeFile": [
-    "docker-compose.yml"
-  ],
-  "service": "encrypted-uri-dev",
+	"name": "Encrypted URI Dev",
+	"dockerComposeFile": [
+		"docker-compose.yml"
+	],
+	"service": "encrypted-uri-dev",
 	"workspaceFolder": "/encrypted-uri",
+	"postCreateCommand": "./.devcontainer/auth.sh",
 	"customizations": {
 		"vscode": {
 			"extensions": [

@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   encrypted-uri-dev:
     image: encrypted-uri-dev
